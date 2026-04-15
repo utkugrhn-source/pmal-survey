@@ -1,544 +1,1236 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Posterior Malleolus Fracture Survey</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=DM+Sans:wght@400;500;600&family=Noto+Sans+JP:wght@400;500&family=Noto+Sans+KR:wght@400;500&family=Noto+Sans+SC:wght@400;500&family=Noto+Sans+Arabic:wght@400;500&display=swap" rel="stylesheet">
+<meta name="description" content="International survey on current trends and practice variation in posterior malleolus fracture management">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#fafafa;--surface:#fff;--surface-alt:#f5f7fa;--border:#e2e5ea;--border-light:#eef0f3;--text:#1a1e26;--text-sec:#5a6270;--text-ter:#8b93a0;--accent:#1a5276;--accent-light:#d4e6f1;--accent-bg:#eaf2f8;--success:#0e6245;--success-bg:#e8f5e9;--warn:#b7791f;--warn-bg:#fef9e7;--radius:8px;--radius-lg:12px;--font-body:'DM Sans',system-ui,sans-serif;--font-head:'Source Serif 4','Georgia',serif;--shadow-sm:0 1px 3px rgba(0,0,0,.06);--shadow-md:0 4px 12px rgba(0,0,0,.08)}
-html{font-size:16px;-webkit-font-smoothing:antialiased}
-body{font-family:var(--font-body);color:var(--text);background:var(--bg);line-height:1.6}
-[lang=ja] body,[lang=ko] body,[lang=zh] body{font-family:'Noto Sans JP','Noto Sans KR','Noto Sans SC',var(--font-body)}
-[lang=ar] body{font-family:'Noto Sans Arabic',var(--font-body)}
-[dir=rtl]{direction:rtl;text-align:right}
-.wrap{max-width:720px;margin:0 auto;padding:1.5rem 1rem 6rem}
-
-/* LANG PICKER PAGE */
-.lang-page{text-align:center;padding:3rem 1rem}
-.lang-page h2{font-family:var(--font-head);font-size:1.4rem;font-weight:600;margin-bottom:.5rem}
-.lang-page p{font-size:.85rem;color:var(--text-sec);margin-bottom:2rem}
-.lang-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.75rem;max-width:640px;margin:0 auto}
-.lang-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem .75rem;cursor:pointer;transition:all .2s;text-align:center}
-.lang-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.lang-card .flag{font-size:1.6rem;margin-bottom:.4rem}
-.lang-card .native{font-size:.85rem;font-weight:500;color:var(--text)}
-.lang-card .name{font-size:.7rem;color:var(--text-ter);margin-top:2px}
-
-/* LANG BADGE (small, corner) */
-.lang-badge{position:fixed;top:12px;right:12px;z-index:200;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:.72rem;font-weight:600;cursor:pointer;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:6px;color:var(--text-sec);display:none}
-.lang-badge:hover{border-color:var(--accent);color:var(--accent)}
-
-/* HEADER */
-.hdr{text-align:center;padding:2.5rem 0 2rem;border-bottom:1px solid var(--border-light);margin-bottom:2rem}
-.hdr-badge{display:inline-block;font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:4px 14px;border-radius:20px;margin-bottom:1rem}
-.hdr h1{font-family:var(--font-head);font-size:1.4rem;font-weight:600;color:var(--text);line-height:1.35;margin-bottom:.5rem}
-.hdr p{font-size:.85rem;color:var(--text-sec);max-width:540px;margin:0 auto}
-.hdr-meta{display:flex;gap:1.5rem;justify-content:center;margin-top:1rem;flex-wrap:wrap}
-.hdr-meta span{font-size:.75rem;color:var(--text-ter);display:flex;align-items:center;gap:4px}
-.hdr-meta svg{width:14px;height:14px;stroke:var(--text-ter)}
-.prog-wrap{position:sticky;top:0;z-index:100;background:var(--bg);padding:.75rem 0 .5rem;border-bottom:1px solid var(--border-light)}
-.prog-bar-bg{height:4px;background:var(--border-light);border-radius:2px}.prog-bar{height:4px;background:var(--accent);border-radius:2px;transition:width .4s ease}
-.prog-label{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text-ter);margin-top:4px}
-.sec{display:none}.sec.active{display:block}
-.sec-badge{display:inline-block;font-size:.65rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--accent-bg);padding:3px 10px;border-radius:14px;margin-bottom:.75rem}
-.sec-title{font-family:var(--font-head);font-size:1.15rem;font-weight:600;color:var(--text);margin-bottom:1.5rem;padding-bottom:.75rem;border-bottom:1px solid var(--border-light)}
-.q{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem 1.5rem;margin-bottom:1rem;transition:border-color .2s}.q:hover{border-color:#c8cdd4}
-.q-label{font-size:.85rem;font-weight:500;color:var(--text);margin-bottom:.75rem;line-height:1.5}
-.q-label .q-num{color:var(--text-ter);font-weight:400;margin-right:4px}
-.q-hint{font-size:.75rem;color:var(--text-ter);margin-bottom:.75rem;font-style:italic}
-.q-required{color:#c0392b;margin-left:2px}
-.opts{display:flex;flex-direction:column;gap:6px}
-.opt{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;transition:background .15s}.opt:hover{background:var(--surface-alt)}
-.opt input{margin-top:3px;accent-color:var(--accent);flex-shrink:0}
-.opt label{font-size:.82rem;color:var(--text);cursor:pointer;line-height:1.45}
-.txt,.sel{width:100%;padding:8px 12px;font-size:.82rem;font-family:var(--font-body);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);background:var(--surface);resize:vertical}.txt:focus,.sel:focus{outline:2px solid var(--accent);outline-offset:1px}
-.case-box{background:var(--surface-alt);border:1px solid var(--border-light);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.5rem}
-.case-title{font-family:var(--font-head);font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.5rem}
-.case-desc{font-size:.82rem;color:var(--text-sec);line-height:1.6;margin-bottom:1rem}
-.case-imgs{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem}
-.case-img-placeholder{aspect-ratio:1;background:var(--border-light);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:var(--text-ter);text-align:center;padding:1rem;border:1px dashed var(--border)}
-.nav{display:flex;justify-content:space-between;align-items:center;margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border-light)}
-.btn{padding:10px 28px;font-size:.82rem;font-weight:500;font-family:var(--font-body);border-radius:var(--radius);cursor:pointer;transition:all .2s;border:none}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#154360}
-.btn-secondary{background:transparent;color:var(--text-sec);border:1px solid var(--border)}.btn-secondary:hover{background:var(--surface-alt)}
-.thankyou{text-align:center;padding:4rem 1rem}
-.ty-icon{width:64px;height:64px;border-radius:50%;background:var(--success-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
-.ty-icon svg{width:28px;height:28px;stroke:var(--success)}
-.ty-h{font-family:var(--font-head);font-size:1.4rem;font-weight:600;color:var(--text);margin-bottom:.5rem}
-.ty-p{font-size:.85rem;color:var(--text-sec);max-width:440px;margin:0 auto 2rem;line-height:1.6}
-.info-box{background:var(--accent-bg);border:1px solid var(--accent-light);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:.8rem;color:var(--accent);line-height:1.55}
-.q.invalid{border-color:#e74c3c;background:#fdf2f2}
-.validation-msg{font-size:.72rem;color:#c0392b;margin-top:4px;display:none}.q.invalid .validation-msg{display:block}
-.consent-box{background:var(--warn-bg);border:1px solid #f0e0a0;border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem}
-.consent-box h3{font-family:var(--font-head);font-size:1rem;font-weight:600;margin-bottom:.75rem;color:var(--text)}
-.consent-box p{font-size:.8rem;color:var(--text-sec);line-height:1.6;margin-bottom:.5rem}
-.country-wrap{position:relative}.country-input{width:100%;padding:8px 12px;font-size:.82rem;font-family:var(--font-body);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);background:var(--surface)}.country-input:focus{outline:2px solid var(--accent);outline-offset:1px}
-.country-list{position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);z-index:50;display:none;box-shadow:var(--shadow-sm)}.country-list.open{display:block}
-.country-item{padding:7px 12px;font-size:.82rem;cursor:pointer;color:var(--text)}.country-item:hover{background:var(--accent-bg);color:var(--accent)}
-.country-selected{font-size:.78rem;color:var(--accent);margin-top:4px;display:none}.country-selected.show{display:block}
-@media(max-width:600px){.wrap{padding:1rem .75rem 5rem}.hdr h1{font-size:1.15rem}.q{padding:1rem}.case-imgs{grid-template-columns:1fr}.nav{flex-direction:column;gap:.75rem}.btn{width:100%;text-align:center}.lang-grid{grid-template-columns:repeat(3,1fr);gap:.5rem}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-fadeIn{animation:fadeIn 0.4s ease-out}
+@keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 </style>
 </head>
 <body>
-<div class="lang-badge" id="langBadge" onclick="showLangPicker()"><span id="langFlag"></span> <span id="langName"></span> ▾</div>
-<div class="wrap" id="app"></div>
+<div id="root"></div>
 <script>
-// ====================================================================
-// TRANSLATIONS & CONFIG (auto-generated)
-// ====================================================================
-const LANGS = {"tr": {"name": "Türkçe", "native": "Türkçe", "dir": "ltr", "flag": "🇹🇷"}, "en": {"name": "English", "native": "English", "dir": "ltr", "flag": "🇬🇧"}, "de": {"name": "Almanca", "native": "Deutsch", "dir": "ltr", "flag": "🇩🇪"}, "fr": {"name": "Fransızca", "native": "Français", "dir": "ltr", "flag": "🇫🇷"}, "es": {"name": "İspanyolca", "native": "Español", "dir": "ltr", "flag": "🇪🇸"}, "it": {"name": "İtalyanca", "native": "Italiano", "dir": "ltr", "flag": "🇮🇹"}, "pt": {"name": "Portekizce", "native": "Português", "dir": "ltr", "flag": "🇧🇷"}, "ru": {"name": "Rusça", "native": "Русский", "dir": "ltr", "flag": "🇷🇺"}, "ja": {"name": "Japonca", "native": "日本語", "dir": "ltr", "flag": "🇯🇵"}, "ko": {"name": "Korece", "native": "한국어", "dir": "ltr", "flag": "🇰🇷"}, "zh": {"name": "Çince", "native": "中文", "dir": "ltr", "flag": "🇨🇳"}, "ar": {"name": "Arapça", "native": "العربية", "dir": "rtl", "flag": "🇸🇦"}};
-const UI = {"badge": {"tr": "Araştırma Anketi", "en": "Research Survey", "de": "Forschungsumfrage", "fr": "Enquête de recherche", "es": "Encuesta de investigación", "it": "Sondaggio di ricerca", "pt": "Pesquisa científica", "ru": "Научный опрос", "ja": "研究調査", "ko": "연구 설문조사", "zh": "研究调查", "ar": "استبيان بحثي"}, "title": {"tr": "Posterior Malleol Kırığı Yönetiminde Güncel Eğilimler ve Pratik Varyasyon", "en": "Current Trends and Practice Variation in Posterior Malleolus Fracture Management", "de": "Aktuelle Trends und Praxisvariation bei der Behandlung von Volkmann-Dreieck-Frakturen", "fr": "Tendances actuelles et variations pratiques dans la prise en charge des fractures de la malléole postérieure", "es": "Tendencias actuales y variación en la práctica del manejo de fracturas del maléolo posterior", "it": "Tendenze attuali e variazioni nella gestione delle fratture del malleolo posteriore", "pt": "Tendências atuais e variação na prática do tratamento de fraturas do maléolo posterior", "ru": "Современные тенденции и вариации в лечении переломов заднего отростка большеберцовой кости", "ja": "後果骨折の管理における現在の傾向と実践のバリエーション", "ko": "후과 골절 관리의 현재 동향 및 진료 변이", "zh": "后踝骨折治疗的当前趋势与实践差异", "ar": "الاتجاهات الحالية والتباين في الممارسة في علاج كسور الكعب الخلفي"}, "subtitle": {"tr": "Ortopedi ve Travmatoloji Cerrahlarının Uluslararası Anketi", "en": "An International Survey of Orthopaedic Surgeons", "de": "Eine internationale Umfrage unter orthopädischen Chirurgen", "fr": "Une enquête internationale auprès des chirurgiens orthopédistes", "es": "Una encuesta internacional de cirujanos ortopédicos", "it": "Un sondaggio internazionale tra chirurghi ortopedici", "pt": "Uma pesquisa internacional com cirurgiões ortopedistas", "ru": "Международный опрос хирургов-ортопедов", "ja": "整形外科医を対象とした国際調査", "ko": "정형외과 의사 대상 국제 설문조사", "zh": "骨科医生国际调查", "ar": "استطلاع دولي لجراحي العظام"}, "items": {"tr": "27 soru", "en": "27 items", "de": "27 Fragen", "fr": "27 questions", "es": "27 preguntas", "it": "27 domande", "pt": "27 perguntas", "ru": "27 вопросов", "ja": "27問", "ko": "27문항", "zh": "27题", "ar": "27 سؤالاً"}, "time": {"tr": "8–10 dakika", "en": "8–10 minutes", "de": "8–10 Minuten", "fr": "8–10 minutes", "es": "8–10 minutos", "it": "8–10 minuti", "pt": "8–10 minutos", "ru": "8–10 минут", "ja": "8〜10分", "ko": "8~10분", "zh": "8-10分钟", "ar": "8-10 دقائق"}, "anon": {"tr": "Anonim", "en": "Anonymous", "de": "Anonym", "fr": "Anonyme", "es": "Anónimo", "it": "Anonimo", "pt": "Anônimo", "ru": "Анонимно", "ja": "匿名", "ko": "익명", "zh": "匿名", "ar": "مجهول الهوية"}, "ethics_label": {"tr": "Etik onaylı", "en": "Ethics approved", "de": "Ethikgenehmigt", "fr": "Approuvé par le comité d'éthique", "es": "Aprobado por comité de ética", "it": "Approvato dal comitato etico", "pt": "Aprovado pelo comitê de ética", "ru": "Одобрено этическим комитетом", "ja": "倫理承認済み", "ko": "윤리 승인", "zh": "伦理审批通过", "ar": "موافقة لجنة الأخلاقيات"}, "select_lang": {"tr": "Lütfen anket dilinizi seçiniz", "en": "Please select your survey language", "de": "Bitte wählen Sie Ihre Umfragesprache", "fr": "Veuillez sélectionner la langue du questionnaire", "es": "Seleccione el idioma de la encuesta", "it": "Selezionare la lingua del sondaggio", "pt": "Selecione o idioma da pesquisa", "ru": "Выберите язык опроса", "ja": "調査の言語を選択してください", "ko": "설문 언어를 선택하세요", "zh": "请选择问卷语言", "ar": "يرجى اختيار لغة الاستبيان"}, "begin": {"tr": "Ankete Başla →", "en": "Begin Survey →", "de": "Umfrage starten →", "fr": "Commencer →", "es": "Comenzar →", "it": "Inizia →", "pt": "Iniciar →", "ru": "Начать →", "ja": "開始 →", "ko": "시작 →", "zh": "开始 →", "ar": "← ابدأ الاستبيان"}, "back": {"tr": "← Geri", "en": "← Back", "de": "← Zurück", "fr": "← Retour", "es": "← Atrás", "it": "← Indietro", "pt": "← Voltar", "ru": "← Назад", "ja": "← 戻る", "ko": "← 뒤로", "zh": "← 返回", "ar": "التالي ←"}, "cont": {"tr": "Devam →", "en": "Continue →", "de": "Weiter →", "fr": "Continuer →", "es": "Continuar →", "it": "Continua →", "pt": "Continuar →", "ru": "Далее →", "ja": "次へ →", "ko": "계속 →", "zh": "继续 →", "ar": "← متابعة"}, "submit_btn": {"tr": "Anketi Gönder ✓", "en": "Submit Survey ✓", "de": "Umfrage absenden ✓", "fr": "Soumettre ✓", "es": "Enviar ✓", "it": "Invia ✓", "pt": "Enviar ✓", "ru": "Отправить ✓", "ja": "送信 ✓", "ko": "제출 ✓", "zh": "提交 ✓", "ar": "✓ إرسال"}, "required_msg": {"tr": "Bu alan zorunludur.", "en": "This field is required.", "de": "Dieses Feld ist erforderlich.", "fr": "Ce champ est obligatoire.", "es": "Este campo es obligatorio.", "it": "Questo campo è obbligatorio.", "pt": "Este campo é obrigatório.", "ru": "Это обязательное поле.", "ja": "この項目は必須です。", "ko": "필수 항목입니다.", "zh": "此字段为必填项。", "ar": "هذا الحقل مطلوب."}, "select_all": {"tr": "Uygun olanların tümünü seçiniz.", "en": "Select all that apply.", "de": "Alle zutreffenden auswählen.", "fr": "Sélectionnez toutes les réponses applicables.", "es": "Seleccione todas las que correspondan.", "it": "Selezionare tutte le risposte applicabili.", "pt": "Selecione todas as opções aplicáveis.", "ru": "Выберите все подходящие варианты.", "ja": "該当するものをすべて選択してください。", "ko": "해당하는 것을 모두 선택하세요.", "zh": "请选择所有适用选项。", "ar": "اختر كل ما ينطبق."}, "select_msg": {"tr": "Lütfen en az bir seçenek işaretleyiniz.", "en": "Please select at least one option.", "de": "Bitte wählen Sie mindestens eine Option.", "fr": "Veuillez sélectionner au moins une option.", "es": "Seleccione al menos una opción.", "it": "Selezionare almeno un'opzione.", "pt": "Selecione pelo menos uma opção.", "ru": "Выберите хотя бы один вариант.", "ja": "少なくとも1つ選択してください。", "ko": "최소 하나를 선택하세요.", "zh": "请至少选择一个选项。", "ar": "يرجى اختيار خيار واحد على الأقل."}, "other_ph": {"tr": "Lütfen belirtiniz...", "en": "Please specify...", "de": "Bitte angeben...", "fr": "Veuillez préciser...", "es": "Especifique...", "it": "Specificare...", "pt": "Especifique...", "ru": "Уточните...", "ja": "具体的に記入してください...", "ko": "구체적으로 기재해 주세요...", "zh": "请说明...", "ar": "يرجى التحديد..."}, "optional_ph": {"tr": "İsteğe bağlı — düşüncelerinizi paylaşınız...", "en": "Optional — share your thoughts...", "de": "Optional — teilen Sie Ihre Gedanken...", "fr": "Facultatif — partagez vos réflexions...", "es": "Opcional — comparta sus opiniones...", "it": "Facoltativo — condivida le sue opinioni...", "pt": "Opcional — compartilhe suas opiniões...", "ru": "Необязательно — поделитесь мнением...", "ja": "任意 — ご意見をお聞かせください...", "ko": "선택사항 — 의견을 공유해 주세요...", "zh": "选填 — 请分享您的看法...", "ar": "اختياري — شاركنا رأيك..."}, "country_ph": {"tr": "Ülke arayınız...", "en": "Search country...", "de": "Land suchen...", "fr": "Rechercher un pays...", "es": "Buscar país...", "it": "Cerca paese...", "pt": "Buscar país...", "ru": "Поиск страны...", "ja": "国名を検索...", "ko": "국가 검색...", "zh": "搜索国家...", "ar": "بحث عن بلد..."}, "country_sel": {"tr": "Seçili:", "en": "Selected:", "de": "Ausgewählt:", "fr": "Sélectionné:", "es": "Seleccionado:", "it": "Selezionato:", "pt": "Selecionado:", "ru": "Выбрано:", "ja": "選択済み:", "ko": "선택됨:", "zh": "已选择:", "ar": "المحدد:"}, "consent_label": {"tr": "Onam", "en": "Consent", "de": "Einwilligung", "fr": "Consentement", "es": "Consentimiento", "it": "Consenso", "pt": "Consentimento", "ru": "Согласие", "ja": "同意", "ko": "동의", "zh": "知情同意", "ar": "الموافقة"}, "section_label": {"tr": "Bölüm ", "en": "Section ", "de": "Abschnitt ", "fr": "Section ", "es": "Sección ", "it": "Sezione ", "pt": "Seção ", "ru": "Раздел ", "ja": "セクション", "ko": "섹션 ", "zh": "第", "ar": "القسم "}, "of_label": {"tr": " / ", "en": " of ", "de": " von ", "fr": " sur ", "es": " de ", "it": " di ", "pt": " de ", "ru": " из ", "ja": " / ", "ko": " / ", "zh": "节 / 共", "ar": " من "}, "complete_label": {"tr": "Tamamlandı", "en": "Complete", "de": "Abgeschlossen", "fr": "Terminé", "es": "Completado", "it": "Completato", "pt": "Concluído", "ru": "Завершено", "ja": "完了", "ko": "완료", "zh": "已完成", "ar": "مكتمل"}, "no_participate": {"tr": "Zaman ayırdığınız için teşekkürler. Bu çalışmaya katılmamayı tercih ettiniz.", "en": "Thank you for your time. You have chosen not to participate.", "de": "Vielen Dank für Ihre Zeit. Sie haben sich gegen die Teilnahme entschieden.", "fr": "Merci de votre temps. Vous avez choisi de ne pas participer.", "es": "Gracias por su tiempo. Ha elegido no participar.", "it": "Grazie per il suo tempo. Ha scelto di non partecipare.", "pt": "Obrigado pelo seu tempo. Você optou por não participar.", "ru": "Спасибо за ваше время. Вы решили не участвовать.", "ja": "お時間をいただきありがとうございます。参加しないことを選択されました。", "ko": "시간 내주셔서 감사합니다. 참여하지 않기로 선택하셨습니다.", "zh": "感谢您的时间。您已选择不参与本调查。", "ar": "شكراً لوقتك. لقد اخترت عدم المشاركة."}, "ty_title": {"tr": "Teşekkürler", "en": "Thank You", "de": "Vielen Dank", "fr": "Merci", "es": "Gracias", "it": "Grazie", "pt": "Obrigado", "ru": "Спасибо", "ja": "ありがとうございます", "ko": "감사합니다", "zh": "感谢您", "ar": "شكراً لك"}, "ty_msg": {"tr": "Yanıtlarınız başarıyla kaydedilmiştir. Katkınız posterior malleol kırığı yönetimindeki güncel pratik varyasyonların daha iyi anlaşılmasına yardımcı olacaktır.", "en": "Your responses have been recorded successfully. Your contribution will help advance our understanding of current practice patterns in posterior malleolus fracture management.", "de": "Ihre Antworten wurden erfolgreich gespeichert. Ihr Beitrag wird dazu beitragen, aktuelle Praxismuster in der Behandlung von Volkmann-Dreieck-Frakturen besser zu verstehen.", "fr": "Vos réponses ont été enregistrées avec succès. Votre contribution aidera à mieux comprendre les pratiques actuelles dans la prise en charge des fractures de la malléole postérieure.", "es": "Sus respuestas han sido registradas exitosamente. Su contribución ayudará a comprender mejor los patrones de práctica actuales en el manejo de fracturas del maléolo posterior.", "it": "Le sue risposte sono state registrate con successo. Il suo contributo aiuterà a comprendere meglio le pratiche attuali nella gestione delle fratture del malleolo posteriore.", "pt": "Suas respostas foram registradas com sucesso. Sua contribuição ajudará a compreender melhor os padrões atuais de prática no tratamento de fraturas do maléolo posterior.", "ru": "Ваши ответы успешно записаны. Ваш вклад поможет лучше понять современные тенденции в лечении переломов заднего отростка большеберцовой кости.", "ja": "回答が正常に記録されました。ご協力は後果骨折管理における現在の診療パターンの理解を深めるのに役立ちます。", "ko": "응답이 성공적으로 기록되었습니다. 귀하의 기여는 후과 골절 관리의 현재 진료 패턴을 이해하는 데 도움이 될 것입니다.", "zh": "您的回答已成功记录。您的贡献将有助于增进对后踝骨折治疗当前实践模式的理解。", "ar": "تم تسجيل إجاباتك بنجاح. ستساعد مشاركتك في تحسين فهم أنماط الممارسة الحالية في علاج كسور الكعب الخلفي."}, "ty_contact": {"tr": "Bu çalışma hakkında sorularınız için:<br>Doç. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "en": "If you have questions about this study:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "de": "Bei Fragen zu dieser Studie:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "fr": "Pour toute question sur cette étude:<br>Prof. Assoc. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "es": "Para preguntas sobre este estudio:<br>Prof. Asoc. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "it": "Per domande su questo studio:<br>Prof. Assoc. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "pt": "Para dúvidas sobre este estudo:<br>Prof. Assoc. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "ru": "По вопросам об исследовании:<br>Доц. д-р Утку Гюрхан — utku.gurhan@kyrenia.edu.tr", "ja": "本研究に関するお問い合わせ:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "ko": "본 연구에 대한 문의:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "zh": "如有疑问请联系:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr", "ar": "للاستفسار عن هذه الدراسة:<br>Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr"}, "email_sep": {"tr": "(Bu bilgi anket yanıtlarınızla ilişkilendirilmeden ayrı tutulacaktır.)", "en": "(This will be stored separately and not linked to your survey responses.)", "de": "(Diese Information wird separat gespeichert und nicht mit Ihren Antworten verknüpft.)", "fr": "(Cette information sera stockée séparément et non liée à vos réponses.)", "es": "(Esta información se almacenará por separado y no se vinculará con sus respuestas.)", "it": "(Queste informazioni saranno conservate separatamente e non collegate alle risposte.)", "pt": "(Esta informação será armazenada separadamente e não vinculada às suas respostas.)", "ru": "(Эта информация будет храниться отдельно и не будет связана с вашими ответами.)", "ja": "（この情報は回答とは別に保管され、紐付けされません。）", "ko": "(이 정보는 설문 응답과 별도로 저장되며 연결되지 않습니다.)", "zh": "（此信息将单独存储，不会与您的问卷回答关联。）", "ar": "(ستُخزَّن هذه المعلومات بشكل منفصل ولن تُربط بإجاباتك.)"}, "case_info": {"tr": "Aşağıdaki senaryolar yaygın posterior malleol kırık paternlerini sunmaktadır. Her vaka için tercih ettiğiniz tedavi yaklaşımını belirtiniz.", "en": "The following scenarios present common posterior malleolus fracture patterns. Please indicate your preferred management for each case.", "de": "Die folgenden Szenarien zeigen häufige Frakturmuster des Volkmann-Dreiecks. Bitte geben Sie Ihre bevorzugte Behandlung an.", "fr": "Les scénarios suivants présentent des fractures typiques de la malléole postérieure. Veuillez indiquer votre prise en charge préférée.", "es": "Los siguientes escenarios presentan patrones comunes de fractura del maléolo posterior. Indique su manejo preferido.", "it": "I seguenti scenari presentano pattern comuni di frattura del malleolo posteriore. Indicare la gestione preferita.", "pt": "Os cenários a seguir apresentam padrões comuns de fratura do maléolo posterior. Indique seu tratamento preferido.", "ru": "Ниже представлены типичные паттерны переломов задней лодыжки. Укажите предпочтительную тактику лечения.", "ja": "以下は後果骨折の一般的なパターンを示すシナリオです。各症例について希望する治療法を示してください。", "ko": "다음은 일반적인 후과 골절 패턴을 제시한 시나리오입니다. 각 사례에 대한 선호 치료법을 표시해 주세요.", "zh": "以下场景展示了常见的后踝骨折模式。请指出您对每个病例的首选治疗方案。", "ar": "تعرض السيناريوهات التالية أنماط كسور شائعة للكعب الخلفي. يرجى تحديد أسلوب العلاج المفضل لديك."}, "case_img_ph": {"tr": "BT görüntüleri burada gösterilecektir (güncelleme bekleniyor)", "en": "CT images will be displayed here (imaging update pending)", "de": "CT-Bilder werden hier angezeigt (Bildaktualisierung ausstehend)", "fr": "Les images CT seront affichées ici (mise à jour en attente)", "es": "Las imágenes TC se mostrarán aquí (actualización pendiente)", "it": "Le immagini TC verranno visualizzate qui (aggiornamento in attesa)", "pt": "Imagens de TC serão exibidas aqui (atualização pendente)", "ru": "КТ-изображения будут показаны здесь (ожидается обновление)", "ja": "CT画像はここに表示されます（画像アップデート予定）", "ko": "CT 영상이 여기에 표시됩니다 (영상 업데이트 예정)", "zh": "CT影像将在此处显示（影像更新中）", "ar": "سيتم عرض صور الأشعة المقطعية هنا (بانتظار التحديث)"}};
-const CON = {"title": {"tr": "Bilgilendirilmiş Onam", "en": "Informed Consent", "de": "Einverständniserklärung", "fr": "Consentement éclairé", "es": "Consentimiento informado", "it": "Consenso informato", "pt": "Consentimento informado", "ru": "Информированное согласие", "ja": "インフォームドコンセント", "ko": "사전 동의서", "zh": "知情同意书", "ar": "الموافقة المستنيرة"}, "p1": {"tr": "\"Posterior Malleol Kırığı Yönetiminde Güncel Eğilimler ve Pratik Varyasyon: Ortopedi Cerrahlarının Uluslararası Anketi\" başlıklı araştırma çalışmasına katılmaya davet edilmektesiniz.", "en": "You are invited to participate in a research study titled \"Current Trends and Practice Variation in Posterior Malleolus Fracture Management: An International Survey of Orthopaedic Surgeons.\"", "de": "Sie werden eingeladen, an einer Studie mit dem Titel „Aktuelle Trends und Praxisvariation bei der Behandlung von Volkmann-Dreieck-Frakturen: Eine internationale Umfrage\" teilzunehmen.", "fr": "Vous êtes invité(e) à participer à une étude intitulée « Tendances actuelles et variations pratiques dans la prise en charge des fractures de la malléole postérieure ».", "es": "Se le invita a participar en un estudio titulado \"Tendencias actuales y variación en la práctica del manejo de fracturas del maléolo posterior: una encuesta internacional\".", "it": "È invitato/a a partecipare a uno studio intitolato \"Tendenze attuali e variazioni nella gestione delle fratture del malleolo posteriore: un sondaggio internazionale\".", "pt": "Você está sendo convidado(a) a participar de um estudo intitulado \"Tendências atuais e variação na prática do tratamento de fraturas do maléolo posterior: uma pesquisa internacional\".", "ru": "Вы приглашены принять участие в исследовании «Современные тенденции и вариации в лечении переломов заднего отростка: международный опрос ортопедов».", "ja": "「後果骨折管理における現在の傾向と実践のバリエーション：整形外科医の国際調査」という研究にご参加いただくようお願い申し上げます。", "ko": "\"후과 골절 관리의 현재 동향 및 진료 변이: 정형외과 의사 대상 국제 설문조사\"라는 연구에 참여를 요청드립니다.", "zh": "诚邀您参加题为\"后踝骨折治疗的当前趋势与实践差异：骨科医生国际调查\"的研究。", "ar": "نود دعوتك للمشاركة في دراسة بحثية بعنوان \"الاتجاهات الحالية والتباين في الممارسة في علاج كسور الكعب الخلفي: استطلاع دولي لجراحي العظام\"."}, "p2": {"tr": "Bu çalışma Dr. Suat Günsel Girne Üniversitesi Hastanesi Ortopedi ve Travmatoloji Bölümü tarafından yürütülmektedir. Çalışma Girne Üniversitesi Klinik Araştırmalar Etik Kurulu tarafından onaylanmıştır.", "en": "This survey is conducted by the Department of Orthopaedic and Traumatology Surgery, Dr. Suat Günsel Kyrenia University Hospital, Cyprus. The study has been approved by the Kyrenia University Clinical Research Ethics Committee.", "de": "Diese Umfrage wird von der Abteilung für Orthopädie und Unfallchirurgie des Dr. Suat Günsel Kyrenia Universitätskrankenhauses, Zypern, durchgeführt. Die Studie wurde von der Ethikkommission der Universität Kyrenia genehmigt.", "fr": "Cette enquête est menée par le Département de Chirurgie Orthopédique et Traumatologique de l'Hôpital Universitaire Dr. Suat Günsel de Kyrenia, Chypre. L'étude a été approuvée par le Comité d'Éthique.", "es": "Esta encuesta es realizada por el Departamento de Cirugía Ortopédica y Traumatología del Hospital Universitario Dr. Suat Günsel Kyrenia, Chipre. El estudio ha sido aprobado por el Comité de Ética.", "it": "Questo sondaggio è condotto dal Dipartimento di Chirurgia Ortopedica e Traumatologica dell'Ospedale Universitario Dr. Suat Günsel Kyrenia, Cipro. Lo studio è stato approvato dal Comitato Etico.", "pt": "Esta pesquisa é conduzida pelo Departamento de Cirurgia Ortopédica e Traumatológica do Hospital Universitário Dr. Suat Günsel Kyrenia, Chipre. O estudo foi aprovado pelo Comitê de Ética.", "ru": "Исследование проводится отделением ортопедии и травматологии Университетской больницы им. д-ра Суата Гюнселя, Кирения, Кипр. Исследование одобрено этическим комитетом.", "ja": "本調査はキプロス・キレニア大学病院整形外科・外傷外科部門により実施されています。本研究はキレニア大学臨床研究倫理委員会の承認を受けています。", "ko": "본 설문조사는 키프로스 키레니아 대학교 병원 정형외과 및 외상외과에서 수행합니다. 본 연구는 키레니아 대학교 임상연구 윤리위원회의 승인을 받았습니다.", "zh": "本调查由塞浦路斯凯里尼亚大学医院骨科与创伤外科进行。本研究已获凯里尼亚大学临床研究伦理委员会批准。", "ar": "يتم إجراء هذا الاستطلاع من قبل قسم جراحة العظام والكسور في مستشفى جامعة كيرينيا، قبرص. تمت الموافقة على الدراسة من قبل لجنة الأخلاقيات."}, "purpose": {"tr": "<strong>Amaç:</strong> Posterior malleol kırıklarında güncel cerrahi karar verme süreçlerini uluslararası düzeyde karakterize etmek.", "en": "<strong>Purpose:</strong> To characterise contemporary surgical decision-making for posterior malleolus fractures across an international cohort.", "de": "<strong>Ziel:</strong> Aktuelle chirurgische Entscheidungsprozesse bei Volkmann-Dreieck-Frakturen international zu charakterisieren.", "fr": "<strong>Objectif:</strong> Caractériser la prise de décision chirurgicale contemporaine pour les fractures de la malléole postérieure à l'échelle internationale.", "es": "<strong>Objetivo:</strong> Caracterizar la toma de decisiones quirúrgicas contemporánea para fracturas del maléolo posterior a nivel internacional.", "it": "<strong>Scopo:</strong> Caratterizzare il processo decisionale chirurgico contemporaneo per le fratture del malleolo posteriore a livello internazionale.", "pt": "<strong>Objetivo:</strong> Caracterizar a tomada de decisão cirúrgica contemporânea para fraturas do maléolo posterior em âmbito internacional.", "ru": "<strong>Цель:</strong> Охарактеризовать современную хирургическую тактику при переломах задней лодыжки на международном уровне.", "ja": "<strong>目的:</strong> 後果骨折に対する現代の外科的意思決定を国際的に特徴づけること。", "ko": "<strong>목적:</strong> 후과 골절에 대한 현대 외과적 의사결정을 국제적으로 특성화하는 것.", "zh": "<strong>目的：</strong>在国际范围内表征后踝骨折的当代手术决策过程。", "ar": "<strong>الهدف:</strong> توصيف اتخاذ القرارات الجراحية المعاصرة لكسور الكعب الخلفي على المستوى الدولي."}, "participation": {"tr": "<strong>Katılım:</strong> Anket 9 bölümde 27 sorudan oluşmakta olup yaklaşık 8–10 dakika sürmektedir. Katılım tamamen gönüllü ve anonimdir.", "en": "<strong>Participation:</strong> The survey consists of 27 items across 9 sections (8–10 minutes). Participation is fully voluntary and anonymous.", "de": "<strong>Teilnahme:</strong> Die Umfrage umfasst 27 Fragen in 9 Abschnitten (8–10 Minuten). Die Teilnahme ist freiwillig und anonym.", "fr": "<strong>Participation:</strong> Le questionnaire comprend 27 questions en 9 sections (8–10 minutes). La participation est volontaire et anonyme.", "es": "<strong>Participación:</strong> La encuesta consta de 27 preguntas en 9 secciones (8–10 minutos). La participación es voluntaria y anónima.", "it": "<strong>Partecipazione:</strong> Il sondaggio comprende 27 domande in 9 sezioni (8–10 minuti). La partecipazione è volontaria e anonima.", "pt": "<strong>Participação:</strong> A pesquisa possui 27 perguntas em 9 seções (8–10 minutos). A participação é voluntária e anônima.", "ru": "<strong>Участие:</strong> Опрос состоит из 27 вопросов в 9 разделах (8–10 минут). Участие добровольное и анонимное.", "ja": "<strong>参加：</strong>9セクション27問（8〜10分）。参加は完全に任意で匿名です。", "ko": "<strong>참여:</strong> 설문은 9개 섹션 27문항(8~10분)입니다. 참여는 자발적이며 익명입니다.", "zh": "<strong>参与：</strong>问卷包含9个部分27道题（8-10分钟）。参与完全自愿且匿名。", "ar": "<strong>المشاركة:</strong> يتكون الاستبيان من 27 سؤالاً في 9 أقسام (8-10 دقائق). المشاركة طوعية ومجهولة الهوية تماماً."}, "risk": {"tr": "<strong>Risk ve Yarar:</strong> Öngörülen herhangi bir risk yoktur.", "en": "<strong>Risks & Benefits:</strong> There are no foreseeable risks.", "de": "<strong>Risiken & Nutzen:</strong> Es bestehen keine vorhersehbaren Risiken.", "fr": "<strong>Risques et bénéfices:</strong> Aucun risque prévisible.", "es": "<strong>Riesgos y beneficios:</strong> No hay riesgos previsibles.", "it": "<strong>Rischi e benefici:</strong> Non ci sono rischi prevedibili.", "pt": "<strong>Riscos e benefícios:</strong> Não há riscos previsíveis.", "ru": "<strong>Риски и преимущества:</strong> Предвидимых рисков нет.", "ja": "<strong>リスクと利益：</strong>予測されるリスクはありません。", "ko": "<strong>위험 및 이점:</strong> 예측 가능한 위험은 없습니다.", "zh": "<strong>风险与获益：</strong>无可预见的风险。", "ar": "<strong>المخاطر والفوائد:</strong> لا توجد مخاطر متوقعة."}, "consent_q": {"tr": "Yukarıdaki bilgileri okudum, anladım ve bu çalışmaya gönüllü olarak katılmayı kabul ediyorum.", "en": "I have read and understood the above information and voluntarily agree to participate.", "de": "Ich habe die obigen Informationen gelesen, verstanden und stimme der freiwilligen Teilnahme zu.", "fr": "J'ai lu et compris les informations ci-dessus et j'accepte volontairement de participer.", "es": "He leído y comprendido la información anterior y acepto voluntariamente participar.", "it": "Ho letto e compreso le informazioni sopra riportate e accetto volontariamente di partecipare.", "pt": "Li e compreendi as informações acima e aceito voluntariamente participar.", "ru": "Я прочитал(а) и понял(а) информацию выше и добровольно соглашаюсь участвовать.", "ja": "上記の情報を読み、理解し、本研究への参加に同意します。", "ko": "위 정보를 읽고 이해하였으며, 자발적으로 참여에 동의합니다.", "zh": "我已阅读并理解上述信息，自愿同意参与本研究。", "ar": "لقد قرأت وفهمت المعلومات أعلاه وأوافق طوعياً على المشاركة."}, "yes": {"tr": "Evet, katılmayı kabul ediyorum", "en": "Yes, I consent to participate", "de": "Ja, ich stimme der Teilnahme zu", "fr": "Oui, j'accepte de participer", "es": "Sí, acepto participar", "it": "Sì, acconsento a partecipare", "pt": "Sim, aceito participar", "ru": "Да, я согласен/согласна участвовать", "ja": "はい、参加に同意します", "ko": "예, 참여에 동의합니다", "zh": "是的，我同意参与", "ar": "نعم، أوافق على المشاركة"}, "no": {"tr": "Hayır, katılmak istemiyorum", "en": "No, I do not wish to participate", "de": "Nein, ich möchte nicht teilnehmen", "fr": "Non, je ne souhaite pas participer", "es": "No, no deseo participar", "it": "No, non desidero partecipare", "pt": "Não, não desejo participar", "ru": "Нет, я не хочу участвовать", "ja": "いいえ、参加を希望しません", "ko": "아니오, 참여를 원하지 않습니다", "zh": "不，我不愿参与", "ar": "لا، لا أرغب في المشاركة"}};
+const {
+  useState,
+  useEffect,
+  useCallback
+} = React;
 
-// ====================================================================
-// SECTIONS DATA (B–I use EN fallback for non-TR/EN; medical terms universal)
-// ====================================================================
-function ml(tr,en,de,fr,es,it,pt,ru,ja,ko,zh,ar){
-  return {tr:tr,en:en,de:de||en,fr:fr||en,es:es||en,it:it||en,pt:pt||en,ru:ru||en,ja:ja||en,ko:ko||en,zh:zh||en,ar:ar||en};
-}
+// ── 12 LANGUAGES ──
+const LANGS = [{
+  code: "tr",
+  flag: "🇹🇷",
+  name: "Türkçe",
+  native: "Türkçe"
+}, {
+  code: "en",
+  flag: "🇬🇧",
+  name: "English",
+  native: "English"
+}, {
+  code: "de",
+  flag: "🇩🇪",
+  name: "Almanca",
+  native: "Deutsch"
+}, {
+  code: "fr",
+  flag: "🇫🇷",
+  name: "Fransızca",
+  native: "Français"
+}, {
+  code: "es",
+  flag: "🇪🇸",
+  name: "İspanyolca",
+  native: "Español"
+}, {
+  code: "it",
+  flag: "🇮🇹",
+  name: "İtalyanca",
+  native: "Italiano"
+}, {
+  code: "pt",
+  flag: "🇧🇷",
+  name: "Portekizce",
+  native: "Português"
+}, {
+  code: "ru",
+  flag: "🇷🇺",
+  name: "Rusça",
+  native: "Русский"
+}, {
+  code: "ja",
+  flag: "🇯🇵",
+  name: "Japonca",
+  native: "日本語"
+}, {
+  code: "ko",
+  flag: "🇰🇷",
+  name: "Korece",
+  native: "한국어"
+}, {
+  code: "zh",
+  flag: "🇨🇳",
+  name: "Çince",
+  native: "中文"
+}, {
+  code: "ar",
+  flag: "🇸🇦",
+  name: "Arapça",
+  native: "العربية"
+}];
 
-const SECTIONS = [
-  {"id": "A", "title": {"tr": "Demografik ve Mesleki Bilgiler", "en": "Demographic and Professional Background", "de": "Demografische und berufliche Informationen", "fr": "Informations démographiques et professionnelles", "es": "Información demográfica y profesional", "it": "Informazioni demografiche e professionali", "pt": "Informações demográficas e profissionais", "ru": "Демографическая и профессиональная информация", "ja": "人口統計学的・職業的背景", "ko": "인구통계학적 및 직업적 배경", "zh": "人口统计与职业背景", "ar": "المعلومات الديموغرافية والمهنية"}, "questions": [{"id": "A1", "q": {"tr": "Mevcut mesleki unvanınız nedir?", "en": "What is your current professional title?", "de": "Was ist Ihr aktueller Berufstitel?", "fr": "Quel est votre titre professionnel actuel?", "es": "¿Cuál es su título profesional actual?", "it": "Qual è il suo attuale titolo professionale?", "pt": "Qual é seu título profissional atual?", "ru": "Ваша текущая должность?", "ja": "現在の職位は？", "ko": "현재 직업적 직함은?", "zh": "您目前的职称是？", "ar": "ما هو لقبك المهني الحالي؟"}, "type": "radio", "req": true, "opts": [{"v": "Resident", "labels": {"tr": "Asistan / Ortopedi Uzmanlık Öğrencisi", "en": "Resident / Orthopaedic Trainee", "de": "Assistenzarzt / Weiterbildungsassistent", "fr": "Interne / Résident en orthopédie", "es": "Residente / En formación", "it": "Specializzando", "pt": "Residente", "ru": "Ординатор", "ja": "研修医 / 専攻医", "ko": "전공의", "zh": "住院医师 / 培训医生", "ar": "طبيب مقيم / متدرب"}}, {"v": "Specialist", "labels": {"tr": "Uzman / Cerrah (akademik dışı)", "en": "Specialist / Attending Surgeon (non-academic)", "de": "Facharzt / Oberarzt (nicht-akademisch)", "fr": "Spécialiste / Chirurgien (non-universitaire)", "es": "Especialista / Cirujano (no académico)", "it": "Specialista / Chirurgo (non accademico)", "pt": "Especialista / Cirurgião (não acadêmico)", "ru": "Специалист / Хирург (вне академии)", "ja": "専門医 / 外科医（非学術）", "ko": "전문의 / 외과의 (비학술)", "zh": "专科医师 / 外科医生（非学术）", "ar": "أخصائي / جراح (غير أكاديمي)"}}, {"v": "Academic", "labels": {"tr": "Akademik Kadro (Dr. Öğr. Üyesi / Doç. Dr.)", "en": "Academic Faculty (Asst. / Assoc. Professor)", "de": "Akademischer Mitarbeiter (Asst./Assoc. Professor)", "fr": "Faculté académique (MCU / PU)", "es": "Facultad académica (Prof. Asistente / Asociado)", "it": "Facoltà accademica (Prof. Associato)", "pt": "Docente acadêmico (Prof. Assistente / Associado)", "ru": "Академический сотрудник (доцент / профессор)", "ja": "大学教員（助教・准教授）", "ko": "학술 교수진 (조교수 / 부교수)", "zh": "学术教员（助理教授 / 副教授）", "ar": "هيئة أكاديمية (أستاذ مساعد / مشارك)"}}, {"v": "Professor", "labels": {"tr": "Profesör", "en": "Professor", "de": "Professor", "fr": "Professeur", "es": "Profesor", "it": "Professore", "pt": "Professor", "ru": "Профессор", "ja": "教授", "ko": "교수", "zh": "教授", "ar": "أستاذ"}}, {"v": "Fellow", "labels": {"tr": "Fellow (yan dal eğitimi)", "en": "Fellow (subspecialty training)", "de": "Fellow (Subspezialisierung)", "fr": "Fellow (surspécialité)", "es": "Fellow (subespecialidad)", "it": "Fellow (subspecializzazione)", "pt": "Fellow (subespecialidade)", "ru": "Стажёр (субспециализация)", "ja": "フェロー（サブスペシャリティ研修）", "ko": "펠로우 (세부 전문 수련)", "zh": "进修医（亚专科培训）", "ar": "زميل (تدريب تخصص فرعي)"}}]}, {"id": "A2", "q": {"tr": "Ortopedi uzmanı olarak kaç yıldır çalışıyorsunuz?", "en": "How many years have you practised as a fully qualified orthopaedic surgeon?", "de": "Wie viele Jahre praktizieren Sie als Facharzt für Orthopädie?", "fr": "Depuis combien d'années exercez-vous comme chirurgien orthopédiste qualifié?", "es": "¿Cuántos años lleva ejerciendo como cirujano ortopédico calificado?", "it": "Da quanti anni esercita come chirurgo ortopedico qualificato?", "pt": "Há quantos anos exerce como cirurgião ortopedista qualificado?", "ru": "Сколько лет вы практикуете как квалифицированный ортопед?", "ja": "整形外科専門医として何年間勤務していますか？", "ko": "정형외과 전문의로서 몇 년간 근무하셨습니까?", "zh": "您作为合格骨科医师执业多少年？", "ar": "كم سنة مارست كجراح عظام مؤهل؟"}, "type": "radio", "req": true, "opts": [{"v": "< 5", "labels": {"tr": "< 5 yıl", "en": "< 5 years", "de": "< 5 Jahre", "fr": "< 5 ans", "es": "< 5 años", "it": "< 5 anni", "pt": "< 5 anos", "ru": "< 5 лет", "ja": "5年未満", "ko": "5년 미만", "zh": "< 5年", "ar": "أقل من 5 سنوات"}}, {"v": "5-10", "labels": {"tr": "5–10 yıl", "en": "5–10 years", "de": "5–10 Jahre", "fr": "5–10 ans", "es": "5–10 años", "it": "5–10 anni", "pt": "5–10 anos", "ru": "5–10 лет", "ja": "5〜10年", "ko": "5~10년", "zh": "5-10年", "ar": "5-10 سنوات"}}, {"v": "11-20", "labels": {"tr": "11–20 yıl", "en": "11–20 years", "de": "11–20 Jahre", "fr": "11–20 ans", "es": "11–20 años", "it": "11–20 anni", "pt": "11–20 anos", "ru": "11–20 лет", "ja": "11〜20年", "ko": "11~20년", "zh": "11-20年", "ar": "11-20 سنة"}}, {"v": "> 20", "labels": {"tr": "> 20 yıl", "en": "> 20 years", "de": "> 20 Jahre", "fr": "> 20 ans", "es": "> 20 años", "it": "> 20 anni", "pt": "> 20 anos", "ru": "> 20 лет", "ja": "20年以上", "ko": "20년 초과", "zh": "> 20年", "ar": "أكثر من 20 سنة"}}]}, {"id": "A3", "q": {"tr": "Birincil çalışma ortamınız nedir?", "en": "What is your primary institutional setting?", "de": "In welcher Einrichtung arbeiten Sie hauptsächlich?", "fr": "Quel est votre cadre institutionnel principal?", "es": "¿Cuál es su entorno institucional principal?", "it": "Qual è il suo contesto istituzionale principale?", "pt": "Qual é seu ambiente institucional principal?", "ru": "В каком учреждении вы работаете?", "ja": "主な勤務先は？", "ko": "주요 근무 기관은?", "zh": "您的主要工作机构是？", "ar": "ما هو إطار عملك المؤسسي الأساسي؟"}, "type": "radio", "req": true, "opts": [{"v": "University", "labels": {"tr": "Üniversite / Akademik Tıp Merkezi", "en": "University / Academic Medical Centre", "de": "Universitätsklinik", "fr": "CHU / Centre universitaire", "es": "Hospital universitario", "it": "Centro universitario", "pt": "Hospital universitário", "ru": "Университетская клиника", "ja": "大学病院", "ko": "대학병원", "zh": "大学附属医院", "ar": "مركز طبي أكاديمي / جامعي"}}, {"v": "Government", "labels": {"tr": "Devlet / Eğitim ve Araştırma Hastanesi", "en": "Government / State Training Hospital", "de": "Staatliches Krankenhaus", "fr": "Hôpital public", "es": "Hospital público", "it": "Ospedale pubblico", "pt": "Hospital público", "ru": "Государственная больница", "ja": "公立病院", "ko": "정부 / 수련 병원", "zh": "公立医院", "ar": "مستشفى حكومي"}}, {"v": "Community", "labels": {"tr": "Toplum / İlçe Devlet Hastanesi", "en": "Community / District General Hospital", "de": "Kreiskrankenhaus", "fr": "Hôpital communautaire", "es": "Hospital comunitario", "it": "Ospedale distrettuale", "pt": "Hospital comunitário", "ru": "Районная больница", "ja": "地域病院", "ko": "지역사회 병원", "zh": "社区医院", "ar": "مستشفى مجتمعي"}}, {"v": "Private", "labels": {"tr": "Özel Hastane", "en": "Private / Independent Hospital", "de": "Privatklinik", "fr": "Clinique privée", "es": "Hospital privado", "it": "Ospedale privato", "pt": "Hospital privado", "ru": "Частная клиника", "ja": "私立病院", "ko": "개인 병원", "zh": "私立医院", "ar": "مستشفى خاص"}}]}, {"id": "A4", "q": {"tr": "Ayak ve ayak bileği cerrahisinde yan dal odağınız var mı?", "en": "Do you have a subspecialty focus in foot & ankle surgery?", "de": "Haben Sie eine Subspezialisierung in Fuß- und Sprunggelenkchirurgie?", "fr": "Avez-vous une surspécialité en chirurgie du pied et de la cheville?", "es": "¿Tiene una subespecialidad en cirugía de pie y tobillo?", "it": "Ha una subspecializzazione in chirurgia del piede e della caviglia?", "pt": "Tem subespecialidade em cirurgia do pé e tornozelo?", "ru": "У вас есть субспециализация в хирургии стопы и голеностопного сустава?", "ja": "足・足関節外科のサブスペシャリティはありますか？", "ko": "족부 및 발목 외과 세부 전문 분야가 있습니까?", "zh": "您是否有足踝外科亚专科方向？", "ar": "هل لديك تخصص فرعي في جراحة القدم والكاحل؟"}, "type": "radio", "req": true, "opts": [{"v": "Yes-primary", "labels": {"tr": "Evet — birincil yan dal alanım", "en": "Yes — primary subspecialty", "de": "Ja — Hauptsubspezialisierung", "fr": "Oui — surspécialité principale", "es": "Sí — subespecialidad principal", "it": "Sì — subspecializzazione principale", "pt": "Sim — subespecialidade principal", "ru": "Да — основная субспециализация", "ja": "はい — 主要サブスペシャリティ", "ko": "예 — 주 세부전문 분야", "zh": "是 — 主要亚专科方向", "ar": "نعم — تخصص فرعي رئيسي"}}, {"v": "Yes-several", "labels": {"tr": "Evet — birkaç ilgi alanımdan biri", "en": "Yes — one of several interests", "de": "Ja — einer von mehreren", "fr": "Oui — parmi plusieurs", "es": "Sí — una de varias", "it": "Sì — una tra diverse", "pt": "Sim — uma entre várias", "ru": "Да — одна из нескольких", "ja": "はい — 複数の関心分野の一つ", "ko": "예 — 여러 관심 분야 중 하나", "zh": "是 — 多个亚专科之一", "ar": "نعم — واحد من عدة تخصصات"}}, {"v": "No", "labels": {"tr": "Hayır — genel ortopedik travma", "en": "No — general orthopaedic trauma", "de": "Nein — allgemeine Unfallchirurgie", "fr": "Non — traumatologie générale", "es": "No — traumatología general", "it": "No — traumatologia generale", "pt": "Não — trauma ortopédico geral", "ru": "Нет — общая травматология", "ja": "いいえ — 一般整形外科外傷", "ko": "아니오 — 일반 정형외과 외상", "zh": "否 — 一般骨科创伤", "ar": "لا — رضوض عظمية عامة"}}]}, {"id": "A5", "q": {"tr": "Yılda yaklaşık kaç ayak bileği kırığını cerrahi tedavi ediyorsunuz?", "en": "Approximately how many ankle fractures do you treat operatively per year?", "de": "Wie viele Sprunggelenkfrakturen operieren Sie jährlich?", "fr": "Combien de fractures de cheville opérez-vous par an?", "es": "¿Cuántas fracturas de tobillo opera al año?", "it": "Quante fratture di caviglia opera all'anno?", "pt": "Quantas fraturas de tornozelo você opera por ano?", "ru": "Сколько переломов голеностопного сустава вы оперируете в год?", "ja": "年間何件の足関節骨折を手術していますか？", "ko": "연간 약 몇 건의 발목 골절을 수술하십니까?", "zh": "您每年大约手术治疗多少例踝关节骨折？", "ar": "كم عدد كسور الكاحل التي تعالجها جراحياً سنوياً؟"}, "type": "radio", "req": true, "opts": [{"v": "< 10", "labels": {"tr": "< 10", "en": "< 10", "de": "< 10", "fr": "< 10", "es": "< 10", "it": "< 10", "pt": "< 10", "ru": "< 10", "ja": "10未満", "ko": "10건 미만", "zh": "< 10", "ar": "أقل من 10"}}, {"v": "10-30", "labels": {"tr": "10–30", "en": "10–30", "de": "10–30", "fr": "10–30", "es": "10–30", "it": "10–30", "pt": "10–30", "ru": "10–30", "ja": "10〜30", "ko": "10~30", "zh": "10-30", "ar": "10-30"}}, {"v": "31-60", "labels": {"tr": "31–60", "en": "31–60", "de": "31–60", "fr": "31–60", "es": "31–60", "it": "31–60", "pt": "31–60", "ru": "31–60", "ja": "31〜60", "ko": "31~60", "zh": "31-60", "ar": "31-60"}}, {"v": "> 60", "labels": {"tr": "> 60", "en": "> 60", "de": "> 60", "fr": "> 60", "es": "> 60", "it": "> 60", "pt": "> 60", "ru": "> 60", "ja": "60以上", "ko": "60건 초과", "zh": "> 60", "ar": "أكثر من 60"}}]}, {"id": "A6", "q": {"tr": "Hangi ülkede çalışıyorsunuz?", "en": "In which country do you practise?", "de": "In welchem Land praktizieren Sie?", "fr": "Dans quel pays exercez-vous?", "es": "¿En qué país ejerce?", "it": "In quale paese esercita?", "pt": "Em qual país você atua?", "ru": "В какой стране вы работаете?", "ja": "どの国で勤務していますか？", "ko": "어느 나라에서 근무하십니까?", "zh": "您在哪个国家执业？", "ar": "في أي بلد تمارس عملك؟"}, "type": "country", "req": true}]},
+// ── COUNTRY LIST ──
+const COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Belarus", "Belgium", "Bolivia", "Bosnia and Herzegovina", "Brazil", "Brunei", "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Northern Cyprus (TRNC)", "Denmark", "Dominican Republic", "Ecuador", "Egypt", "Estonia", "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece", "Guatemala", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Libya", "Lithuania", "Luxembourg", "Malaysia", "Maldives", "Malta", "Mexico", "Moldova", "Mongolia", "Montenegro", "Morocco", "Myanmar", "Nepal", "Netherlands", "New Zealand", "Nigeria", "North Macedonia", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saudi Arabia", "Senegal", "Serbia", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Tunisia", "Turkey", "Turkmenistan", "UAE", "Uganda", "Ukraine", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
 
-  {id:'B',title:ml('Posterior Malleol Kırıklarına Maruz Kalım','Exposure to Posterior Malleolus Fractures','Exposition gegenüber Volkmann-Dreieck-Frakturen','Exposition aux fractures de la malléole postérieure','Exposición a fracturas del maléolo posterior','Esposizione alle fratture del malleolo posteriore','Exposição a fraturas do maléolo posterior','Опыт лечения переломов задней лодыжки','後果骨折への曝露','후과 골절 노출','后踝骨折接诊量','التعرض لكسور الكعب الخلفي'),questions:[
-    {id:'B1',q:ml('Ayda ortalama kaç PM kırığıyla karşılaşıyorsunuz (konservatif dahil)?','How many PM fractures do you encounter per month (including non-operative)?','Wie viele PM-Frakturen sehen Sie monatlich?','Combien de fractures PM rencontrez-vous par mois?','¿Cuántas fracturas PM encuentra por mes?','Quante fratture PM incontra al mese?','Quantas fraturas PM encontra por mês?','Сколько переломов задней лодыжки вы встречаете в месяц?','月に何件のPM骨折を経験しますか？','월 평균 몇 건의 PM 골절을 경험합니까?','您每月遇到多少例PM骨折？','كم عدد كسور الكعب الخلفي التي تصادفها شهرياً؟'),type:'radio',req:true,opts:[
-      {v:'< 2',labels:{tr:'< 2',en:'< 2'}},{v:'2-5',labels:{tr:'2–5',en:'2–5'}},
-      {v:'6-10',labels:{tr:'6–10',en:'6–10'}},{v:'> 10',labels:{tr:'> 10',en:'> 10'}}]},
-    {id:'B2',q:ml('Karşılaştığınız PM kırıklarının yüzde kaçını cerrahi tedavi ediyorsunuz?','What percentage of PM fractures do you treat operatively?','Welchen Prozentsatz der PM-Frakturen operieren Sie?','Quel pourcentage de fractures PM opérez-vous?','¿Qué porcentaje de fracturas PM opera?','Che percentuale di fratture PM opera?','Que porcentagem de fraturas PM você opera?','Какой процент переломов задней лодыжки вы оперируете?','PM骨折の何パーセントを手術していますか？','PM 골절의 몇 퍼센트를 수술합니까?','您手术治疗PM骨折的比例是多少？','ما نسبة كسور الكعب الخلفي التي تعالجها جراحياً؟'),type:'radio',req:true,opts:[
-      {v:'< 25%',labels:{tr:'< %25',en:'< 25%'}},{v:'25-50%',labels:{tr:'%25–50',en:'25–50%'}},
-      {v:'51-75%',labels:{tr:'%51–75',en:'51–75%'}},{v:'> 75%',labels:{tr:'> %75',en:'> 75%'}}]}
-  ]},
-  {id:'C',title:ml('Sınıflama Sistemleri','Classification Systems','Klassifikationssysteme','Systèmes de classification','Sistemas de clasificación','Sistemi di classificazione','Sistemas de classificação','Системы классификации','分類システム','분류 체계','分类系统','أنظمة التصنيف'),questions:[
-    {id:'C1',q:ml('PM kırıkları için öncelikli hangi sınıflama sistemini kullanıyorsunuz?','Which classification system do you primarily use for PM fractures?','Welches Klassifikationssystem verwenden Sie primär?','Quel système de classification utilisez-vous principalement?','¿Qué sistema de clasificación utiliza principalmente?','Quale sistema di classificazione utilizza principalmente?','Qual sistema de classificação utiliza principalmente?','Какую классификацию вы используете?','どの分類システムを主に使用していますか？','주로 어떤 분류 체계를 사용합니까?','您主要使用哪种分类系统？','أي نظام تصنيف تستخدم بشكل أساسي؟'),type:'radio',req:true,hasOther:true,opts:[
-      {v:'Haraguchi',labels:ml('Haraguchi sınıflaması (BT: Tip I, II, III)','Haraguchi classification (CT-based: Type I, II, III)')},
-      {v:'Bartoníček',labels:ml('Bartoníček sınıflaması (BT: Tip 1–5)','Bartoníček classification (CT-based: Type 1–5)')},
-      {v:'Lauge-Hansen',labels:ml('Geleneksel Lauge-Hansen / Mason','Traditional Lauge-Hansen / Mason')},
-      {v:'None',labels:ml('Rutin sınıflama kullanmıyorum','I do not routinely use a specific classification','Keine spezifische Klassifikation','Aucune classification spécifique','No uso clasificación específica','Nessuna classificazione specifica','Não uso classificação específica','Не использую классификацию','特定の分類を使用していない','특정 분류를 사용하지 않음','不常规使用特定分类','لا أستخدم تصنيفاً محدداً')},
-      {v:'Other',labels:ml('Diğer (lütfen belirtiniz)','Other (please specify)','Andere (bitte angeben)','Autre (veuillez préciser)','Otro (especifique)','Altro (specificare)','Outro (especifique)','Другое (укажите)','その他（具体的に）','기타 (구체적으로)','其他（请说明）','أخرى (يرجى التحديد)')}]},
-    {id:'C2',q:ml('PM şüphesi olan kırıklarda rutin preoperatif BT çekiyor musunuz?','Do you routinely obtain a preoperative CT for suspected PM fractures?','Führen Sie routinemäßig ein präoperatives CT durch?','Réalisez-vous un scanner préopératoire de routine?','¿Realiza TC preoperatorio de rutina?','Esegue una TC preoperatoria di routine?','Solicita TC pré-operatória de rotina?','Выполняете ли вы рутинную КТ?','術前CTを日常的に撮影しますか？','수술 전 CT를 일상적으로 촬영합니까?','您是否常规进行术前CT检查？','هل تجري أشعة مقطعية قبل العملية بشكل روتيني؟'),type:'radio',req:true,opts:[
-      {v:'Always',labels:ml('Her zaman','Always','Immer','Toujours','Siempre','Sempre','Sempre','Всегда','常に','항상','总是','دائماً')},
-      {v:'Usually',labels:ml('Genellikle (> %50)','Usually (> 50%)','Meistens (> 50%)','Généralement (> 50%)','Generalmente (> 50%)','Di solito (> 50%)','Geralmente (> 50%)','Обычно (> 50%)','通常（50%超）','대부분 (> 50%)','通常 (> 50%)','عادةً (> 50%)')},
-      {v:'Sometimes',labels:ml('Bazen (< %50)','Sometimes (< 50%)','Manchmal (< 50%)','Parfois (< 50%)','A veces (< 50%)','A volte (< 50%)','Às vezes (< 50%)','Иногда (< 50%)','時々（50%未満）','가끔 (< 50%)','有时 (< 50%)','أحياناً (< 50%)')},
-      {v:'Rarely',labels:ml('Nadiren / Hiçbir zaman','Rarely / Never','Selten / Nie','Rarement / Jamais','Raramente / Nunca','Raramente / Mai','Raramente / Nunca','Редко / Никогда','まれ / なし','드물게 / 하지 않음','很少 / 从不','نادراً / أبداً')}]},
-    {id:'C3',q:ml('Morfolojik patern cerrahi planlamanızda ne kadar önemli?','How important is the morphological pattern in guiding your surgical plan?','Wie wichtig ist das morphologische Muster?','Quelle importance accordez-vous au pattern morphologique?','¿Qué importancia tiene el patrón morfológico?','Quanto è importante il pattern morfologico?','Quão importante é o padrão morfológico?','Насколько важен морфологический паттерн?','形態学的パターンはどの程度重要ですか？','형태학적 패턴은 얼마나 중요합니까?','形态学模式在您的手术规划中有多重要？','ما مدى أهمية النمط المورفولوجي في توجيه خطتك الجراحية؟'),type:'radio',req:true,opts:[
-      {v:'Very',labels:ml('Çok önemli — birincil belirleyici','Very important — primary determinant','Sehr wichtig — Hauptfaktor','Très important — déterminant principal','Muy importante — determinante principal','Molto importante — determinante principale','Muito importante — determinante principal','Очень важен — основной фактор','非常に重要 — 主要な決定因子','매우 중요 — 주요 결정 요인','非常重要 — 主要决定因素','مهم جداً — عامل أساسي')},
-      {v:'Somewhat',labels:ml('Kısmen önemli — birkaç faktörden biri','Somewhat important — one of several factors','Etwas wichtig','Assez important','Algo importante','Abbastanza importante','Razoavelmente importante','Умеренно важен','やや重要','다소 중요','有一定重要性','مهم إلى حد ما')},
-      {v:'NotVery',labels:ml('Çok önemli değil — fragman boyutu daha belirleyici','Not very important — fragment size matters more','Nicht sehr wichtig','Pas très important','No muy importante','Non molto importante','Não muito importante','Не очень важен','あまり重要ではない','별로 중요하지 않음','不太重要','ليس مهماً جداً')},
-      {v:'Irrelevant',labels:ml('Karar verme sürecimle ilgisiz','Not relevant to my decision-making','Nicht relevant','Non pertinent','No relevante','Non rilevante','Não relevante','Не имеет значения','関係ない','관련 없음','与决策无关','غير ذي صلة')}]}
-  ]},
-  {id:'D',title:ml('Fiksasyon Karar Verme Süreci','Fixation Decision-Making','Entscheidungsfindung zur Fixation','Prise de décision pour la fixation','Toma de decisiones de fijación','Processo decisionale per la fissazione','Tomada de decisão para fixação','Принятие решения о фиксации','固定の意思決定','고정 의사결정','固定决策过程','اتخاذ قرار التثبيت'),questions:[
-    {id:'D1',q:ml('Fiksasyon düşüneceğiniz minimum PM fragman boyutu nedir?','What is the minimum PM fragment size at which you would consider fixation?','Minimale PM-Fragmentgröße für Fixation?','Taille minimale du fragment PM pour fixation?','¿Tamaño mínimo del fragmento PM para fijación?','Dimensione minima del frammento PM per fissazione?','Tamanho mínimo do fragmento PM para fixação?','Минимальный размер фрагмента для фиксации?','固定を考慮する最小PM断片サイズは？','고정을 고려하는 최소 PM 골편 크기는?','您会考虑固定的最小PM骨折块大小是？','ما هو الحد الأدنى لحجم الكسر الذي تفكر عنده بالتثبيت؟'),type:'radio',req:true,opts:[
-      {v:'Any',labels:ml('Herhangi bir görünür fragman','Any visible fragment','Jedes sichtbare Fragment','Tout fragment visible','Cualquier fragmento visible','Qualsiasi frammento visibile','Qualquer fragmento visível','Любой видимый фрагмент','すべての可視断片','모든 가시적 골편','任何可见骨折块','أي كسر مرئي')},
-      {v:'10-15%',labels:{tr:'%10–15',en:'10–15%'}},{v:'16-25%',labels:{tr:'%16–25',en:'16–25%'}},
-      {v:'25-33%',labels:ml('%25–33 (geleneksel kural)','25–33% (traditional rule)','25–33% (traditionelle Regel)','25–33% (règle traditionnelle)','25–33% (regla tradicional)','25–33% (regola tradizionale)','25–33% (regra tradicional)','25–33% (традиционное правило)','25–33%（従来のルール）','25–33% (전통적 규칙)','25–33%（传统规则）','25-33% (القاعدة التقليدية)')},
-      {v:'> 33%',labels:{tr:'> %33',en:'> 33%'}},
-      {v:'NotSize',labels:ml('Fragman boyutu birincil endikasyonum değil','Fragment size is not my primary indication','Fragmentgröße ist nicht Hauptindikation','La taille n\'est pas mon indication principale','El tamaño no es mi indicación principal','La dimensione non è la mia indicazione principale','O tamanho não é minha indicação principal','Размер — не главный критерий','断片サイズは主要な指標ではない','골편 크기가 주요 적응증이 아님','骨折块大小不是主要指征','حجم الكسر ليس مؤشري الأساسي')}]},
-    {id:'D2',q:ml('Fragman boyutu dışında PM fiksasyon kararınızı hangi faktörler etkiler?','Apart from fragment size, which factors influence your decision to fix the PM?','Welche Faktoren beeinflussen Ihre Entscheidung neben der Fragmentgröße?','Quels facteurs influencent votre décision outre la taille?','¿Qué factores además del tamaño influyen?','Quali fattori oltre alla dimensione?','Quais fatores além do tamanho?','Какие факторы кроме размера?','断片サイズ以外の要因は？','골편 크기 외 어떤 요인이 영향을 줍니까?','除骨折块大小外，哪些因素影响您的决策？','ما العوامل الأخرى التي تؤثر على قرارك؟'),type:'checkbox',req:true,hasOther:true,opts:[
-      {v:'StepOff',labels:ml('Eklem basamağı / inkongrüite (> 1–2 mm)','Articular step-off / incongruity (> 1–2 mm)')},
-      {v:'Syndesmosis',labels:ml('Sindesmoz instabilitesi (PM → PİTFL)','Syndesmotic instability (PM as PITFL stabiliser)')},
-      {v:'Morphology',labels:ml('Fragman morfolojisi','Fragment morphology / pattern')},
-      {v:'Subluxation',labels:ml('Tibiotalar subluksasyon','Tibiotalar subluxation / joint instability')},
-      {v:'CT',labels:ml('BT bulguları (kominüsyon, impaksiyon, die-punch)','CT findings (comminution, impaction, die-punch)')},
-      {v:'Age',labels:ml('Hasta yaşı ve aktivite düzeyi','Patient age and activity level','Alter und Aktivität','Âge et activité','Edad y actividad','Età e attività','Idade e atividade','Возраст и активность','年齢と活動度','연령 및 활동도','患者年龄与活动水平','عمر المريض ومستوى نشاطه')},
-      {v:'Other',labels:ml('Diğer','Other','Andere','Autre','Otro','Altro','Outro','Другое','その他','기타','其他','أخرى')}]},
-    {id:'D3',q:ml('Her PM fragmanının boyuttan bağımsız fikse edilmesi gerektiğine inanıyor musunuz?','Do you believe every PM fragment should be fixed to restore syndesmotic stability?','Sollte jedes PM-Fragment fixiert werden?','Faut-il fixer chaque fragment PM?','¿Debe fijarse cada fragmento PM?','Ogni frammento PM va fissato?','Todo fragmento PM deve ser fixado?','Нужно ли фиксировать каждый фрагмент?','すべてのPM断片を固定すべきですか？','모든 PM 골편을 고정해야 한다고 생각합니까?','您认为每个PM骨折块都应固定吗？','هل تعتقد أن كل كسر يجب تثبيته؟'),type:'radio',req:true,opts:[
-      {v:'YesAll',labels:ml('Evet — tüm PM fragmanlarını fikse ederim','Yes — I fix all PM fragments','Ja — ich fixiere alle','Oui — je fixe tous les fragments','Sí — fijo todos','Sì — fisso tutti','Sim — fixo todos','Да — фиксирую все','はい — すべて固定','예 — 모두 고정','是 — 所有骨折块都固定','نعم — أثبت جميع الكسور')},
-      {v:'YesSynd',labels:ml('Evet — ancak sindesmoz instabilse','Yes — but only if syndesmosis unstable','Ja — nur bei Syndesmose-Instabilität','Oui — si syndesmose instable','Sí — solo si sindesmosis inestable','Sì — solo se sindesmosi instabile','Sim — se sindesmose instável','Да — если синдесмоз нестабилен','はい — 靭帯結合不安定の場合のみ','예 — 인대결합 불안정 시에만','是 — 仅在下胫腓联合不稳定时','نعم — فقط إذا كان الرباط غير مستقر')},
-      {v:'NoSize',labels:ml('Hayır — fragman boyutu kriterlerine dayanırım','No — I rely on fragment size criteria','Nein — Größenkriterien','Non — critères de taille','No — criterios de tamaño','No — criteri dimensionali','Não — critérios de tamanho','Нет — критерии размера','いいえ — サイズ基準に依存','아니오 — 크기 기준에 의존','否 — 依据骨折块大小标准','لا — أعتمد على معايير الحجم')},
-      {v:'NoPattern',labels:ml('Hayır — genel kırık paternine bağlı','No — depends on overall fracture pattern','Nein — abhängig vom Frakturmuster','Non — dépend du pattern','No — depende del patrón','No — dipende dal pattern','Não — depende do padrão','Нет — зависит от паттерна','いいえ — 骨折パターンによる','아니오 — 골절 패턴에 따라 다름','否 — 取决于整体骨折模式','لا — يعتمد على نمط الكسر')}]},
-    {id:'D4',q:ml('PM fiksasyonundan sonra ayrıca sindesmotik fiksasyon gerekiyor mu?','When you fix the PM, is separate syndesmotic fixation also required?','Ist zusätzliche Syndesmosefixation nötig?','Faut-il une fixation syndesmotique supplémentaire?','¿Se requiere fijación sindesmótica adicional?','È necessaria fissazione sindesmotica aggiuntiva?','É necessária fixação sindesmótica adicional?','Нужна ли дополнительная фиксация синдесмоза?','PM固定後に別の靭帯結合固定は必要ですか？','PM 고정 후 별도의 인대결합 고정이 필요합니까?','PM固定后是否需要额外的下胫腓联合固定？','هل يلزم تثبيت إضافي للرباط بعد تثبيت الكعب؟'),type:'radio',req:true,opts:[
-      {v:'Rarely',labels:ml('Nadiren — PM fiksasyonu genellikle yeterli','Rarely — PM fixation usually sufficient','Selten — PM-Fixation reicht meist','Rarement — fixation PM suffit','Raramente — fijación PM suficiente','Raramente — fissazione PM sufficiente','Raramente — fixação PM suficiente','Редко — фиксация достаточна','まれ — PM固定で十分','드물게 — PM 고정으로 충분','很少 — PM固定通常足够','نادراً — تثبيت الكعب كافٍ عادةً')},
-      {v:'Sometimes',labels:ml('Bazen — yaklaşık yarısında','Sometimes — about half the time','Manchmal — etwa die Hälfte','Parfois — environ la moitié','A veces — aproximadamente la mitad','A volte — circa la metà','Às vezes — cerca de metade','Иногда — примерно в половине','時々 — 約半数','가끔 — 약 절반에서','有时 — 约一半','أحياناً — في نصف الحالات تقريباً')},
-      {v:'Usually',labels:ml('Genellikle — çoğu vakada eklerim','Usually — I add in most cases','Meistens — in den meisten Fällen','Généralement — dans la plupart des cas','Generalmente — en la mayoría','Di solito — nella maggior parte','Geralmente — na maioria','Обычно — в большинстве','通常 — ほとんどの場合追加','대부분 — 대부분의 경우 추가','通常 — 大多数情况下追加','عادةً — أضيفه في معظم الحالات')},
-      {v:'Always',labels:ml('Daima — rutin olarak eklerim','Always — I routinely add regardless','Immer — routinemäßig','Toujours — systématiquement','Siempre — de rutina','Sempre — di routine','Sempre — rotineiramente','Всегда — рутинно','常に — 日常的に追加','항상 — 일상적으로 추가','总是 — 常规追加','دائماً — أضيفه بشكل روتيني')}]}
-  ]},
-  {id:'E',title:ml('Cerrahi Yaklaşım ve Teknik','Surgical Approach and Technique','Chirurgischer Zugang und Technik','Approche chirurgicale et technique','Abordaje quirúrgico y técnica','Approccio chirurgico e tecnica','Abordagem cirúrgica e técnica','Хирургический доступ и техника','手術アプローチと手技','수술적 접근법과 기법','手术入路与技术','النهج الجراحي والتقنية'),questions:[
-    {id:'E1',q:ml('PM fiksasyonu için tercih ettiğiniz cerrahi yaklaşım?','What is your preferred surgical approach for PM fixation?','Bevorzugter Zugang?','Approche chirurgicale préférée?','¿Abordaje preferido?','Approccio preferito?','Abordagem preferida?','Предпочтительный доступ?','PM固定の好ましいアプローチは？','PM 고정에 선호하는 수술적 접근법은?','您首选的PM固定手术入路是？','ما هو النهج الجراحي المفضل لديك لتثبيت الكعب الخلفي؟'),type:'radio',req:true,opts:[
-      {v:'Posterolateral',labels:ml('Posterolateral yaklaşım','Posterolateral approach')},
-      {v:'Posteromedial',labels:ml('Posteromedial yaklaşım','Posteromedial approach')},
-      {v:'ByMorphology',labels:ml('Kırık morfolojisine göre değişir','Depends on fracture morphology','Abhängig von der Morphologie','Dépend de la morphologie','Depende de la morfología','Dipende dalla morfologia','Depende da morfologia','Зависит от морфологии','骨折形態による','골절 형태에 따라 다름','取决于骨折形态','يعتمد على مورفولوجية الكسر')},
-      {v:'DirectPosterior',labels:ml('Direkt posterior (pron pozisyon)','Direct posterior (prone)','Direkt posterior (Bauchlage)','Postérieur direct (décubitus ventral)','Posterior directo (prono)','Posteriore diretto (prono)','Posterior direto (prona)','Прямой задний (на животе)','直接後方（腹臥位）','직접 후방 (복위)','直接后方入路（俯卧位）','خلفي مباشر (وضعية الاستلقاء)')},
-      {v:'Percutaneous',labels:ml('Açık yaklaşım kullanmıyorum — perkütan','No open approach — percutaneous only','Kein offener Zugang — nur perkutan','Pas d\'approche ouverte — percutanée','Sin abordaje abierto — percutáneo','Nessun approccio aperto — percutaneo','Sem abordagem aberta — percutânea','Только чрескожно','オープンアプローチなし — 経皮的のみ','개방적 접근 없음 — 경피적만','不使用开放入路 — 仅经皮','بدون نهج مفتوح — عبر الجلد فقط')}]},
-    {id:'E2',q:ml('PM fragmanı için tercih ettiğiniz fiksasyon yöntemi?','What is your preferred fixation method for the PM fragment?','Bevorzugte Fixationsmethode?','Méthode de fixation préférée?','¿Método de fijación preferido?','Metodo di fissazione preferito?','Método de fixação preferido?','Предпочтительный метод фиксации?','PM断片の好ましい固定法は？','PM 골편에 선호하는 고정 방법은?','您首选的PM固定方法是？','ما هي طريقة التثبيت المفضلة لديك؟'),type:'radio',req:true,opts:[
-      {v:'AP',labels:ml('AP perkütan lag vidası','AP percutaneous lag screw')},
-      {v:'PA',labels:ml('PA lag vidası','PA lag screw')},
-      {v:'Buttress',labels:ml('Posterior buttress plak (açık redüksiyon)','Posterior buttress plate (open reduction)')},
-      {v:'Antiglide',labels:ml('Posterior antiglide plak','Posterior antiglide plate')},
-      {v:'Variable',labels:ml('Fragman boyutu ve morfolojisine bağlı','Depends on fragment size and morphology','Abhängig von Größe und Morphologie','Dépend de la taille et morphologie','Depende del tamaño y morfología','Dipende da dimensione e morfologia','Depende do tamanho e morfologia','Зависит от размера и морфологии','サイズと形態による','크기와 형태에 따라 다름','取决于骨折块大小和形态','يعتمد على حجم ومورفولوجية الكسر')}]},
-    {id:'E3',q:ml('PM fiksasyonu için tercih ettiğiniz hasta pozisyonu?','What is your preferred patient position for PM fixation?','Bevorzugte Patientenlagerung?','Position préférée du patient?','¿Posición preferida del paciente?','Posizione preferita del paziente?','Posição preferida do paciente?','Предпочтительное положение пациента?','PM固定の好ましい患者体位は？','PM 고정 시 선호하는 환자 자세는?','PM固定时首选的患者体位？','ما هو وضع المريض المفضل لديك؟'),type:'radio',req:true,opts:[
-      {v:'Supine',labels:ml('Supin','Supine','Rückenlage','Décubitus dorsal','Supino','Supina','Supina','На спине','仰臥位','앙와위','仰卧位','وضعية الاستلقاء على الظهر')},
-      {v:'Prone',labels:ml('Pron','Prone','Bauchlage','Décubitus ventral','Prono','Prona','Prona','На животе','腹臥位','복위','俯卧位','وضعية الاستلقاء على البطن')},
-      {v:'Lateral',labels:ml('Lateral dekübit','Lateral decubitus','Seitenlage','Décubitus latéral','Decúbito lateral','Decubito laterale','Decúbito lateral','На боку','側臥位','측와위','侧卧位','وضعية الاستلقاء الجانبي')},
-      {v:'Depends',labels:ml('Seçilen yaklaşıma bağlı','Depends on chosen approach','Abhängig vom Zugang','Dépend de l\'approche','Depende del abordaje','Dipende dall\'approccio','Depende da abordagem','Зависит от доступа','アプローチによる','접근법에 따라 다름','取决于所选入路','يعتمد على النهج المختار')}]}
-  ]},
-  {id:'F',title:ml('Trimalleolar Kırık Fiksasyon Sıralaması','Trimalleolar Fracture Sequencing','Trimalleolare Fraktur — Fixationsreihenfolge','Séquence de fixation trimalléolaire','Secuencia de fijación trimaleolar','Sequenza di fissazione trimalleolare','Sequência de fixação trimaleolar','Последовательность фиксации трёхлодыжечных переломов','三果骨折の固定順序','삼과 골절 고정 순서','三踝骨折固定顺序','تسلسل تثبيت الكسر الثلاثي'),questions:[
-    {id:'F1',q:ml('Trimalleolar kırıkta tipik fiksasyon sıralamanız?','What is your typical fixation sequence in a trimalleolar fracture?','Ihre typische Fixationsreihenfolge?','Votre séquence de fixation typique?','¿Cuál es su secuencia típica?','Quale la sua sequenza tipica?','Qual sua sequência típica?','Типичная последовательность фиксации?','典型的な固定順序は？','전형적인 고정 순서는?','您的典型固定顺序是？','ما هو تسلسل التثبيت النموذجي لديك؟'),type:'radio',req:true,opts:[
-      {v:'PM-LM-MM',labels:{tr:'Posterior → Lateral → Medial',en:'Posterior → Lateral → Medial'}},
-      {v:'LM-PM-MM',labels:{tr:'Lateral → Posterior → Medial',en:'Lateral → Posterior → Medial'}},
-      {v:'LM-MM-PM',labels:{tr:'Lateral → Medial → Posterior',en:'Lateral → Medial → Posterior'}},
-      {v:'MM-LM-PM',labels:{tr:'Medial → Lateral → Posterior',en:'Medial → Lateral → Posterior'}},
-      {v:'Variable',labels:ml('Değişken — kırık paternine bağlı','Variable — depends on fracture pattern','Variabel','Variable','Variable','Variabile','Variável','Варьирует','可変 — 骨折パターンによる','가변적 — 골절 패턴에 따라 다름','可变 — 取决于骨折模式','متغير — يعتمد على نمط الكسر')}]},
-    {id:'F2',q:ml('Trimalleolar kırıkta sindesmoz stabilitesini ne zaman değerlendiriyorsunuz?','When do you assess syndesmotic stability in a trimalleolar fracture?','Wann prüfen Sie die Syndesmosestabilität?','Quand évaluez-vous la stabilité syndesmotique?','¿Cuándo evalúa la estabilidad sindesmótica?','Quando valuta la stabilità sindesmotica?','Quando avalia a estabilidade sindesmótica?','Когда оцениваете стабильность синдесмоза?','靭帯結合の安定性をいつ評価しますか？','인대결합 안정성을 언제 평가합니까?','您何时评估下胫腓联合稳定性？','متى تقيم استقرار الرباط؟'),type:'radio',req:true,opts:[
-      {v:'BeforePM',labels:ml('PM fiksasyonundan önce','Before PM fixation','Vor PM-Fixation','Avant fixation PM','Antes de fijación PM','Prima della fissazione PM','Antes da fixação PM','До фиксации','PM固定前','PM 고정 전','PM固定前','قبل تثبيت الكعب')},
-      {v:'AfterPM',labels:ml('PM fiksasyonundan sonra','After PM fixation','Nach PM-Fixation','Après fixation PM','Después de fijación PM','Dopo fissazione PM','Após fixação PM','После фиксации','PM固定後','PM 고정 후','PM固定后','بعد تثبيت الكعب')},
-      {v:'AfterAll',labels:ml('Tüm malleoller sonrası','After all malleoli fixed','Nach Fixation aller Malleoli','Après fixation de toutes les malléoles','Después de fijar todos','Dopo tutti i malleoli','Após todos os maléolos','После всех','全果固定後','모든 과 고정 후','所有踝固定后','بعد تثبيت جميع الكعوب')},
-      {v:'Routine',labels:ml('Rutin sindesmoz fiksasyonu','I routinely fix the syndesmosis','Routinemäßige Syndesmosefixation','Fixation systématique','Fijación rutinaria','Fissazione di routine','Fixação rotineira','Рутинная фиксация','日常的に固定','일상적으로 고정','常规固定','أثبت الرباط بشكل روتيني')}]}
-  ]},
-  {id:'G',title:ml('Pratik Değişimi','Practice Evolution','Praxisentwicklung','Évolution de la pratique','Evolución de la práctica','Evoluzione della pratica','Evolução da prática','Эволюция практики','診療の変遷','진료 변화','实践演变','تطور الممارسة'),questions:[
-    {id:'G1',q:ml('Son 5 yılda PM kırıklarına yaklaşımınız değişti mi?','Has your approach to PM fractures changed over the past 5 years?','Hat sich Ihr Vorgehen in den letzten 5 Jahren geändert?','Votre approche a-t-elle changé ces 5 dernières années?','¿Ha cambiado su enfoque en los últimos 5 años?','Il suo approccio è cambiato negli ultimi 5 anni?','Sua abordagem mudou nos últimos 5 anos?','Изменился ли ваш подход за последние 5 лет?','過去5年間でPM骨折へのアプローチは変わりましたか？','지난 5년간 PM 골절에 대한 접근법이 변했습니까?','过去5年中您对PM骨折的方法是否改变？','هل تغير نهجك خلال السنوات الخمس الماضية؟'),type:'radio',req:true,opts:[
-      {v:'Substantially',labels:ml('Evet — önemli ölçüde','Yes — substantially','Ja — wesentlich','Oui — considérablement','Sí — sustancialmente','Sì — sostanzialmente','Sim — substancialmente','Да — существенно','はい — 大幅に','예 — 상당히','是 — 显著变化','نعم — بشكل كبير')},
-      {v:'Somewhat',labels:ml('Evet — kısmen','Yes — somewhat','Ja — etwas','Oui — un peu','Sí — algo','Sì — un po\'','Sim — um pouco','Да — несколько','はい — やや','예 — 다소','是 — 有所变化','نعم — إلى حد ما')},
-      {v:'No',labels:ml('Hayır — büyük ölçüde aynı','No — largely the same','Nein — weitgehend gleich','Non — sensiblement le même','No — prácticamente igual','No — sostanzialmente uguale','Não — praticamente o mesmo','Нет — в целом тот же','いいえ — ほぼ同じ','아니오 — 거의 동일','否 — 基本相同','لا — لم يتغير تقريباً')},
-      {v:'NA',labels:ml('Uygulanamaz — < 5 yıl deneyim','N/A — < 5 years experience','N/A — < 5 Jahre','N/A — < 5 ans','N/A — < 5 años','N/A — < 5 anni','N/A — < 5 anos','Н/п — < 5 лет','該当なし — 5年未満','해당없음 — 5년 미만','不适用 — 经验不足5年','لا ينطبق — أقل من 5 سنوات')}]},
-    {id:'G2',q:ml('Yaklaşımınız değiştiyse en etkili faktör neydi?','If changed, what was the most influential factor?','Wichtigster Einflussfaktor?','Facteur le plus influent?','¿Factor más influyente?','Fattore più influente?','Fator mais influente?','Наиболее значимый фактор?','最も影響力のある要因は？','가장 영향력 있는 요인은?','最具影响力的因素是？','ما العامل الأكثر تأثيراً؟'),type:'radio',req:true,opts:[
-      {v:'Evidence',labels:ml('Yayınlanmış kanıt','Published evidence','Publizierte Evidenz','Preuves publiées','Evidencia publicada','Evidenze pubblicate','Evidência publicada','Публикации','発表された根拠','출판된 근거','发表的证据','الأدلة المنشورة')},
-      {v:'Conference',labels:ml('Kongre / kurslar','Conferences / courses','Kongresse / Kurse','Congrès / formations','Congresos / cursos','Congressi / corsi','Congressos / cursos','Конференции / курсы','学会 / コース','학회 / 코스','会议 / 课程','مؤتمرات / دورات')},
-      {v:'Peers',labels:ml('Meslektaş etkisi','Peer influence','Kollegeneinfluss','Influence des pairs','Influencia de pares','Influenza dei colleghi','Influência dos pares','Влияние коллег','同僚の影響','동료의 영향','同行影响','تأثير الأقران')},
-      {v:'Experience',labels:ml('Kendi klinik deneyimim','My own clinical experience','Eigene Erfahrung','Mon expérience clinique','Mi experiencia clínica','La mia esperienza','Minha experiência','Собственный опыт','自身の臨床経験','개인 임상 경험','个人临床经验','خبرتي السريرية')},
-      {v:'CT',labels:ml('Preoperatif BT erişiminin artması','Improved access to preoperative CT','Besserer Zugang zu CT','Meilleur accès au scanner','Mejor acceso a TC','Migliore accesso alla TC','Melhor acesso à TC','Улучшение доступа к КТ','術前CTへのアクセス改善','수술 전 CT 접근성 향상','术前CT检查便利性提高','تحسن الوصول للأشعة المقطعية')},
-      {v:'NA',labels:ml('Uygulanamaz','Not applicable','N/A','N/A','N/A','N/A','N/A','Н/п','該当なし','해당없음','不适用','لا ينطبق')}]}
-  ]},
-  {id:'H',title:ml('Klinik Senaryolar','Clinical Scenarios','Klinische Szenarien','Scénarios cliniques','Escenarios clínicos','Scenari clinici','Cenários clínicos','Клинические сценарии','臨床シナリオ','임상 시나리오 ','临床情景','سيناريوهات سريرية'),questions:[
-    {id:'H1',q:ml('Vaka 1\'de PM fragmanını nasıl tedavi edersiniz?','How would you manage the PM fragment in Case 1?','Wie behandeln Sie das PM-Fragment in Fall 1?','Comment traitez-vous le fragment PM dans le Cas 1?','¿Cómo manejaría el fragmento PM en el Caso 1?','Come tratterrebbe il frammento PM nel Caso 1?','Como trataria o fragmento PM no Caso 1?','Как бы вы лечили фрагмент в случае 1?','症例1のPM断片をどう治療しますか？','증례 1에서 PM 골편을 어떻게 치료하시겠습니까?','病例1中您将如何处理PM骨折块？','كيف ستعالج كسر الكعب الخلفي في الحالة 1؟'),type:'radio',req:true,case_num:1,opts:[
-      {v:'NoFix',labels:ml('Posterior fragmana fiksasyon yok','No fixation of the posterior fragment','Keine Fixation des Fragments','Pas de fixation du fragment postérieur','Sin fijación del fragmento','Nessuna fissazione del frammento','Sem fixação do fragmento','Без фиксации','後方断片の固定なし','후방 골편 고정 없음','不固定后方骨折块','عدم تثبيت الكسر الخلفي')},
-      {v:'AP',labels:ml('AP perkütan lag vidası','AP percutaneous lag screw')},
-      {v:'PA',labels:ml('PA perkütan lag vidası','PA percutaneous lag screw')},
-      {v:'OpenPlate',labels:ml('Açık redüksiyon + posterior buttress plak','Open reduction and posterior buttress plate')},
-      {v:'NeedMore',labels:ml('Daha fazla bilgi gerekir','Would need more information','Mehr Informationen nötig','Plus d\'informations nécessaires','Necesito más información','Necessito più informazioni','Preciso de mais informações','Необходимо больше информации','さらなる情報が必要','추가 정보 필요','需要更多信息','أحتاج مزيداً من المعلومات')}]},
-    {id:'H2',q:ml('Vaka 2\'de PM fragmanını nasıl tedavi edersiniz?','How would you manage the PM fragment in Case 2?','Wie behandeln Sie in Fall 2?','Comment traitez-vous dans le Cas 2?','¿Cómo manejaría en el Caso 2?','Come tratterrebbe nel Caso 2?','Como trataria no Caso 2?','Как бы вы лечили в случае 2?','症例2ではどう治療しますか？','증례 2에서는?','病例2中您将如何处理？','كيف ستعالج في الحالة 2؟'),type:'radio',req:true,case_num:2,opts:[
-      {v:'AP',labels:ml('AP perkütan lag vidası','AP percutaneous lag screw')},
-      {v:'PA',labels:ml('PA perkütan lag vidası','PA percutaneous lag screw')},
-      {v:'OpenButtress',labels:ml('Açık redüksiyon, impaksiyon elevasyonu, buttress plak','Open reduction, impaction elevation, buttress plate')},
-      {v:'OpenAntiglide',labels:ml('Açık redüksiyon + antiglide plak','Open reduction and antiglide plate')},
-      {v:'OpenScrews',labels:ml('Açık redüksiyon + yalnızca lag vidaları','Open reduction and lag screws only')},]},
-    {id:'H3',q:ml('Vaka 2\'de PM sonrası sindesmotik fiksasyon ekler misiniz?','Would you add syndesmotic fixation after PM fixation in Case 2?','Syndesmosefixation nach PM in Fall 2?','Fixation syndesmotique après PM dans le Cas 2?','¿Fijación sindesmótica después de PM en Caso 2?','Fissazione sindesmotica dopo PM nel Caso 2?','Fixação sindesmótica após PM no Caso 2?','Дополнительная фиксация в случае 2?','症例2でPM固定後に靭帯結合固定を追加しますか？','증례 2에서 PM 고정 후 인대결합 고정을 추가하시겠습니까?','病例2中PM固定后是否追加下胫腓联合固定？','هل ستضيف تثبيت الرباط بعد تثبيت الكعب في الحالة 2؟'),type:'radio',req:true,opts:[
-      {v:'No',labels:ml('Hayır — PM fiksasyonu yeterli olmalı','No — PM fixation should suffice','Nein — PM-Fixation sollte reichen','Non — fixation PM devrait suffire','No — fijación PM debería bastar','No — la fissazione PM dovrebbe bastare','Não — fixação PM deve ser suficiente','Нет — фиксации достаточно','いいえ — PM固定で十分','아니오 — PM 고정으로 충분','否 — PM固定应该足够','لا — تثبيت الكعب يجب أن يكفي')},
-      {v:'IfUnstable',labels:ml('İntraop stres testi instabilite gösterirse','Only if intraop stress test shows instability','Nur bei Instabilität im Stresstest','Seulement si test de stress instable','Solo si prueba de estrés inestable','Solo se stress test instabile','Apenas se teste de estresse instável','Только при нестабильности','術中ストレステストで不安定の場合のみ','술중 스트레스 검사에서 불안정 시에만','仅在术中应力试验显示不稳定时','فقط إذا أظهر اختبار الإجهاد عدم استقرار')},
-      {v:'Yes',labels:ml('Evet — rutin olarak eklerim','Yes — I routinely add','Ja — routinemäßig','Oui — systématiquement','Sí — de rutina','Sì — di routine','Sim — rotineiramente','Да — рутинно','はい — 日常的に','예 — 일상적으로','是 — 常规追加','نعم — أضيفه بشكل روتيني')}]}
-  ]},
-  {id:'I',title:ml('Kapanış','Closing Remarks','Abschluss','Remarques finales','Comentarios finales','Osservazioni conclusive','Considerações finais','Заключение','まとめ','마무리','结语','ملاحظات ختامية'),questions:[
-    {id:'I1',q:ml('PM kırığı yönetiminde en önemli çözülmemiş soru nedir?','What is the most important unresolved question in PM fracture management?','Wichtigste ungelöste Frage?','Question non résolue la plus importante?','¿Pregunta más importante sin resolver?','Questione irrisolta più importante?','Questão não resolvida mais importante?','Главный нерешённый вопрос?','最も重要な未解決の問題は？','가장 중요한 미해결 질문은?','PM骨折管理中最重要的未解决问题是什么？','ما هو أهم سؤال لم يُحل بعد؟'),type:'textarea',req:false},
-    {id:'I2',q:ml('Sonuçlar yayınlandığında özet almak ister misiniz?','Would you like a summary when results are published?','Möchten Sie eine Zusammenfassung?','Souhaitez-vous un résumé des résultats?','¿Desea un resumen de los resultados?','Desidera un riepilogo dei risultati?','Deseja um resumo dos resultados?','Хотите получить резюме?','結果公表時に概要を希望しますか？','결과 발표 시 요약을 받으시겠습니까?','您是否希望在结果发表时收到摘要？','هل ترغب في ملخص عند نشر النتائج؟'),type:'radio',req:false,opts:[
-      {v:'Yes',labels:ml('Evet','Yes','Ja','Oui','Sí','Sì','Sim','Да','はい','예','是','نعم')},
-      {v:'No',labels:ml('Hayır','No','Nein','Non','No','No','Não','Нет','いいえ','아니오','否','لا')}]},
-    {id:'I3',q:ml('"Evet" ise lütfen e-posta adresinizi giriniz.','If "Yes", please provide your email address.','"Ja" — bitte E-Mail-Adresse angeben.','"Oui" — veuillez indiquer votre email.','"Sí" — indique su correo electrónico.','"Sì" — indichi il suo indirizzo email.','"Sim" — informe seu e-mail.','Если «Да» — укажите email.','「はい」の場合メールアドレスをご記入ください。','"예"의 경우 이메일 주소를 입력해 주세요。','如选"是"，请提供您的电子邮箱。','إذا "نعم"، يرجى إدخال بريدك الإلكتروني.'),type:'email',req:false,note:true}
-  ]}
-];
-
-// Case vignettes
-const CASES = {
-  1: {title:ml('Vaka 1 — Küçük Posterolateral Fragman','Case 1 — Small Posterolateral Fragment','Fall 1 — Kleines posterolaterales Fragment','Cas 1 — Petit fragment postérolatéral','Caso 1 — Fragmento posterolateral pequeño','Caso 1 — Piccolo frammento posterolaterale','Caso 1 — Fragmento posterolateral pequeno','Случай 1 — Малый заднелатеральный фрагмент','症例1 — 小さい後外側骨片','증례 1 — 작은 후외측 골편','病例1 — 小的后外侧骨折块','الحالة 1 — كسر خلفي وحشي صغير'),
-      desc:ml('45 yaşında hasta, SER mekanizması. Weber B fibula kırığı, eklem yüzeyinin ~%15 PM fragmanı. BT: posterolateral (Haraguchi I / Bartoníček 2), impaksiyon yok, sindesmoz kongrüan.','45-year-old, SER injury. Weber B fibula fracture with ~15% PM fragment. CT: posterolateral (Haraguchi I / Bartoníček 2), no impaction, syndesmosis congruent.','45 Jahre, SER-Verletzung. Weber-B-Fraktur, ~15% PM-Fragment. CT: posterolateral (Haraguchi I / Bartoníček 2), keine Impaktion, Syndesmose kongruent.','45 ans, mécanisme SER. Fracture Weber B, fragment PM ~15%. TDM: postérolatéral (Haraguchi I / Bartoníček 2), pas d\'impaction, syndesmose congruente.','45 años, mecanismo SER. Fractura Weber B, fragmento PM ~15%. TC: posterolateral (Haraguchi I / Bartoníček 2), sin impactación, sindesmosis congruente.','45 anni, meccanismo SER. Frattura Weber B, frammento PM ~15%. TC: posterolaterale (Haraguchi I / Bartoníček 2), no impaction, sindesmosi congruente.','45 anos, mecanismo SER. Fratura Weber B, fragmento PM ~15%. TC: posterolateral (Haraguchi I / Bartoníček 2), sem impacção, sindesmose congruente.','45 лет, СЕР-механизм. Перелом Weber B, ~15% фрагмент. КТ: заднелатеральный (Haraguchi I / Bartoníček 2), импакции нет, синдесмоз конгруэнтен.','45歳、SER損傷。Weber B腓骨骨折、PM断片約15%。CT：後外側（Haraguchi I / Bartoníček 2）、impactionなし、靭帯結合正常。','45세, SER 손상. Weber B 비골 골절, PM 골편 ~15%. CT: 후외측 (Haraguchi I / Bartoníček 2), 함입 없음, 인대결합 정렬 정상.','45岁，SER损伤。Weber B腓骨骨折，PM骨折块约15%。CT：后外侧（Haraguchi I / Bartoníček 2），无压缩，下胫腓联合对线正常。','45 سنة، إصابة SER. كسر Weber B، كسر كعب خلفي ~15%. أشعة مقطعية: خلفي وحشي (Haraguchi I / Bartoníček 2)، بدون انضغاط، رباط مستقر.')},
-  2: {title:ml('Vaka 2 — Büyük Posterolateral Fragman ve İmpaksiyon','Case 2 — Large Posterolateral Fragment with Impaction','Fall 2 — Großes Fragment mit Impaktion','Cas 2 — Grand fragment avec impaction','Caso 2 — Fragmento grande con impactación','Caso 2 — Grande frammento con impaction','Caso 2 — Fragmento grande com impacção','Случай 2 — Большой фрагмент с импакцией','症例2 — 大きい後外側骨片と陥入','증례 2 — 큰 후외측 골편과 함입','病例2 — 大的后外侧骨折块伴压缩','الحالة 2 — كسر خلفي وحشي كبير مع انضغاط'),
-      desc:ml('58 yaşında, trimalleolar kırık. BT: ~%35 PM fragmanı (Haraguchi I / Bartoníček 3), die-punch lezyonu, 3 mm talar subluksasyon.','58-year-old, trimalleolar fracture. CT: ~35% PM fragment (Haraguchi I / Bartoníček 3) with die-punch lesion, 3 mm posterior talar subluxation.','58 Jahre, trimalleolare Fraktur. CT: ~35% PM-Fragment (Haraguchi I / Bartoníček 3) mit Die-Punch-Läsion, 3 mm Talus-Subluxation.','58 ans, fracture trimalléolaire. TDM: fragment PM ~35% (Haraguchi I / Bartoníček 3), lésion die-punch, subluxation talienne 3 mm.','58 años, fractura trimaleolar. TC: fragmento PM ~35% (Haraguchi I / Bartoníček 3), lesión die-punch, subluxación talar 3 mm.','58 anni, frattura trimalleolare. TC: frammento PM ~35% (Haraguchi I / Bartoníček 3), lesione die-punch, sublussazione talare 3 mm.','58 anos, fratura trimaleolar. TC: fragmento PM ~35% (Haraguchi I / Bartoníček 3), lesão die-punch, subluxação talar 3 mm.','58 лет, трёхлодыжечный перелом. КТ: ~35% фрагмент (Haraguchi I / Bartoníček 3), die-punch, подвывих таранной кости 3 мм.','58歳、三果骨折。CT：PM断片約35%（Haraguchi I / Bartoníček 3）、die-punch病変、距骨後方亜脱臼3mm。','58세, 삼과 골절. CT: PM 골편 ~35% (Haraguchi I / Bartoníček 3), die-punch 병변, 거골 후방 아탈구 3mm.','58岁，三踝骨折。CT：PM骨折块约35%（Haraguchi I / Bartoníček 3），die-punch损伤，距骨后脱位3mm。','58 سنة، كسر ثلاثي. أشعة مقطعية: كسر كعب خلفي ~35% (Haraguchi I / Bartoníček 3)، die-punch، انزلاق خلفي 3 مم.')}
+// ── UI TRANSLATIONS (TR + EN full, others fallback to EN) ──
+const T = {
+  tr: {
+    title: "Posterior Malleol Kırığı Yönetimi Anketi",
+    subtitle: "Uluslararası Cerrahi Pratik Varyasyonu Çalışması",
+    lang_title: "Lütfen dilinizi seçiniz",
+    lang_subtitle: "Please select your language",
+    consent_title: "Bilgilendirilmiş Onam",
+    consent_text: "Bu çalışma, posterior malleol kırıklarının cerrahi yönetimindeki güncel eğilimleri ve pratik varyasyonu değerlendirmeyi amaçlayan uluslararası bir anket çalışmasıdır. Katılımınız tamamen gönüllüdür ve anonim olarak kaydedilecektir. Herhangi bir hasta verisi toplanmamaktadır. Çalışma Dr. Suat Günsel Girne Üniversitesi Hastanesi Etik Kurulu tarafından onaylanmıştır.",
+    consent_agree: "Okudum, anladım ve katılmayı kabul ediyorum",
+    next: "Devam",
+    prev: "Geri",
+    submit: "Anketi Gönder",
+    save_warning: "Yanıtlarınız henüz kaydedilmedi!",
+    thank_title: "Teşekkürler!",
+    thank_text: "Anketi tamamladığınız için teşekkür ederiz. Katkınız son derece değerlidir.",
+    results_q: "Çalışma sonuçlarından haberdar olmak ister misiniz?",
+    email_ph: "E-posta adresiniz",
+    email_btn: "Gönder",
+    fix_q: "Bu vakada posterior malleolü fikse eder misiniz?",
+    pos_q: "Ameliyata hangi pozisyonda başlarsınız?",
+    app_q: "Hangi cerrahi yaklaşımı tercih edersiniz?",
+    seq_q: "Fiksasyon sıranız ne olur?",
+    tech_q: "PM fiksasyonu için hangi teknik ve implantı tercih edersiniz?",
+    fix_yes: "Evet",
+    fix_no: "Hayır",
+    likert: ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"],
+    view_ct: "BT'yi İncele",
+    select_all: "Birden fazla seçebilirsiniz",
+    last_section: "Bu anketin son bölümüdür. Yanıtlarınızı göndermek için lütfen tamamlayınız.",
+    country_ph: "Ülke arayın...",
+    country_label: "Çalıştığınız ülke",
+    badge_info: "soru · 8–10 dk · Anonim · Etik onaylı"
+  },
+  en: {
+    title: "Posterior Malleolus Fracture Management Survey",
+    subtitle: "International Surgical Practice Variation Study",
+    lang_title: "Lütfen dilinizi seçiniz",
+    lang_subtitle: "Please select your language",
+    consent_title: "Informed Consent",
+    consent_text: "This study is an international survey evaluating current trends and practice variation in the surgical management of posterior malleolus fractures. Your participation is entirely voluntary and will be recorded anonymously. No patient data is collected. This study has been approved by the Ethics Committee of Dr. Suat Günsel Kyrenia University Hospital.",
+    consent_agree: "I have read, understood, and agree to participate",
+    next: "Next",
+    prev: "Back",
+    submit: "Submit Survey",
+    save_warning: "Your responses have not been saved!",
+    thank_title: "Thank You!",
+    thank_text: "Thank you for completing the survey. Your contribution is extremely valuable.",
+    results_q: "Would you like to be notified about the study results?",
+    email_ph: "Your email address",
+    email_btn: "Submit",
+    fix_q: "Would you fix the posterior malleolus in this case?",
+    pos_q: "In what position would you start the surgery?",
+    app_q: "Which surgical approach would you prefer?",
+    seq_q: "What would be your fixation sequence?",
+    tech_q: "Which technique and implant would you prefer for PM fixation?",
+    fix_yes: "Yes",
+    fix_no: "No",
+    likert: ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
+    view_ct: "View CT",
+    select_all: "Select all that apply",
+    last_section: "This is the final section of the survey. Please complete it to submit your responses.",
+    country_ph: "Search country...",
+    country_label: "Country of practice",
+    badge_info: "questions · 8–10 min · Anonymous · Ethics approved"
+  }
 };
+const t = (lang, key) => (T[lang] || T.en)[key] || T.en[key] || key;
 
-// Countries (English value stored; display names per language)
-const COUNTRIES = [
-  {en:'Afghanistan'},{en:'Albania'},{en:'Algeria'},{en:'Argentina'},{en:'Armenia'},{en:'Australia'},
-  {en:'Austria'},{en:'Azerbaijan'},{en:'Bahrain'},{en:'Bangladesh'},{en:'Belgium'},{en:'Bolivia'},
-  {en:'Bosnia and Herzegovina'},{en:'Botswana'},{en:'Brazil'},{en:'Brunei'},{en:'Bulgaria'},
-  {en:'Burkina Faso'},{en:'Cambodia'},{en:'Cameroon'},{en:'Canada'},{en:'Chad'},{en:'Chile'},
-  {en:'China'},{en:'Colombia'},{en:'Congo'},{en:'Costa Rica'},{en:'Croatia'},{en:'Cuba'},
-  {en:'Cyprus'},{en:'Czechia'},{en:'Denmark'},{en:'Dominican Republic'},{en:'Ecuador'},{en:'Egypt'},
-  {en:'El Salvador'},{en:'Estonia'},{en:'Ethiopia'},{en:'Fiji'},{en:'Finland'},{en:'France'},
-  {en:'Georgia'},{en:'Germany'},{en:'Ghana'},{en:'Greece'},{en:'Guatemala'},{en:'Honduras'},
-  {en:'Hungary'},{en:'Iceland'},{en:'India'},{en:'Indonesia'},{en:'Iran'},{en:'Iraq'},{en:'Ireland'},
-  {en:'Israel'},{en:'Italy'},{en:'Jamaica'},{en:'Japan'},{en:'Jordan'},{en:'Kazakhstan'},{en:'Kenya'},
-  {en:'Kuwait'},{en:'Kyrgyzstan'},{en:'Laos'},{en:'Latvia'},{en:'Lebanon'},{en:'Libya'},
-  {en:'Lithuania'},{en:'Luxembourg'},{en:'Madagascar'},{en:'Malawi'},{en:'Malaysia'},{en:'Mali'},
-  {en:'Malta'},{en:'Mexico'},{en:'Moldova'},{en:'Mongolia'},{en:'Montenegro'},{en:'Morocco'},
-  {en:'Mozambique'},{en:'Myanmar'},{en:'Nepal'},{en:'Netherlands'},{en:'New Zealand'},{en:'Nicaragua'},
-  {en:'Niger'},{en:'Nigeria'},{en:'North Macedonia'},{en:'Norway'},{en:'Oman'},{en:'Pakistan'},
-  {en:'Panama'},{en:'Paraguay'},{en:'Peru'},{en:'Philippines'},{en:'Poland'},{en:'Portugal'},
-  {en:'Qatar'},{en:'Romania'},{en:'Russia'},{en:'Rwanda'},{en:'Saudi Arabia'},{en:'Senegal'},
-  {en:'Serbia'},{en:'Singapore'},{en:'Slovakia'},{en:'Slovenia'},{en:'Somalia'},{en:'South Africa'},
-  {en:'South Korea'},{en:'Spain'},{en:'Sri Lanka'},{en:'Sudan'},{en:'Sweden'},{en:'Switzerland'},
-  {en:'Syria'},{en:'Taiwan'},{en:'Tajikistan'},{en:'Tanzania'},{en:'Thailand'},{en:'Togo'},
-  {en:'Tunisia'},{en:'Turkey'},{en:'Turkish Republic of Northern Cyprus'},{en:'Turkmenistan'},
-  {en:'Uganda'},{en:'Ukraine'},{en:'United Arab Emirates'},{en:'United Kingdom'},{en:'United States'},
-  {en:'Uruguay'},{en:'Uzbekistan'},{en:'Venezuela'},{en:'Vietnam'},{en:'Yemen'},{en:'Zambia'},
-  {en:'Zimbabwe'},{en:'Other'}
-];
-
-// ====================================================================
-// SURVEY ENGINE
-// ====================================================================
-let currentLang = null;
-let currentSection = -1; // -1 = lang picker
-const TOTAL = SECTIONS.length;
-let answers = {};
-
-function t(obj) {
-  if (!obj) return '';
-  if (typeof obj === 'string') return obj;
-  return obj[currentLang] || obj.en || obj.tr || '';
-}
-
-function showLangPicker() { currentSection = -1; renderAll(); }
-
-function selectLang(lang) {
-  currentLang = lang;
-  document.documentElement.lang = lang;
-  document.documentElement.dir = LANGS[lang].dir;
-  currentSection = 0;
-  renderAll();
-  const badge = document.getElementById('langBadge');
-  badge.style.display = 'flex';
-  document.getElementById('langFlag').textContent = LANGS[lang].flag;
-  document.getElementById('langName').textContent = LANGS[lang].native;
-}
-
-function renderAll() {
-  const app = document.getElementById('app');
-  if (currentSection === -1) {
-    // LANGUAGE PICKER
-    document.getElementById('langBadge').style.display = 'none';
-    let h = '<div class="lang-page">';
-    h += '<div class="hdr-badge" style="margin-bottom:1.5rem">Posterior Malleolus Fracture Survey</div>';
-    h += '<h2>' + t(UI.select_lang) + '</h2>';
-    h += '<p style="color:var(--text-ter);font-size:.8rem;margin-bottom:2rem">' +
-      Object.values(LANGS).map(l => l.native).join(' · ') + '</p>';
-    h += '<div class="lang-grid">';
-    for (const [code, info] of Object.entries(LANGS)) {
-      h += `<div class="lang-card" onclick="selectLang('${code}')">
-        <div class="flag">${info.flag}</div>
-        <div class="native">${info.native}</div>
-        <div class="name">${info.name}</div>
-      </div>`;
-    }
-    h += '</div></div>';
-    app.innerHTML = h;
-    return;
+// ── SECTIONS ──
+const SECTIONS = {
+  A: {
+    title: {
+      tr: "A — Demografik Bilgiler",
+      en: "A — Demographics"
+    },
+    questions: [{
+      id: "a2",
+      type: "single",
+      text: {
+        tr: "Uzman olarak kaç yıldır çalışıyorsunuz?",
+        en: "How many years have you been practicing as a specialist?"
+      },
+      opts: [{
+        tr: "< 5 yıl",
+        en: "< 5 years"
+      }, {
+        tr: "5–10 yıl",
+        en: "5–10 years"
+      }, {
+        tr: "11–20 yıl",
+        en: "11–20 years"
+      }, {
+        tr: "> 20 yıl",
+        en: "> 20 years"
+      }]
+    }, {
+      id: "a3",
+      type: "single",
+      text: {
+        tr: "Çalıştığınız kurum tipi nedir?",
+        en: "What type of institution do you work in?"
+      },
+      opts: [{
+        tr: "Devlet hastanesi — 3. basamak",
+        en: "Public hospital — tertiary"
+      }, {
+        tr: "Özel hastane — 3. basamak",
+        en: "Private hospital — tertiary"
+      }, {
+        tr: "Devlet hastanesi — 2. basamak",
+        en: "Public hospital — secondary"
+      }, {
+        tr: "Özel hastane — 2. basamak",
+        en: "Private hospital — secondary"
+      }, {
+        tr: "Serbest hekim",
+        en: "Independent practitioner"
+      }]
+    }, {
+      id: "a4",
+      type: "country",
+      text: {
+        tr: "Çalıştığınız ülke",
+        en: "Country of practice"
+      }
+    }, {
+      id: "a5",
+      type: "single",
+      text: {
+        tr: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
+        en: "Approximately how many ankle fracture surgeries do you perform per year?"
+      },
+      opts: [{
+        tr: "< 20",
+        en: "< 20"
+      }, {
+        tr: "20–50",
+        en: "20–50"
+      }, {
+        tr: "51–100",
+        en: "51–100"
+      }, {
+        tr: "> 100",
+        en: "> 100"
+      }]
+    }]
+  },
+  B: {
+    title: {
+      tr: "B — PM Kırığı Deneyimi",
+      en: "B — PM Fracture Exposure"
+    },
+    questions: [{
+      id: "b1",
+      type: "single",
+      text: {
+        tr: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
+        en: "Approximately how many posterior malleolus fractures do you encounter per month?"
+      },
+      opts: [{
+        tr: "< 2",
+        en: "< 2"
+      }, {
+        tr: "2–5",
+        en: "2–5"
+      }, {
+        tr: "6–10",
+        en: "6–10"
+      }, {
+        tr: "> 10",
+        en: "> 10"
+      }]
+    }, {
+      id: "b2",
+      type: "single",
+      text: {
+        tr: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
+        en: "Do you routinely order CT scans for ankle fractures?"
+      },
+      opts: [{
+        tr: "Evet — tüm ayak bileği kırıklarında",
+        en: "Yes — for all ankle fractures"
+      }, {
+        tr: "Evet — sadece PM şüphesi varsa",
+        en: "Yes — only if PM fracture is suspected"
+      }, {
+        tr: "Evet — sadece trimalleolar kırıklarda",
+        en: "Yes — only for trimalleolar fractures"
+      }, {
+        tr: "Hayır — sadece grafiye dayanarak karar veririm",
+        en: "No — I decide based on plain radiographs only"
+      }]
+    }]
+  },
+  C: {
+    title: {
+      tr: "C — Sınıflama",
+      en: "C — Classification"
+    },
+    questions: [{
+      id: "c1",
+      type: "multi",
+      text: {
+        tr: "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?",
+        en: "Which classification systems do you use when evaluating PM fractures?"
+      },
+      opts: [{
+        tr: "Haraguchi sınıflaması",
+        en: "Haraguchi classification"
+      }, {
+        tr: "Bartoníček/Rammelt sınıflaması",
+        en: "Bartoníček/Rammelt classification"
+      }, {
+        tr: "Mason & Molloy sınıflaması",
+        en: "Mason & Molloy classification"
+      }, {
+        tr: "AO/OTA sınıflaması",
+        en: "AO/OTA classification"
+      }, {
+        tr: "Lauge-Hansen sınıflaması",
+        en: "Lauge-Hansen classification"
+      }, {
+        tr: "Fragment boyutu (% eklem yüzeyi)",
+        en: "Fragment size (% articular surface)"
+      }, {
+        tr: "Spesifik bir sınıflama kullanmıyorum",
+        en: "I do not use a specific classification"
+      }]
+    }, {
+      id: "c2",
+      type: "single",
+      text: {
+        tr: "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?",
+        en: "Does the classification system guide your treatment decisions?"
+      },
+      opts: [{
+        tr: "Evet — primer olarak sınıflamaya göre karar veririm",
+        en: "Yes — I primarily decide based on classification"
+      }, {
+        tr: "Kısmen — sınıflama faktörlerden biridir",
+        en: "Partially — classification is one of several factors"
+      }, {
+        tr: "Hayır — sınıflamadan bağımsız değerlendiririm",
+        en: "No — I evaluate independently of classification"
+      }]
+    }]
+  },
+  D: {
+    title: {
+      tr: "D — Fiksasyon Endikasyonları",
+      en: "D — Fixation Indications"
+    },
+    questions: [{
+      id: "d1",
+      type: "single",
+      text: {
+        tr: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
+        en: "What is your minimum articular surface involvement threshold for fixing the PM fragment?"
+      },
+      opts: [{
+        tr: "< %10",
+        en: "< 10%"
+      }, {
+        tr: "%10–25",
+        en: "10–25%"
+      }, {
+        tr: "%25–33",
+        en: "25–33%"
+      }, {
+        tr: "> %33",
+        en: "> 33%"
+      }, {
+        tr: "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim",
+        en: "I fix all PM fractures regardless of fragment size"
+      }, {
+        tr: "Boyut tek başına karar verdirici değildir",
+        en: "Size alone is not decisive"
+      }]
+    }, {
+      id: "d3",
+      type: "multi",
+      text: {
+        tr: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
+        en: "Which factors influence your PM fixation decision?"
+      },
+      opts: [{
+        tr: "Artiküler step-off miktarı",
+        en: "Articular step-off"
+      }, {
+        tr: "Fibular notch tutulumu",
+        en: "Fibular notch involvement"
+      }, {
+        tr: "Sindesmoz instabilitesi",
+        en: "Syndesmotic instability"
+      }, {
+        tr: "Fragment morfolojisi (Bartoníček/Haraguchi tipi)",
+        en: "Fragment morphology (Bartoníček/Haraguchi type)"
+      }, {
+        tr: "Hasta yaşı ve aktivite düzeyi",
+        en: "Patient age and activity level"
+      }, {
+        tr: "Kemik kalitesi (osteoporoz)",
+        en: "Bone quality (osteoporosis)"
+      }, {
+        tr: "Yumuşak doku durumu",
+        en: "Soft tissue condition"
+      }, {
+        tr: "İmpakte artiküler fragment varlığı",
+        en: "Presence of impacted articular fragments"
+      }, {
+        tr: "Komorbidite (DM, sigara vb.)",
+        en: "Comorbidities (DM, smoking, etc.)"
+      }]
+    }]
+  },
+  E: {
+    title: {
+      tr: "E — Teknik Tercihler",
+      en: "E — Technique Preferences"
+    },
+    questions: [{
+      id: "e1",
+      type: "single",
+      text: {
+        tr: "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?",
+        en: "What is your most commonly preferred technique for PM fixation?"
+      },
+      opts: [{
+        tr: "Perkütan AP lag vida",
+        en: "Percutaneous AP lag screw"
+      }, {
+        tr: "Perkütan PA lag vida",
+        en: "Percutaneous PA lag screw"
+      }, {
+        tr: "Trans-Achilles perkütan PA vida",
+        en: "Trans-Achilles percutaneous PA screw"
+      }, {
+        tr: "Açık posterolateral — buttress/locking plak",
+        en: "Open posterolateral — buttress/locking plate"
+      }, {
+        tr: "Açık posterolateral — lag vida",
+        en: "Open posterolateral — lag screw"
+      }]
+    }, {
+      id: "e2",
+      type: "single",
+      text: {
+        tr: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
+        en: "What is your most commonly preferred surgical approach for PM fractures?"
+      },
+      opts: [{
+        tr: "Posterolateral",
+        en: "Posterolateral"
+      }, {
+        tr: "Posteromedial",
+        en: "Posteromedial"
+      }, {
+        tr: "Kombine posterolateral + posteromedial",
+        en: "Combined posterolateral + posteromedial"
+      }, {
+        tr: "Anterior (perkütan)",
+        en: "Anterior (percutaneous)"
+      }, {
+        tr: "Artroskopik",
+        en: "Arthroscopic"
+      }, {
+        tr: "Vakaya göre değişir",
+        en: "Varies by case"
+      }]
+    }, {
+      id: "e3",
+      type: "single",
+      text: {
+        tr: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
+        en: "What is your most commonly preferred patient position for PM fractures?"
+      },
+      opts: [{
+        tr: "Supine",
+        en: "Supine"
+      }, {
+        tr: "Prone",
+        en: "Prone"
+      }, {
+        tr: "Lateral dekübitus",
+        en: "Lateral decubitus"
+      }]
+    }]
+  },
+  F: {
+    title: {
+      tr: "F — Fiksasyon Sırası ve Sindesmoz",
+      en: "F — Fixation Sequence and Syndesmosis"
+    },
+    questions: [{
+      id: "f1",
+      type: "single",
+      text: {
+        tr: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
+        en: "What is your general fixation sequence in trimalleolar fractures?"
+      },
+      opts: [{
+        tr: "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)",
+        en: "Fibula → PM → Medial malleolus → Syndesmosis (if unstable)"
+      }, {
+        tr: "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)",
+        en: "PM first → Fibula → Medial malleolus → Syndesmosis (if unstable)"
+      }, {
+        tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
+        en: "Fibula → Assess syndesmosis → PM → Medial malleolus"
+      }, {
+        tr: "Bireyselleştirilmiş — standart sıram yok",
+        en: "Individualised — no standard sequence"
+      }]
+    }, {
+      id: "f2",
+      type: "single",
+      text: {
+        tr: "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?",
+        en: "How do you assess the syndesmosis after PM fixation?"
+      },
+      opts: [{
+        tr: "İntraoperatif stres testi (eksternal rotasyon / hook test)",
+        en: "Intraoperative stress test (external rotation / hook test)"
+      }, {
+        tr: "Medial clear space değerlendirmesi yeterlidir",
+        en: "Medial clear space assessment is sufficient"
+      }, {
+        tr: "İntraoperatif artroskopi",
+        en: "Intraoperative arthroscopy"
+      }, {
+        tr: "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım",
+        en: "I routinely fix the syndesmosis regardless of stability"
+      }]
+    }, {
+      id: "f3",
+      type: "single",
+      text: {
+        tr: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
+        en: "In your experience, does PM fixation reduce the need for syndesmotic screw placement?"
+      },
+      opts: [{
+        tr: "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar",
+        en: "Yes — consistently; PM fixation restores syndesmotic stability"
+      }, {
+        tr: "Evet — bazı vakalarda",
+        en: "Yes — in some cases"
+      }, {
+        tr: "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder",
+        en: "No — syndesmotic instability often persists despite PM fixation"
+      }, {
+        tr: "Pratiğimde bunu spesifik olarak değerlendirmedim",
+        en: "I have not specifically assessed this in my practice"
+      }]
+    }]
   }
+};
+const CASES = [{
+  id: "case1",
+  title: {
+    tr: "VAKA 1",
+    en: "CASE 1"
+  },
+  color: "#E6A817",
+  bg: "#FFF8E7",
+  vig: {
+    tr: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası ayak bileği ağrısı ve şişlik şikâyetiyle acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %20'sini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g1_case1",
+  hasSequence: true
+}, {
+  id: "case2",
+  title: {
+    tr: "VAKA 2",
+    en: "CASE 2"
+  },
+  color: "#3A7D44",
+  bg: "#F0F7EE",
+  vig: {
+    tr: "76 yaşında aktif erkek hasta, bahçede yürürken düzensiz zeminde ayağının dönmesi sonrası ayak bileği ağrısı ve yürüyememe şikâyetiyle başvurmuştur. Özgeçmişinde iyi kontrollü tip 2 diabetes mellitus (metformin tedavisi altında, HbA1c %6.8) ve benign prostat hiperplazisi mevcuttur. Direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %18'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 3 ve Haraguchi Tip 2 olarak sınıflandırılmıştır.",
+    en: "A 76-year-old active male patient presented with ankle pain and inability to bear weight after his foot turned on uneven ground while walking in his garden. His medical history includes well-controlled type 2 diabetes mellitus (on metformin, HbA1c 6.8%) and benign prostatic hyperplasia. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 18% of the articular surface. The fracture was classified as Bartoníček Type 3 and Haraguchi Type 2."
+  },
+  prefix: "g2_case2",
+  hasSequence: true
+}, {
+  id: "case3",
+  title: {
+    tr: "VAKA 3",
+    en: "CASE 3"
+  },
+  color: "#6A3D9A",
+  bg: "#F3EEF8",
+  vig: {
+    tr: "74 yaşında kadın hasta, evde düşme sonrası başka bir merkeze başvurmuş ve atelle stabilize edilerek kliniğimize sevk edilmiştir. İlk başvuruda anteromedialde yumuşak doku hasarı tespit edilmiş olup, debridman ve primer kapama uygulanmıştır; aktif enfeksiyon bulgusu yoktur. Hastaya Gustilo-Anderson Tip 3A açık trimalleolar kırık tanısı konularak eksternal fiksatör uygulanmış ve VAC tedavisi başlanmıştır. Üçüncü haftada yapılan değerlendirmede lateral ve posterior bölgelerde büzüşme testi pozitif bulunmuştur. Özgeçmişinde osteoporoz ve hipertansiyon mevcuttur. Weber B fibula kırığı eşlik etmektedir. Preoperatif bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %28'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 74-year-old female patient initially presented to another centre following a fall at home and was referred to our clinic after being stabilised with a splint. At the initial presentation, a soft tissue injury was identified on the anteromedial aspect; debridement and primary closure were performed with no signs of active infection. The patient was diagnosed with a Gustilo-Anderson Type 3A open trimalleolar fracture, and an external fixator was applied along with VAC therapy. At the third week of follow-up, the wrinkle test was found to be positive over the lateral and posterior aspects. Her medical history includes osteoporosis and hypertension. An associated Weber B fibula fracture is present. Preoperative computed tomography showed the posterior malleolus fragment involving approximately 28% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g3_case3",
+  hasSequence: true
+}, {
+  id: "case4",
+  title: {
+    tr: "VAKA 4",
+    en: "CASE 4"
+  },
+  color: "#C0392B",
+  bg: "#FDEDEC",
+  vig: {
+    tr: "47 yaşında kadın hasta (vücut kitle indeksi 30.5), yürüyüş sırasında ayağının burkulması sonrası ayak bileği ağrısı şikâyetiyle başvurmuştur. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde izole posterior malleol kırığı saptanmış olup fibula ve medial malleol intakttır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %26'sını tuttuğu görülmüş, artiküler step-off izlenmemiştir. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 47-year-old female patient (body mass index 30.5) presented with ankle pain following a twisting injury while walking. Plain radiographs and computed tomography revealed an isolated posterior malleolus fracture; the fibula and medial malleolus were intact. On CT, the posterior malleolus fragment was found to involve approximately 26% of the articular surface with no articular step-off identified. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g4_case4",
+  hasSequence: false
+}];
+const CASE_OPTS = {
+  pos: [{
+    tr: "Supine",
+    en: "Supine"
+  }, {
+    tr: "Prone",
+    en: "Prone"
+  }, {
+    tr: "Lateral dekübitus",
+    en: "Lateral decubitus"
+  }],
+  app: [{
+    tr: "Posterolateral",
+    en: "Posterolateral"
+  }, {
+    tr: "Posteromedial",
+    en: "Posteromedial"
+  }, {
+    tr: "Kombine posterolateral + posteromedial",
+    en: "Combined posterolateral + posteromedial"
+  }, {
+    tr: "Anterior (perkütan)",
+    en: "Anterior (percutaneous)"
+  }, {
+    tr: "Artroskopik",
+    en: "Arthroscopic"
+  }],
+  seq: [{
+    tr: "PM önce → Fibula → Medial malleol",
+    en: "PM first → Fibula → Medial malleolus"
+  }, {
+    tr: "Fibula → PM → Medial malleol",
+    en: "Fibula → PM → Medial malleolus"
+  }, {
+    tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
+    en: "Fibula → Assess syndesmosis → PM → Medial malleolus"
+  }, {
+    tr: "Bireyselleştirilmiş — standart sıram yok",
+    en: "Individualised — no standard sequence"
+  }],
+  tech: [{
+    tr: "Perkütan AP lag vida",
+    en: "Percutaneous AP lag screw"
+  }, {
+    tr: "Perkütan PA lag vida",
+    en: "Percutaneous PA lag screw"
+  }, {
+    tr: "Trans-Achilles perkütan PA vida",
+    en: "Trans-Achilles percutaneous PA screw"
+  }, {
+    tr: "Açık posterolateral — buttress/locking plak",
+    en: "Open posterolateral — buttress/locking plate"
+  }, {
+    tr: "Açık posterolateral — lag vida",
+    en: "Open posterolateral — lag screw"
+  }]
+};
+const LIKERT_QS = [{
+  id: "h1",
+  tr: "Fragment boyutu PM fiksasyon kararında en önemli faktördür.",
+  en: "Fragment size is the most important factor in PM fixation decisions."
+}, {
+  id: "h2",
+  tr: "Fragment morfolojisi boyuttan daha önemlidir.",
+  en: "Fragment morphology is more important than size."
+}, {
+  id: "h3",
+  tr: "Direkt posterior yaklaşım perkütan tekniklerden üstündür.",
+  en: "Direct posterior approach is superior to percutaneous techniques."
+}, {
+  id: "h4",
+  tr: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir.",
+  en: "The complication rate of direct PM fixation (17-20%) is acceptable given the functional benefit."
+}];
+const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "case1", "case2", "case3", "case4", "H", "thanks"];
 
-  let html = '';
+// ══════════════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════════════
+const g = lang => lang || "en"; // fallback getter
 
-  // Header
-  html += `<div class="hdr">
-    <div class="hdr-badge">${t(UI.badge)}</div>
-    <h1>${t(UI.title)}</h1>
-    <p>${t(UI.subtitle)}</p>
-    <div class="hdr-meta">
-      <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg> ${t(UI.items)}</span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> ${t(UI.time)}</span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> ${t(UI.anon)}</span>
-      <span><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg> ${t(UI.ethics_label)}</span>
-    </div></div>`;
+function RadioGroup({
+  name,
+  options,
+  value,
+  onChange,
+  lang
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-2 mt-2"
+  }, options.map((opt, i) => {
+    const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    return /*#__PURE__*/React.createElement("label", {
+      key: i,
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${value === label ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "radio",
+      name: name,
+      value: label,
+      checked: value === label,
+      onChange: e => onChange(e.target.value),
+      className: "accent-amber-600 w-4 h-4 flex-shrink-0"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-gray-800"
+    }, label));
+  }));
+}
+function CheckboxGroup({
+  name,
+  options,
+  values = [],
+  onChange,
+  lang
+}) {
+  const toggle = label => {
+    if (values.includes(label)) onChange(values.filter(v => v !== label));else onChange([...values, label]);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-2 mt-2"
+  }, options.map((opt, i) => {
+    const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    return /*#__PURE__*/React.createElement("label", {
+      key: i,
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${values.includes(label) ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: values.includes(label),
+      onChange: () => toggle(label),
+      className: "accent-amber-600 w-4 h-4 flex-shrink-0 rounded"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-gray-800"
+    }, label));
+  }));
+}
+function CountryDropdown({
+  value,
+  onChange,
+  lang
+}) {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+  const ph = t(lang, "country_ph");
+  return /*#__PURE__*/React.createElement("div", {
+    className: "relative mt-2"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: search,
+    onChange: e => {
+      setSearch(e.target.value);
+      setOpen(true);
+    },
+    onFocus: () => setOpen(true),
+    placeholder: ph,
+    className: "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
+  }), value && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 text-xs text-amber-600 font-medium"
+  }, lang === 'tr' ? 'Seçili' : 'Selected', ": ", value), open && search.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+  }, filtered.length > 0 ? filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      onChange(c);
+      setSearch(c);
+      setOpen(false);
+    },
+    className: "w-full text-left px-4 py-2.5 text-sm hover:bg-amber-50 text-gray-800 border-b border-gray-50 last:border-0"
+  }, c)) : /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-3 text-sm text-gray-400"
+  }, lang === 'tr' ? 'Sonuç bulunamadı' : 'No results')));
+}
+function LikertScale({
+  value,
+  onChange,
+  labels
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1 mt-3 flex-wrap"
+  }, labels.map((label, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => onChange(i + 1),
+    className: `flex-1 min-w-14 px-1 py-3 rounded-lg text-xs font-medium border transition-all duration-200 ${value === i + 1 ? 'bg-amber-500 text-white border-amber-600 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:bg-amber-50'}`
+  }, label)));
+}
+function ProgressBar({
+  current,
+  total
+}) {
+  const pct = Math.round(current / total * 100);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-2 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full transition-all duration-500 ease-out",
+    style: {
+      width: `${pct}%`,
+      background: 'linear-gradient(90deg,#D97706,#F59E0B)'
+    }
+  }));
+}
+function QuestionBlock({
+  q,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "space-y-1"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, q.text[l] || q.text.en), q.type === 'multi' && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-amber-600 font-medium mt-1"
+  }, tt.select_all), q.type === 'single' && /*#__PURE__*/React.createElement(RadioGroup, {
+    name: q.id,
+    options: q.opts,
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }), q.type === 'multi' && /*#__PURE__*/React.createElement(CheckboxGroup, {
+    name: q.id,
+    options: q.opts,
+    values: answers[q.id] || [],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }), q.type === 'country' && /*#__PURE__*/React.createElement(CountryDropdown, {
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }));
+}
+function SectionPage({
+  sectionKey,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const sec = SECTIONS[sectionKey];
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, sec.title[l] || sec.title.en), sec.questions.map(q => /*#__PURE__*/React.createElement(QuestionBlock, {
+    key: q.id,
+    q: q,
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  })));
+}
+function DicomViewerEmbed({
+  caseId
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-900 rounded-xl overflow-hidden mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between px-4 py-2.5 border-b border-gray-700"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, ['Axial', 'Sagittal', 'Coronal'].map(p => /*#__PURE__*/React.createElement("button", {
+    key: p,
+    className: "px-3 py-1 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white transition-colors"
+  }, p))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1.5"
+  }, ['W/L', 'Zoom', 'Pan', 'Measure', '⧉'].map(tl => /*#__PURE__*/React.createElement("button", {
+    key: tl,
+    className: "px-2 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+  }, tl)))), /*#__PURE__*/React.createElement("div", {
+    className: "h-72 sm:h-96 flex items-center justify-center text-gray-500"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "48",
+    height: "48",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1",
+    className: "mx-auto mb-3 opacity-40"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "2",
+    y: "2",
+    width: "20",
+    height: "20",
+    rx: "2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 7v10M7 12h10"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium"
+  }, "Cornerstone.js DICOM Viewer"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mt-1 text-gray-600"
+  }, "Cloudflare R2 \u2014 ", caseId))));
+}
+function CaseCard({
+  c,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const fixVal = answers[`${c.prefix}_fix`];
+  const showSub = fixVal === tt.fix_yes;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl overflow-hidden border-2 shadow-lg",
+    style: {
+      borderColor: c.color
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4",
+    style: {
+      background: c.color
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-white font-bold text-lg tracking-wide"
+  }, c.title[l] || c.title.en)), /*#__PURE__*/React.createElement("div", {
+    className: "px-5 sm:px-6 py-5",
+    style: {
+      background: c.bg
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-800 leading-relaxed"
+  }, c.vig[l] || c.vig.en), /*#__PURE__*/React.createElement(DicomViewerEmbed, {
+    caseId: c.id
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "px-5 sm:px-6 py-5 space-y-6 bg-white"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.fix_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_fix`,
+    options: [tt.fix_yes, tt.fix_no],
+    value: fixVal,
+    onChange: v => setAnswer(`${c.prefix}_fix`, v),
+    lang: l
+  })), showSub && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6 pl-4 border-l-4 border-amber-400",
+    style: {
+      animation: 'slideDown 0.4s ease-out'
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.pos_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_position`,
+    options: CASE_OPTS.pos,
+    value: answers[`${c.prefix}_position`],
+    onChange: v => setAnswer(`${c.prefix}_position`, v),
+    lang: l
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.app_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_approach`,
+    options: CASE_OPTS.app,
+    value: answers[`${c.prefix}_approach`],
+    onChange: v => setAnswer(`${c.prefix}_approach`, v),
+    lang: l
+  })), c.hasSequence && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.seq_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_sequence`,
+    options: CASE_OPTS.seq,
+    value: answers[`${c.prefix}_sequence`],
+    onChange: v => setAnswer(`${c.prefix}_sequence`, v),
+    lang: l
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.tech_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_technique`,
+    options: CASE_OPTS.tech,
+    value: answers[`${c.prefix}_technique`],
+    onChange: v => setAnswer(`${c.prefix}_technique`, v),
+    lang: l
+  })))));
+}
 
-  // Progress
-  const pct = currentSection === 0 ? 0 : Math.round((currentSection / TOTAL) * 100);
-  const secText = currentSection === 0 ? t(UI.consent_label) : currentSection > TOTAL ? t(UI.complete_label) : t(UI.section_label) + currentSection + t(UI.of_label) + TOTAL;
-  html += `<div class="prog-wrap"><div class="prog-bar-bg"><div class="prog-bar" style="width:${pct}%"></div></div>
-    <div class="prog-label"><span>${secText}</span><span>${pct}%</span></div></div>`;
-
-  // Consent (sec 0)
-  html += `<div class="sec ${currentSection===0?'active':''}" data-sec="0">
-    <div class="consent-box"><h3>${t(CON.title)}</h3>
-    <p>${t(CON.p1)}</p><p>${t(CON.p2)}</p><p>${t(CON.purpose)}</p>
-    <p>${t(CON.participation)}</p><p>${t(CON.risk)}</p>
-    <p><strong>${currentLang==='tr'?'İletişim':'Contact'}:</strong> Assoc. Prof. Dr. Utku Gürhan — utku.gurhan@kyrenia.edu.tr</p></div>
-    <div class="q" id="q-consent"><div class="q-label">${t(CON.consent_q)} <span class="q-required">*</span></div>
-    <div class="opts"><div class="opt"><input type="radio" name="consent" value="yes"><label>${t(CON.yes)}</label></div>
-    <div class="opt"><input type="radio" name="consent" value="no"><label>${t(CON.no)}</label></div></div>
-    <div class="validation-msg">${t(UI.required_msg)}</div></div>
-    <div class="nav"><div></div><button class="btn btn-primary" onclick="nextSection()">${t(UI.begin)}</button></div></div>`;
-
-  // Question sections
-  SECTIONS.forEach((sec, si) => {
-    const secIdx = si + 1;
-    let sh = `<div class="sec ${currentSection===secIdx?'active':''}" data-sec="${secIdx}">`;
-    sh += `<div class="sec-badge">${sec.id}</div><div class="sec-title">${t(sec.title)}</div>`;
-    if (sec.id === 'H') sh += `<div class="info-box">${t(UI.case_info)}</div>`;
-
-    let lastCase = 0;
-    sec.questions.forEach(qq => {
-      if (qq.case_num && qq.case_num !== lastCase) {
-        const c = CASES[qq.case_num];
-        sh += `<div class="case-box"><div class="case-title">${t(c.title)}</div>
-          <div class="case-desc">${t(c.desc)}</div>
-          <div class="case-imgs"><div class="case-img-placeholder">${t(UI.case_img_ph)}</div></div></div>`;
-        lastCase = qq.case_num;
+// ══════════════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════════════
+function App() {
+  const [lang, setLang] = useState(null);
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [consented, setConsented] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const ll = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const tt = T[ll] || T.en;
+  const totalSteps = STEP_KEYS.length - 1;
+  const setAnswer = useCallback((key, val) => {
+    setAnswers(prev => ({
+      ...prev,
+      [key]: val
+    }));
+  }, []);
+  useEffect(() => {
+    const handler = e => {
+      if (step > 1 && step < totalSteps) {
+        e.preventDefault();
+        e.returnValue = tt.save_warning;
       }
-      sh += `<div class="q" id="q-${qq.id}"><div class="q-label"><span class="q-num">${qq.id}.</span> ${t(qq.q)}`;
-      if (qq.req) sh += ` <span class="q-required">*</span>`;
-      sh += `</div>`;
-      if (qq.type === 'checkbox') sh += `<div class="q-hint">${t(UI.select_all)}</div>`;
-      if (qq.type === 'radio' || qq.type === 'checkbox') {
-        sh += `<div class="opts">`;
-        qq.opts.forEach(o => {
-          const itype = qq.type === 'checkbox' ? 'checkbox' : 'radio';
-          sh += `<div class="opt"><input type="${itype}" name="${qq.id}" value="${o.v}"><label>${t(o.labels)}</label></div>`;
-        });
-        sh += `</div>`;
-        if (qq.hasOther) sh += `<input type="text" class="txt" name="${qq.id}_other" placeholder="${t(UI.other_ph)}" style="margin-top:6px;display:none" id="${qq.id}other">`;
-        sh += `<div class="validation-msg">${qq.type==='checkbox'?t(UI.select_msg):t(UI.required_msg)}</div>`;
-      } else if (qq.type === 'textarea') {
-        sh += `<textarea class="txt" name="${qq.id}" rows="3" placeholder="${t(UI.optional_ph)}"></textarea>`;
-      } else if (qq.type === 'email') {
-        if (qq.note) sh += `<div class="q-hint" style="font-style:normal;color:var(--text-ter)">${t(UI.email_sep)}</div>`;
-        sh += `<input type="email" class="txt" name="${qq.id}" placeholder="email@example.com">`;
-      } else if (qq.type === 'country') {
-        sh += `<div class="country-wrap"><input type="text" class="country-input" id="country-search" autocomplete="off" placeholder="${t(UI.country_ph)}">`;
-        sh += `<input type="hidden" name="${qq.id}" id="country-val">`;
-        sh += `<div class="country-selected" id="country-sel"></div>`;
-        sh += `<div class="country-list" id="country-list">`;
-        const sorted = [...COUNTRIES].sort((a,b) => a.en.localeCompare(b.en));
-        sorted.forEach(c => { sh += `<div class="country-item" data-v="${c.en}">${c.en}</div>`; });
-        sh += `</div></div>`;
-        if(qq.req) sh += `<div class="validation-msg">${t(UI.required_msg)}</div>`;
-      }
-      sh += `</div>`;
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [step, totalSteps, tt.save_warning]);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
     });
-    const isLast = si === SECTIONS.length - 1;
-    sh += `<div class="nav"><button class="btn btn-secondary" onclick="prevSection()">${t(UI.back)}</button>`;
-    sh += isLast ? `<button class="btn btn-primary" onclick="submitSurvey()">${t(UI.submit_btn)}</button>` : `<button class="btn btn-primary" onclick="nextSection()">${t(UI.cont)}</button>`;
-    sh += `</div></div>`;
-    html += sh;
-  });
-
-  // Thank you
-  html += `<div class="sec ${currentSection===TOTAL+1?'active':''}" data-sec="${TOTAL+1}"><div class="thankyou">
-    <div class="ty-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
-    <div class="ty-h">${t(UI.ty_title)}</div><div class="ty-p">${t(UI.ty_msg)}</div>
-    <div class="ty-p" style="font-size:.78rem;color:var(--text-ter)">${t(UI.ty_contact)}</div></div></div>`;
-
-  app.innerHTML = html;
-  restoreAnswers();
-  bindEvents();
-}
-
-// ====================================================================
-// NAVIGATION & VALIDATION
-// ====================================================================
-function getVal(name) {
-  const cbs = document.querySelectorAll('input[name="'+name+'"][type="checkbox"]:checked');
-  if(cbs.length) return Array.from(cbs).map(c=>c.value);
-  const r = document.querySelector('input[name="'+name+'"]:checked');
-  if(r) return r.value;
-  const h = document.querySelector('input[name="'+name+'"][type="hidden"]');
-  if(h && h.value) return h.value;
-  const tx = document.querySelector('textarea[name="'+name+'"], input[type="email"][name="'+name+'"], input[type="text"][name="'+name+'"]');
-  return tx ? tx.value : '';
-}
-
-function getRequired(secIdx) {
-  if(secIdx===0) return ['consent'];
-  const sec = SECTIONS[secIdx-1];
-  return sec ? sec.questions.filter(q=>q.req).map(q=>q.id) : [];
-}
-
-function validateSection(secIdx) {
-  const fields = getRequired(secIdx);
-  let valid = true;
-  fields.forEach(name => {
-    const val = getVal(name);
-    const qEl = document.getElementById('q-'+name);
-    if(!qEl) return;
-    const empty = Array.isArray(val) ? val.length===0 : !val;
-    if(empty){qEl.classList.add('invalid');valid=false;} else {qEl.classList.remove('invalid');}
-  });
-  if(secIdx===0){
-    const cv=getVal('consent');
-    if(cv==='no'){alert(t(UI.no_participate));return false;}
-    if(!cv){document.getElementById('q-consent').classList.add('invalid');return false;}
-  }
-  return valid;
-}
-
-function showSection(idx) {
-  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
-  const el=document.querySelector('.sec[data-sec="'+idx+'"]');
-  if(el) el.classList.add('active');
-  currentSection=idx;
-  // Update progress bar
-  const pct=idx===0?0:Math.round((idx/TOTAL)*100);
-  const bar=document.querySelector('.prog-bar');
-  if(bar) bar.style.width=pct+'%';
-  const labels=document.querySelectorAll('.prog-label span');
-  if(labels[0]) labels[0].textContent=idx===0?t(UI.consent_label):idx>TOTAL?t(UI.complete_label):t(UI.section_label)+idx+t(UI.of_label)+TOTAL;
-  if(labels[1]) labels[1].textContent=pct+'%';
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-
-function saveAnswers() {
-  document.querySelectorAll('input[type="radio"]:checked').forEach(el=>{answers[el.name]=el.value;});
-  document.querySelectorAll('input[type="checkbox"]:checked').forEach(el=>{
-    if(!answers[el.name])answers[el.name]=[];if(!answers[el.name].includes(el.value))answers[el.name].push(el.value);
-  });
-  document.querySelectorAll('input[type="checkbox"]:not(:checked)').forEach(el=>{
-    if(answers[el.name])answers[el.name]=answers[el.name].filter(v=>v!==el.value);
-  });
-  document.querySelectorAll('textarea,input[type="email"],input[type="text"],input[type="hidden"]').forEach(el=>{
-    if(el.name)answers[el.name]=el.value;
-  });
-}
-
-function restoreAnswers() {
-  Object.keys(answers).forEach(name=>{
-    const val=answers[name];
-    if(Array.isArray(val)){val.forEach(v=>{const el=document.querySelector('input[name="'+name+'"][value="'+v+'"]');if(el)el.checked=true;});}
-    else{
-      const r=document.querySelector('input[name="'+name+'"][value="'+val+'"]');
-      if(r){r.checked=true;return;}
-      const h=document.querySelector('input[name="'+name+'"][type="hidden"]');if(h)h.value=val;
-      const tx=document.querySelector('textarea[name="'+name+'"],input[type="email"][name="'+name+'"],input[type="text"][name="'+name+'"]');
-      if(tx)tx.value=val;
+  }, [step]);
+  const secForStep = s => {
+    const k = STEP_KEYS[s];
+    return ['A', 'B', 'C', 'D', 'E', 'F'].includes(k) ? k : null;
+  };
+  const caseForStep = s => {
+    const k = STEP_KEYS[s];
+    const idx = CASES.findIndex(c => c.id === k);
+    return idx >= 0 ? CASES[idx] : null;
+  };
+  const NavBtns = ({
+    hideBack,
+    isSubmit
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 mt-6"
+  }, !hideBack && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step - 1),
+    className: "px-6 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+  }, tt.prev), isSubmit ? /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step + 1),
+    className: "flex-1 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-all"
+  }, tt.submit, " \u2713") : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step + 1),
+    className: "flex-1 py-3 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all"
+  }, tt.next, " \u2192"));
+  return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen",
+    style: {
+      background: 'linear-gradient(135deg,#FAFAF9 0%,#F5F0EB 100%)'
     }
-  });
-  if(answers['A6']){const sel=document.getElementById('country-sel');if(sel){sel.textContent=t(UI.country_sel)+' '+answers['A6'];sel.classList.add('show');}}
-  ['C1','D2'].forEach(name=>{const o=document.getElementById(name+'other');if(!o)return;
-    if(name==='D2'){const cb=document.querySelector('input[name="D2"][value="Other"]:checked');o.style.display=cb?'block':'none';}
-    else{const r=document.querySelector('input[name="'+name+'"]:checked');o.style.display=(r&&r.value==='Other')?'block':'none';}
-  });
+  }, step > 0 && /*#__PURE__*/React.createElement("header", {
+    className: "sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/60"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-3xl mx-auto px-4 py-3 flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-white font-black text-xs"
+  }, "PM")), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-gray-800 text-sm hidden sm:block"
+  }, "PMAL Survey")), step > 1 && step < totalSteps && /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 mx-4 sm:mx-6 max-w-xs"
+  }, /*#__PURE__*/React.createElement(ProgressBar, {
+    current: step - 1,
+    total: totalSteps - 2
+  })), lang && /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setStep(0);
+      setLang(null);
+    },
+    className: "px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+  }, LANGS.find(l => l.code === lang)?.flag, " ", LANGS.find(l => l.code === lang)?.native, " \u25BE"))), /*#__PURE__*/React.createElement("main", {
+    className: "max-w-3xl mx-auto px-4 py-6 sm:py-8"
+  }, step === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "animate-fadeIn text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-16 h-16 rounded-2xl bg-amber-500 flex items-center justify-center mx-auto mb-4"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-white font-black text-xl"
+  }, "PM")), /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl sm:text-2xl font-black text-gray-900 mb-1"
+  }, "Posterior Malleolus Fracture Survey"), /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-600 font-medium text-sm"
+  }, "International Surgical Practice Variation Study")), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600 text-sm mb-6"
+  }, "L\xFCtfen dilinizi se\xE7iniz \xB7 Please select your language"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-lg mx-auto"
+  }, LANGS.map(l => /*#__PURE__*/React.createElement("button", {
+    key: l.code,
+    onClick: () => {
+      setLang(l.code);
+      setStep(1);
+    },
+    className: "bg-white rounded-xl border border-gray-200 p-4 hover:border-amber-400 hover:shadow-md transition-all duration-200 text-center group"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl mb-1"
+  }, l.flag), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold text-gray-800 group-hover:text-amber-600 transition-colors"
+  }, l.native)))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-400 mt-8"
+  }, "pmal.cyprusorthopaedics.com")), step === 1 && lang && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center space-y-2"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl sm:text-2xl font-black text-gray-900 tracking-tight"
+  }, tt.title), /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-600 font-medium text-sm"
+  }, tt.subtitle)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-amber-50 border border-amber-200 rounded-xl p-5 sm:p-6"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-bold text-amber-800 mb-3"
+  }, tt.consent_title), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-700 leading-relaxed"
+  }, tt.consent_text)), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-start gap-3 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: consented,
+    onChange: e => setConsented(e.target.checked),
+    className: "accent-amber-600 w-5 h-5 mt-0.5"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-gray-800"
+  }, tt.consent_agree)), /*#__PURE__*/React.createElement("button", {
+    disabled: !consented,
+    onClick: () => setStep(2),
+    className: `w-full py-3.5 rounded-xl font-bold text-white transition-all duration-300 ${consented ? 'bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`
+  }, tt.next, " \u2192")), secForStep(step) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SectionPage, {
+    sectionKey: secForStep(step),
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  }), /*#__PURE__*/React.createElement(NavBtns, null)), caseForStep(step) && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, ll === 'tr' ? 'G — Klinik Vaka Senaryoları' : 'G — Clinical Case Vignettes'), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-500 mt-1"
+  }, ll === 'tr' ? 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.' : 'Please evaluate the following clinical scenario. You may review the CT images.')), /*#__PURE__*/React.createElement(CaseCard, {
+    c: caseForStep(step),
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  }), /*#__PURE__*/React.createElement(NavBtns, null)), STEP_KEYS[step] === 'H' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, ll === 'tr' ? 'H — Tutum ve Görüşler' : 'H — Attitudes and Opinions'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-800 font-medium"
+  }, tt.last_section))), LIKERT_QS.map(q => /*#__PURE__*/React.createElement("div", {
+    key: q.id,
+    className: "pb-5 border-b border-gray-100 last:border-0"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, q[ll] || q.en), /*#__PURE__*/React.createElement(LikertScale, {
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    labels: tt.likert
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step - 1),
+    className: "px-6 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+  }, tt.prev), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step + 1),
+    className: "flex-1 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-all"
+  }, tt.submit, " \u2713"))), STEP_KEYS[step] === 'thanks' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "#16A34A",
+    strokeWidth: "2.5",
+    strokeLinecap: "round"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "20 6 9 17 4 12"
+  }))), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-black text-gray-900"
+  }, tt.thank_title), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600"
+  }, tt.thank_text), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-50 rounded-xl p-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium text-gray-700"
+  }, tt.results_q), !emailSent ? /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 max-w-sm mx-auto"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "email",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: tt.email_ph,
+    className: "flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:border-amber-500 outline-none"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      if (email.includes('@')) setEmailSent(true);
+    },
+    className: "px-5 py-2.5 rounded-lg bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition-colors"
+  }, tt.email_btn)) : /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 justify-center text-green-600"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "20 6 9 17 4 12"
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium"
+  }, ll === 'tr' ? 'Kaydedildi!' : 'Saved!'))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-400 mt-6"
+  }, "pmal.cyprusorthopaedics.com"))), /*#__PURE__*/React.createElement("style", null, `
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .animate-fadeIn{animation:fadeIn 0.4s ease-out}
+        @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+      `));
 }
 
-function nextSection(){
-  if(!validateSection(currentSection)){const fi=document.querySelector('.sec.active .q.invalid');if(fi)fi.scrollIntoView({behavior:'smooth',block:'center'});return;}
-  saveAnswers();showSection(currentSection+1);
-}
-function prevSection(){if(currentSection>0){saveAnswers();showSection(currentSection-1);}}
-
-function bindEvents() {
-  document.addEventListener('change',function(e){
-    if(e.target.name==='C1'){const o=document.getElementById('C1other');if(o)o.style.display=e.target.value==='Other'?'block':'none';}
-    if(e.target.name==='D2'&&e.target.value==='Other'){const o=document.getElementById('D2other');if(o)o.style.display=e.target.checked?'block':'none';}
-    const q=e.target.closest('.q');if(q)q.classList.remove('invalid');
-  });
-  const cs=document.getElementById('country-search'),cl=document.getElementById('country-list'),cv=document.getElementById('country-val'),csel=document.getElementById('country-sel');
-  if(cs&&cl){
-    cs.addEventListener('focus',()=>{cl.classList.add('open');});
-    cs.addEventListener('input',()=>{const q=cs.value.toLowerCase();cl.querySelectorAll('.country-item').forEach(i=>{i.style.display=i.textContent.toLowerCase().includes(q)?'':'none';});cl.classList.add('open');});
-    cl.addEventListener('click',(e)=>{const item=e.target.closest('.country-item');if(!item)return;const v=item.getAttribute('data-v');cv.value=v;cs.value='';csel.textContent=t(UI.country_sel)+' '+v;csel.classList.add('show');cl.classList.remove('open');const qEl=cs.closest('.q');if(qEl)qEl.classList.remove('invalid');});
-    document.addEventListener('click',(e)=>{if(!e.target.closest('.country-wrap'))cl.classList.remove('open');});
-  }
-}
-
-// ====================================================================
-// SUBMIT
-// ====================================================================
-const SHEETS_WEBHOOK = '';
-
-function collectData(){
-  const data={timestamp:new Date().toISOString(),language:currentLang};
-  const all=['consent',...SECTIONS.flatMap(s=>s.questions.flatMap(q=>{const ids=[q.id];if(q.hasOther)ids.push(q.id+'_other');return ids;}))];
-  all.forEach(n=>{let v=getVal(n);if(Array.isArray(v))v=v.join('; ');data[n]=v;});
-  return data;
-}
-
-async function submitSurvey(){
-  if(!validateSection(currentSection)){const fi=document.querySelector('.sec.active .q.invalid');if(fi)fi.scrollIntoView({behavior:'smooth',block:'center'});return;}
-  saveAnswers();const data=collectData();
-  if(SHEETS_WEBHOOK){try{await fetch(SHEETS_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});}catch(e){}}
-  try{const ex=JSON.parse(localStorage.getItem('pmal_responses')||'[]');ex.push(data);localStorage.setItem('pmal_responses',JSON.stringify(ex));}catch(e){}
-  showSection(TOTAL+1);
-}
-
-// Init — show language picker
-renderAll();
+ReactDOM.render(React.createElement(App), document.getElementById('root'));
 </script>
 </body>
 </html>
