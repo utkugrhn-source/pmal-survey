@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PMAL Admin — Control Room</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+input:focus{outline:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#141414}
+::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#555}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {
+  useState,
+  useEffect,
+  useCallback
+} = React;
+const TH = {
+  bg: "#0a0a0a",
+  sf: "#141414",
+  cd: "#1a1a1a",
+  br: "#2a2a2a",
+  ac: "#D97706",
+  tx: "#E5E5E5",
+  tm: "#888",
+  td: "#555"
+};
+const R = [{
+  id: "levent",
+  name: "Levent Umur",
+  title: "Doç. Dr.",
+  email: "dr.flumur@gmail.com",
+  char: "David Gilmour",
+  band: "Pink Floyd",
+  color: "#5B8DBE",
+  colorImg: "card_gilmour_color_web.png",
+  bwImg: "card_gilmour_bw_web.png",
+  pTrack: "High Hopes",
+  pYear: 1994,
+  pStory: "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor."
+}, {
+  id: "enes",
+  name: "Enes Sarı",
+  title: "Dr.",
+  email: "esari.md@gmail.com",
+  char: "James Hetfield",
+  band: "Metallica",
+  color: "#E6A817",
+  colorImg: "card_hetfield_color_web.png",
+  bwImg: "card_hetfield_bw_web.png",
+  pTrack: "Nothing Else Matters",
+  pYear: 1991,
+  pStory: "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti."
+}, {
+  id: "utku",
+  name: "Utku Gürhan",
+  title: "Op. Dr.",
+  email: "utkugrhn@gmail.com",
+  char: "Slash",
+  band: "Guns N' Roses",
+  color: "#C0392B",
+  colorImg: "card_slash_color_web.png",
+  bwImg: "card_slash_bw_web.png",
+  pTrack: "Sweet Child O' Mine",
+  pYear: 1987,
+  pStory: "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi."
+}, {
+  id: "yakup",
+  name: "Yakup Kahve",
+  title: "Dr.",
+  email: "ykahve@hotmail.com",
+  char: "Kurt Cobain",
+  band: "Nirvana",
+  color: "#B8860B",
+  colorImg: "card_cobain_color_web.png",
+  bwImg: "card_cobain_bw_web.png",
+  pTrack: "Come As You Are",
+  pYear: 1991,
+  pStory: "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı."
+}];
+const PG = [{
+  id: "dashboard",
+  label: "Dashboard",
+  icon: "◨",
+  track: "Money for Nothing",
+  artist: "Dire Straits",
+  year: 1985,
+  story: "Knopfler şarkıyı New York'ta bir beyaz eşya mağazasında duyduğu konuşmadan yazdı. Bir tesisatçı, mağazadaki TV'lerde MTV izlerken rock yıldızlarına küfrediyordu. Knopfler mikrodalgaların arasından adamı gizlice dinledi ve sözleri bir kağıt peçeteye not etti. Sting tesadüfen aynı stüdyodaydı ve ikonik intro'yu tek seferde söyledi."
+}, {
+  id: "responses",
+  label: "Yanıtlar",
+  icon: "☰",
+  track: "Under the Bridge",
+  artist: "RHCP",
+  year: 1991,
+  story: "Kiedis bu şarkıyı yalnızlık ve bağımlılıktan çıkış sürecinde yazdı. Sözleri bir şiir defterinde saklıyordu, kimseye göstermedi. Prodüktör Rick Rubin defteri karıştırırken buldu ve 'Bu bir şarkı olmalı' dedi. Kiedis ilk başta itiraz etti — çok kişisel buluyordu."
+}, {
+  id: "statistics",
+  label: "İstatistik",
+  icon: "⊞",
+  track: "Enter Sandman",
+  artist: "Metallica",
+  year: 1991,
+  story: "Hammett ana riff'i gece 2-3 civarında Soundgarden dinledikten sonra yazdı. Hetfield'ın orijinal sözleri bebek ölümü hakkındaydı. Prodüktör Bob Rock ve Ulrich, Hetfield'a ilk kez sözlerini değiştirmesini söyleme cesaretini gösterdi. Rock sonra anlattı: 'Kimse daha önce James'e sözleri hakkında bir şey söylememişti.'"
+}, {
+  id: "feedback",
+  label: "Geri Bildirim",
+  icon: "◉",
+  track: "Smells Like Teen Spirit",
+  artist: "Nirvana",
+  year: 1991,
+  story: "Cobain, 1994'te Rolling Stone'a 'Mükemmel pop şarkısını yazmaya çalışıyordum. Pixies'i taklit etmeye çalışıyordum, itiraf etmeliyim' dedi. Şarkının adı, Kathleen Hanna'nın sarhoş bir gece Kurt'ün duvarına yazdığı 'Kurt smells like Teen Spirit' cümlesinden geldi. Kurt bunun devrimci bir slogan olduğunu sandı — aslında bir kız deodorantı markasıydı."
+}, {
+  id: "backup",
+  label: "Yedekleme",
+  icon: "⟳",
+  track: "November Rain",
+  artist: "Guns N' Roses",
+  year: 1991,
+  story: "Axl Rose bu şarkı üzerinde 1983'ten 1991'e kadar çalıştı. Orijinal demo 18 dakikaydı. Slash'in çölde yağmur altında solo çalması rock tarihinin en ikonik görüntülerinden biri oldu. Slash sonra 'O sahneyi çekerken gerçekten yağmur başladı, planlanmamıştı' dedi."
+}, {
+  id: "settings",
+  label: "Ayarlar",
+  icon: "⚙",
+  track: "Learning to Fly",
+  artist: "Pink Floyd",
+  year: 1987,
+  story: "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu."
+}];
+
+// ── LOGIN ──
+function LoginPage({
+  onLogin
+}) {
+  const [hover, setHover] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [pass, setPass] = useState("");
+  const [err, setErr] = useState("");
+  const handleLogin = () => {
+    if (pass.length >= 4) onLogin(selected);else setErr("Geçersiz şifre");
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: "linear-gradient(180deg,#080808 0%,#0f0a05 50%,#080808 100%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      marginBottom: 40
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 14,
+      color: TH.td,
+      letterSpacing: 6,
+      textTransform: "uppercase",
+      marginBottom: 8
+    }
+  }, "Posterior Malleolus Survey"), /*#__PURE__*/React.createElement("h1", {
+    style: {
+      color: TH.ac,
+      fontSize: 36,
+      fontWeight: 800,
+      margin: 0,
+      fontFamily: "Georgia,serif",
+      letterSpacing: 3
+    }
+  }, "CONTROL ROOM"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 60,
+      height: 2,
+      background: TH.ac,
+      margin: "12px auto 0",
+      borderRadius: 1
+    }
+  })), !selected ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 16,
+      flexWrap: "wrap",
+      justifyContent: "center",
+      maxWidth: 900
+    }
+  }, R.map((r, i) => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    onMouseEnter: () => setHover(r.id),
+    onMouseLeave: () => setHover(null),
+    onClick: () => {
+      setSelected(r);
+      setPass("");
+      setErr("");
+    },
+    style: {
+      width: 180,
+      cursor: "pointer",
+      transition: "all 0.4s ease",
+      transform: hover === r.id ? "translateY(-8px) scale(1.03)" : "scale(1)",
+      filter: hover === r.id ? "none" : hover ? "brightness(0.5)" : "grayscale(1)",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      borderRadius: 12,
+      overflow: "hidden",
+      border: `2px solid ${hover === r.id ? r.color : TH.br}`,
+      transition: "border-color 0.3s"
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: hover === r.id ? r.colorImg : r.bwImg,
+    alt: r.char,
+    style: {
+      width: "100%",
+      display: "block",
+      transition: "all 0.4s ease"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      marginTop: 10,
+      transition: "opacity 0.3s",
+      opacity: hover === r.id ? 1 : 0.5
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: hover === r.id ? r.color : TH.tm,
+      fontSize: 13,
+      fontWeight: 600,
+      transition: "color 0.3s"
+    }
+  }, r.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 10
+    }
+  }, r.title))))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.td,
+      fontSize: 12,
+      marginTop: 32,
+      textAlign: "center"
+    }
+  }, "Giri\u015F yapmak i\xE7in kart\u0131n\u0131z\u0131 se\xE7in"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 24,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.td,
+      fontSize: 10,
+      margin: 0
+    }
+  }, "\u266B Welcome to the Jungle \u2014 Guns N' Roses (1987)"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.td,
+      fontSize: 9,
+      fontStyle: "italic",
+      marginTop: 6,
+      maxWidth: 400,
+      lineHeight: 1.5
+    }
+  }, "Axl Rose, \u015Fark\u0131n\u0131n s\xF6zlerini Greyhound otob\xFCs\xFCyle LA'e ilk geldi\u011Fi gece ya\u015Fad\u0131klar\u0131ndan yazd\u0131. Otob\xFCsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi."))) :
+  /*#__PURE__*/
+  /* Password entry after card selection */
+  React.createElement("div", {
+    style: {
+      textAlign: "center",
+      maxWidth: 360
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 16,
+      marginBottom: 24
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: selected.colorImg,
+    alt: selected.char,
+    style: {
+      width: 80,
+      borderRadius: 8,
+      border: `2px solid ${selected.color}`
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "left"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 16,
+      fontWeight: 700
+    }
+  }, selected.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: selected.color,
+      fontSize: 12
+    }
+  }, selected.char), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 10,
+      fontStyle: "italic"
+    }
+  }, selected.band))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 24
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "password",
+    placeholder: "\u015Eifre",
+    value: pass,
+    onChange: e => {
+      setPass(e.target.value);
+      setErr("");
+    },
+    onKeyDown: e => e.key === "Enter" && handleLogin(),
+    autoFocus: true,
+    style: {
+      width: "100%",
+      padding: "12px 16px",
+      borderRadius: 8,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg,
+      color: TH.tx,
+      fontSize: 14,
+      outline: "none",
+      boxSizing: "border-box",
+      marginBottom: 12
+    }
+  }), err && /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "#E53E3E",
+      fontSize: 12,
+      margin: "0 0 8px"
+    }
+  }, err), /*#__PURE__*/React.createElement("button", {
+    onClick: handleLogin,
+    style: {
+      width: "100%",
+      padding: 12,
+      borderRadius: 8,
+      border: "none",
+      background: selected.color,
+      color: "#fff",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: "pointer",
+      transition: "opacity 0.2s"
+    }
+  }, "Giri\u015F Yap")), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSelected(null),
+    style: {
+      background: "none",
+      border: "none",
+      color: TH.tm,
+      fontSize: 12,
+      marginTop: 16,
+      cursor: "pointer"
+    }
+  }, "\u2190 Ba\u015Fka karakter se\xE7")));
+}
+
+// ── MUSIC STORY CARD ──
+function MusicStory({
+  page
+}) {
+  const p = PG.find(pg => pg.id === page) || PG[0];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: `linear-gradient(135deg,${TH.cd} 0%,#1f1a14 100%)`,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 36,
+      height: 36,
+      borderRadius: 8,
+      background: `${TH.ac}22`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      fontSize: 16,
+      color: TH.ac
+    }
+  }, "\u266B"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.ac,
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, p.track), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 11
+    }
+  }, p.artist, " \xB7 ", p.year))), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      lineHeight: 1.7,
+      margin: 0
+    }
+  }, p.story));
+}
+
+// ── MUSIC BAR ──
+function MusicBar({
+  page,
+  playing,
+  setPlaying,
+  volume,
+  setVolume
+}) {
+  const p = PG.find(pg => pg.id === page) || PG[0];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#0d0d0d",
+      borderTop: `1px solid ${TH.br}`,
+      padding: "8px 20px",
+      display: "flex",
+      alignItems: "center",
+      gap: 16,
+      position: "fixed",
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 50
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setPlaying(!playing),
+    style: {
+      background: "none",
+      border: "none",
+      color: TH.ac,
+      fontSize: 18,
+      cursor: "pointer",
+      padding: 4,
+      width: 28
+    }
+  }, playing ? "⏸" : "▶"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, p.track, " ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontWeight: 400
+    }
+  }, "\u2014 ", p.artist, " (", p.year, ")")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      background: TH.br,
+      borderRadius: 2,
+      marginTop: 4,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: playing ? "60%" : "0%",
+      height: "100%",
+      background: TH.ac,
+      borderRadius: 2,
+      transition: "width 2s linear"
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "\uD83D\uDD0A"), /*#__PURE__*/React.createElement("input", {
+    type: "range",
+    min: "0",
+    max: "100",
+    value: volume,
+    onChange: e => setVolume(+e.target.value),
+    style: {
+      width: 70,
+      accentColor: TH.ac
+    }
+  })));
+}
+
+// ── DASHBOARD ──
+function DashPage() {
+  const stats = [{
+    label: "Toplam Yanıt",
+    val: "0",
+    icon: "📋",
+    c: "#D97706"
+  }, {
+    label: "Tamamlanan",
+    val: "0",
+    icon: "✓",
+    c: "#16A34A"
+  }, {
+    label: "Ort. Süre",
+    val: "—",
+    icon: "⏱",
+    c: "#5B8DBE"
+  }, {
+    label: "Bugün",
+    val: "0",
+    icon: "📅",
+    c: "#C0392B"
+  }];
+  const cases = ["Vaka 1 — 52Y K, Bart 2, %20", "Vaka 2 — 76Y E, Bart 3, %18", "Vaka 3 — 74Y K, Açık 3A, %28", "Vaka 4 — 47Y K, İzole PM, %26"];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+      gap: 14,
+      marginBottom: 24
+    }
+  }, stats.map((s, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: "18px 14px",
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      marginBottom: 6
+    }
+  }, s.icon), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: s.c,
+      fontSize: 26,
+      fontWeight: 800
+    }
+  }, s.val), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      marginTop: 4
+    }
+  }, s.label)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 16px"
+    }
+  }, "Vaka Bazl\u0131 Fix Oranlar\u0131"), cases.map((l, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      marginBottom: 12
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tm,
+      fontSize: 11
+    }
+  }, l), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Hen\xFCz veri yok")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 8,
+      background: TH.bg,
+      borderRadius: 4
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "0%",
+      height: "100%",
+      background: TH.ac,
+      borderRadius: 4
+    }
+  }))))), /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 14px"
+    }
+  }, "Ara\u015Ft\u0131rma Ekibi"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
+      gap: 14
+    }
+  }, R.map(r => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 3,
+      background: r.color
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 14,
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: r.colorImg,
+    alt: r.char,
+    style: {
+      width: 40,
+      height: 40,
+      borderRadius: 6,
+      objectFit: "cover",
+      objectPosition: "top"
+    }
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 13,
+      fontWeight: 600
+    }
+  }, r.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: r.color,
+      fontSize: 10,
+      fontWeight: 500
+    }
+  }, r.char), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 9,
+      fontStyle: "italic"
+    }
+  }, r.band)))))));
+}
+
+// ── RESPONSES ──
+function RespPage() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: 0
+    }
+  }, "Yan\u0131t Listesi"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, ["📥 CSV", "📥 Excel"].map((b, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    style: {
+      padding: "8px 14px",
+      borderRadius: 8,
+      border: `1px solid ${TH.br}`,
+      background: TH.cd,
+      color: TH.tx,
+      fontSize: 11,
+      cursor: "pointer"
+    }
+  }, b)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 40,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 42,
+      opacity: 0.3,
+      marginBottom: 10
+    }
+  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tm,
+      fontSize: 13
+    }
+  }, "Hen\xFCz yan\u0131t bulunmamaktad\u0131r."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Anket yay\u0131nland\u0131\u011F\u0131nda yan\u0131tlar burada listelenecektir.")));
+}
+
+// ── STATISTICS ──
+function StatPage() {
+  const charts = ["Deneyim Yılı Dağılımı", "Kurum Tipi", "Boyut Eşiği Tercihi", "Teknik Tercih", "Pozisyon Tercihi", "Sınıflama Kullanımı"];
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 18px"
+    }
+  }, "\u0130statistikler"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: 14
+    }
+  }, charts.map((t, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 18
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: TH.tm,
+      fontSize: 12,
+      fontWeight: 500,
+      margin: "0 0 10px"
+    }
+  }, t), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 110,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Veri bekleniyor"))))));
+}
+
+// ── FEEDBACK — Full embedded survey with comment toggles ──
+const FB_SECTIONS = [{
+  id: "A",
+  title: "A — Demografik Bilgiler",
+  questions: [{
+    id: "a2",
+    text: "Uzman olarak kaç yıldır çalışıyorsunuz?",
+    type: "single",
+    opts: ["< 5 yıl", "5–10 yıl", "11–20 yıl", "> 20 yıl"]
+  }, {
+    id: "a3",
+    text: "Çalıştığınız kurum tipi nedir?",
+    type: "single",
+    opts: ["Devlet hastanesi — 3. basamak", "Özel hastane — 3. basamak", "Devlet hastanesi — 2. basamak", "Özel hastane — 2. basamak", "Serbest hekim"]
+  }, {
+    id: "a5",
+    text: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
+    type: "single",
+    opts: ["< 20", "20–50", "51–100", "> 100"]
+  }]
+}, {
+  id: "B",
+  title: "B — PM Kırığı Deneyimi",
+  questions: [{
+    id: "b1",
+    text: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
+    type: "single",
+    opts: ["< 2", "2–5", "6–10", "> 10"]
+  }, {
+    id: "b2",
+    text: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
+    type: "single",
+    opts: ["Evet — tüm ayak bileği kırıklarında", "Evet — sadece PM şüphesi varsa", "Evet — sadece trimalleolar kırıklarda", "Hayır — sadece grafiye dayanarak karar veririm"]
+  }]
+}, {
+  id: "C",
+  title: "C — Sınıflama",
+  questions: [{
+    id: "c1",
+    text: "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?",
+    type: "multi",
+    opts: ["Haraguchi sınıflaması", "Bartoníček/Rammelt sınıflaması", "Mason & Molloy sınıflaması", "AO/OTA sınıflaması", "Lauge-Hansen sınıflaması", "Fragment boyutu (% eklem yüzeyi)", "Spesifik bir sınıflama kullanmıyorum"]
+  }, {
+    id: "c2",
+    text: "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?",
+    type: "single",
+    opts: ["Evet — primer olarak sınıflamaya göre karar veririm", "Kısmen — sınıflama faktörlerden biridir", "Hayır — sınıflamadan bağımsız değerlendiririm"]
+  }]
+}, {
+  id: "D",
+  title: "D — Fiksasyon Endikasyonları",
+  questions: [{
+    id: "d1",
+    text: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
+    type: "single",
+    opts: ["< %10", "%10–25", "%25–33", "> %33", "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim", "Boyut tek başına karar verdirici değildir"]
+  }, {
+    id: "d3",
+    text: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
+    type: "multi",
+    opts: ["Artiküler step-off miktarı", "Fibular notch tutulumu", "Sindesmoz instabilitesi", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)", "Hasta yaşı ve aktivite düzeyi", "Kemik kalitesi (osteoporoz)", "Yumuşak doku durumu", "İmpakte artiküler fragment varlığı", "Komorbidite (DM, sigara vb.)"]
+  }]
+}, {
+  id: "E",
+  title: "E — Teknik Tercihler",
+  questions: [{
+    id: "e1",
+    text: "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?",
+    type: "single",
+    opts: ["Perkütan AP lag vida", "Perkütan PA lag vida", "Trans-Achilles perkütan PA vida", "Açık posterolateral — buttress/locking plak", "Açık posterolateral — lag vida"]
+  }, {
+    id: "e2",
+    text: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
+    type: "single",
+    opts: ["Posterolateral", "Posteromedial", "Kombine posterolateral + posteromedial", "Anterior (perkütan)", "Artroskopik", "Vakaya göre değişir"]
+  }, {
+    id: "e3",
+    text: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
+    type: "single",
+    opts: ["Supine", "Prone", "Lateral dekübitus"]
+  }]
+}, {
+  id: "F",
+  title: "F — Fiksasyon Sırası ve Sindesmoz",
+  questions: [{
+    id: "f1",
+    text: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
+    type: "single",
+    opts: ["Fibula → PM → Medial malleol → Sindesmoz (instabil ise)", "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)", "Fibula → Sindesmoz değerlendir → PM → Medial malleol", "Bireyselleştirilmiş — standart sıram yok"]
+  }, {
+    id: "f2",
+    text: "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?",
+    type: "multi",
+    opts: ["İntraoperatif stres testi (eksternal rotasyon / hook test)", "İntraoperatif artroskopi", "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım"]
+  }, {
+    id: "f3",
+    text: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
+    type: "single",
+    opts: ["Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar", "Evet — bazı vakalarda", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder", "Pratiğimde bunu spesifik olarak değerlendirmedim"]
+  }]
+}];
+const FB_CASES = [{
+  id: "case1",
+  title: "VAKA 1",
+  color: "#E6A817",
+  bg: "#2a2210",
+  text: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %20'si. Bartoníček Tip 2, Haraguchi Tip 1.",
+  hasSeq: true
+}, {
+  id: "case2",
+  title: "VAKA 2",
+  color: "#3A7D44",
+  bg: "#1a2a1a",
+  text: "76 yaşında aktif erkek hasta, bahçede düzensiz zeminde ayağının dönmesi sonrası başvurmuştur. Özgeçmişinde iyi kontrollü DM tip 2 ve BPH mevcuttur. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %18'i. Bartoníček Tip 3, Haraguchi Tip 2.",
+  hasSeq: true
+}, {
+  id: "case3",
+  title: "VAKA 3",
+  color: "#6A3D9A",
+  bg: "#1f1a28",
+  text: "74 yaşında kadın hasta, dış merkezden atelle sevk. Anteromedialde debride edilmiş yumuşak doku hasarı. Gustilo-Anderson Tip 3A açık trimalleolar kırık. Ext. fiksatör + VAC → 3. hafta büzüşme testi lat+post pozitif. Osteoporoz, HT. Weber B. BT: PM fragmenti %28. Bartoníček Tip 2, Haraguchi Tip 1.",
+  hasSeq: true
+}, {
+  id: "case4",
+  title: "VAKA 4",
+  color: "#C0392B",
+  bg: "#2a1515",
+  text: "47 yaşında kadın hasta (VKİ 30.5), yürüyüş sırasında burkulma. İzole PM kırığı — fibula ve medial malleol intakt. BT: PM fragmenti %26, artiküler step-off yok. Bartoníček Tip 2, Haraguchi Tip 1.",
+  hasSeq: false
+}];
+const FB_CASE_OPTS = {
+  fix: ["Evet", "Hayır"],
+  pos: ["Supine", "Prone", "Lateral dekübitus"],
+  app: ["Posterolateral", "Posteromedial", "Kombine PL+PM", "Anterior (perkütan)", "Artroskopik"],
+  seq: ["PM önce → Fibula → MM", "Fibula → PM → MM", "Fibula → Sindesmoz değerlendir → PM → MM", "Bireyselleştirilmiş"],
+  tech: ["Perkütan AP lag vida", "Perkütan PA lag vida", "Trans-Achilles perkütan PA vida", "Açık PL — buttress/locking plak", "Açık PL — lag vida"]
+};
+const FB_LIKERT = [{
+  id: "h1",
+  text: "Fragment boyutu PM fiksasyon kararında en önemli faktördür."
+}, {
+  id: "h2",
+  text: "Fragment morfolojisi boyuttan daha önemlidir."
+}, {
+  id: "h3",
+  text: "Direkt posterior yaklaşım perkütan tekniklerden üstündür."
+}, {
+  id: "h4",
+  text: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir."
+}, {
+  id: "h5",
+  text: "ARIF PM kırıklarında geleceğin tekniğidir."
+}, {
+  id: "h6",
+  text: "Biyomekanik çalışma sonuçları cerrahi kararlarımı etkiler."
+}];
+function CommentBox({
+  qid,
+  openId,
+  setOpenId
+}) {
+  const isOpen = openId === qid;
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setOpenId(isOpen ? null : qid),
+    style: {
+      padding: "3px 10px",
+      borderRadius: 5,
+      border: `1px solid ${TH.br}`,
+      background: isOpen ? `${TH.ac}22` : "transparent",
+      color: isOpen ? TH.ac : TH.td,
+      fontSize: 10,
+      cursor: "pointer"
+    }
+  }, "\uD83D\uDCAC ", isOpen ? "Kapat" : "Yorum ekle"), isOpen && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6,
+      display: "flex",
+      gap: 6
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    placeholder: "Yorumunuzu yaz\u0131n...",
+    style: {
+      flex: 1,
+      padding: "7px 10px",
+      borderRadius: 5,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg,
+      color: TH.tx,
+      fontSize: 10,
+      outline: "none"
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    style: {
+      padding: "7px 12px",
+      borderRadius: 5,
+      border: "none",
+      background: TH.ac,
+      color: "#fff",
+      fontSize: 10,
+      fontWeight: 600,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, "Kaydet")));
+}
+function ReadOnlyRadio({
+  opts
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4,
+      marginTop: 6
+    }
+  }, opts.map((o, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 14,
+      height: 14,
+      borderRadius: 7,
+      border: `2px solid ${TH.td}`,
+      flexShrink: 0
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tm,
+      fontSize: 11
+    }
+  }, o))));
+}
+function ReadOnlyCheckbox({
+  opts
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 4,
+      marginTop: 6
+    }
+  }, opts.map((o, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      padding: "6px 10px",
+      borderRadius: 6,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 14,
+      height: 14,
+      borderRadius: 3,
+      border: `2px solid ${TH.td}`,
+      flexShrink: 0
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tm,
+      fontSize: 11
+    }
+  }, o))));
+}
+function ReadOnlyLikert() {
+  const labels = ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 4,
+      marginTop: 6,
+      flexWrap: "wrap"
+    }
+  }, labels.map((l, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      flex: 1,
+      minWidth: 60,
+      padding: "8px 4px",
+      borderRadius: 6,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 9
+    }
+  }, l))));
+}
+function FeedPage() {
+  const [openId, setOpenId] = useState(null);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 6px"
+    }
+  }, "Geri Bildirim Paneli"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tm,
+      fontSize: 12,
+      margin: "0 0 18px"
+    }
+  }, "Anketin tam kopyas\u0131. Her sorunun alt\u0131ndaki yorum butonuyla geri bildirim b\u0131rakabilirsiniz."), FB_SECTIONS.map(sec => /*#__PURE__*/React.createElement("div", {
+    key: sec.id,
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: TH.ac,
+      fontSize: 13,
+      fontWeight: 600,
+      margin: "0 0 14px",
+      borderBottom: `1px solid ${TH.br}`,
+      paddingBottom: 8
+    }
+  }, sec.title), sec.questions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+    key: q.id,
+    style: {
+      marginBottom: qi < sec.questions.length - 1 ? 16 : 0,
+      paddingBottom: qi < sec.questions.length - 1 ? 14 : 0,
+      borderBottom: qi < sec.questions.length - 1 ? `1px solid ${TH.br}` : "none"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 500,
+      margin: "0 0 2px"
+    }
+  }, q.text), q.type === "multi" && /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.ac,
+      fontSize: 9,
+      margin: "0 0 4px"
+    }
+  }, "Birden fazla se\xE7ebilirsiniz"), q.type === "single" && /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: q.opts
+  }), q.type === "multi" && /*#__PURE__*/React.createElement(ReadOnlyCheckbox, {
+    opts: q.opts
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: q.id,
+    openId: openId,
+    setOpenId: setOpenId
+  }))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: TH.ac,
+      fontSize: 13,
+      fontWeight: 600,
+      margin: "0 0 14px",
+      borderBottom: `1px solid ${TH.br}`,
+      paddingBottom: 8
+    }
+  }, "G \u2014 Klinik Vaka Senaryolar\u0131"), FB_CASES.map((c, ci) => /*#__PURE__*/React.createElement("div", {
+    key: c.id,
+    style: {
+      marginBottom: ci < FB_CASES.length - 1 ? 20 : 0,
+      paddingBottom: ci < FB_CASES.length - 1 ? 18 : 0,
+      borderBottom: ci < FB_CASES.length - 1 ? `1px solid ${TH.br}` : "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "8px 12px",
+      borderRadius: 8,
+      background: c.bg,
+      border: `1px solid ${c.color}44`,
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: c.color,
+      fontSize: 12,
+      fontWeight: 700,
+      marginBottom: 4
+    }
+  }, c.title), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      margin: 0,
+      lineHeight: 1.6
+    }
+  }, c.text)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 500,
+      margin: "0 0 4px"
+    }
+  }, "Bu vakada posterior malleol\xFC fikse eder misiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: FB_CASE_OPTS.fix
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: `${c.id}_fix`,
+    openId: openId,
+    setOpenId: setOpenId
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      paddingLeft: 12,
+      borderLeft: `3px solid ${c.color}66`,
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.td,
+      fontSize: 9,
+      fontStyle: "italic",
+      margin: "0 0 8px"
+    }
+  }, "Evet ise a\u015Fa\u011F\u0131daki sorular a\xE7\u0131l\u0131r:"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 500,
+      margin: "0 0 4px"
+    }
+  }, "Ameliyata hangi pozisyonda ba\u015Flars\u0131n\u0131z?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: FB_CASE_OPTS.pos
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: `${c.id}_pos`,
+    openId: openId,
+    setOpenId: setOpenId
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 500,
+      margin: "0 0 4px"
+    }
+  }, "Hangi cerrahi yakla\u015F\u0131m\u0131 tercih edersiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: FB_CASE_OPTS.app
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: `${c.id}_app`,
+    openId: openId,
+    setOpenId: setOpenId
+  })), c.hasSeq && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 10
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 500,
+      margin: "0 0 4px"
+    }
+  }, "Fiksasyon s\u0131ran\u0131z ne olur?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: FB_CASE_OPTS.seq
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: `${c.id}_seq`,
+    openId: openId,
+    setOpenId: setOpenId
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginBottom: 4
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 500,
+      margin: "0 0 4px"
+    }
+  }, "PM fiksasyonu i\xE7in hangi teknik ve implant\u0131 tercih edersiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
+    opts: FB_CASE_OPTS.tech
+  }), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: `${c.id}_tech`,
+    openId: openId,
+    setOpenId: setOpenId
+  })))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    style: {
+      color: TH.ac,
+      fontSize: 13,
+      fontWeight: 600,
+      margin: "0 0 14px",
+      borderBottom: `1px solid ${TH.br}`,
+      paddingBottom: 8
+    }
+  }, "H \u2014 Tutum ve G\xF6r\xFC\u015Fler"), FB_LIKERT.map((q, qi) => /*#__PURE__*/React.createElement("div", {
+    key: q.id,
+    style: {
+      marginBottom: qi < FB_LIKERT.length - 1 ? 14 : 0,
+      paddingBottom: qi < FB_LIKERT.length - 1 ? 12 : 0,
+      borderBottom: qi < FB_LIKERT.length - 1 ? `1px solid ${TH.br}` : "none"
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 500,
+      margin: "0 0 2px"
+    }
+  }, q.text), /*#__PURE__*/React.createElement(ReadOnlyLikert, null), /*#__PURE__*/React.createElement(CommentBox, {
+    qid: q.id,
+    openId: openId,
+    setOpenId: setOpenId
+  })))));
+}
+
+// ── BACKUP ──
+function BackPage() {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 18px"
+    }
+  }, "Yedekleme"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 13,
+      fontWeight: 500
+    }
+  }, "Otomatik Yedekleme"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      marginTop: 4
+    }
+  }, "Her 2 g\xFCnde bir otomatik yedekleme")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 44,
+      height: 24,
+      borderRadius: 12,
+      background: "#16A34A",
+      position: "relative",
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      background: "#fff",
+      position: "absolute",
+      top: 2,
+      right: 2
+    }
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 12,
+      marginBottom: 12
+    }
+  }, "Yedekleme Ge\xE7mi\u015Fi"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Hen\xFCz yedekleme yap\u0131lmad\u0131"))));
+}
+
+// ── SETTINGS ──
+function SetPage() {
+  const [copied, setCopied] = useState(false);
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: "0 0 18px"
+    }
+  }, "Ayarlar"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 13,
+      fontWeight: 500,
+      marginBottom: 12
+    }
+  }, "Anket Durumu"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10
+    }
+  }, [["Aktif", "#16A34A"], ["Duraklat", null], ["Kapat", null]].map(([l, bg], i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    style: {
+      padding: "10px 18px",
+      borderRadius: 8,
+      border: bg ? `none` : `1px solid ${TH.br}`,
+      background: bg || "transparent",
+      color: bg ? "#fff" : TH.tm,
+      fontSize: 12,
+      fontWeight: bg ? 600 : 400,
+      cursor: "pointer"
+    }
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 13,
+      fontWeight: 500,
+      marginBottom: 12
+    }
+  }, "Anket Linki"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    readOnly: true,
+    value: "https://pmal.cyprusorthopaedics.com",
+    style: {
+      flex: 1,
+      padding: "10px 14px",
+      borderRadius: 8,
+      border: `1px solid ${TH.br}`,
+      background: TH.bg,
+      color: TH.ac,
+      fontSize: 12,
+      outline: "none"
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      navigator.clipboard?.writeText("https://pmal.cyprusorthopaedics.com");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    },
+    style: {
+      padding: "10px 16px",
+      borderRadius: 8,
+      border: "none",
+      background: TH.ac,
+      color: "#fff",
+      fontSize: 11,
+      fontWeight: 600,
+      cursor: "pointer",
+      whiteSpace: "nowrap"
+    }
+  }, copied ? "✓ Kopyalandı" : "Kopyala"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 20
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 13,
+      fontWeight: 500,
+      marginBottom: 12
+    }
+  }, "Mail Listesi"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Hen\xFCz kay\u0131tl\u0131 mail yok"))));
+}
+
+// ══════════════════════════════════════════════
+// MAIN
+// ══════════════════════════════════════════════
+function App() {
+  const [user, setUser] = useState(null);
+  const [page, setPage] = useState("dashboard");
+  const [playing, setPlaying] = useState(false);
+  const [volume, setVolume] = useState(50);
+  const [sb, setSb] = useState(true);
+  if (!user) return /*#__PURE__*/React.createElement(LoginPage, {
+    onLogin: setUser
+  });
+  const pages = {
+    dashboard: /*#__PURE__*/React.createElement(DashPage, null),
+    responses: /*#__PURE__*/React.createElement(RespPage, null),
+    statistics: /*#__PURE__*/React.createElement(StatPage, null),
+    feedback: /*#__PURE__*/React.createElement(FeedPage, null),
+    backup: /*#__PURE__*/React.createElement(BackPage, null),
+    settings: /*#__PURE__*/React.createElement(SetPage, null)
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: TH.bg,
+      display: "flex"
+    }
+  }, /*#__PURE__*/React.createElement("aside", {
+    style: {
+      width: sb ? 220 : 56,
+      background: TH.sf,
+      borderRight: `1px solid ${TH.br}`,
+      display: "flex",
+      flexDirection: "column",
+      transition: "width 0.3s",
+      overflow: "hidden",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: "16px 14px",
+      borderBottom: `1px solid ${TH.br}`,
+      display: "flex",
+      alignItems: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 28,
+      height: 28,
+      borderRadius: 6,
+      background: TH.ac,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#fff",
+      fontWeight: 800,
+      fontSize: 10
+    }
+  }, "PM")), sb && /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.ac,
+      fontWeight: 700,
+      fontSize: 14,
+      whiteSpace: "nowrap"
+    }
+  }, "PMAL Admin")), sb && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 12,
+      borderBottom: `1px solid ${TH.br}`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: user.colorImg,
+    alt: "",
+    style: {
+      width: 32,
+      height: 32,
+      borderRadius: 6,
+      objectFit: "cover",
+      objectPosition: "top"
+    }
+  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600
+    }
+  }, user.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: user.color,
+      fontSize: 9
+    }
+  }, user.char)))), /*#__PURE__*/React.createElement("nav", {
+    style: {
+      flex: 1,
+      padding: "10px 6px"
+    }
+  }, PG.map(p => /*#__PURE__*/React.createElement("button", {
+    key: p.id,
+    onClick: () => setPage(p.id),
+    style: {
+      width: "100%",
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: sb ? "9px 10px" : "9px 0",
+      justifyContent: sb ? "flex-start" : "center",
+      borderRadius: 7,
+      border: "none",
+      cursor: "pointer",
+      marginBottom: 3,
+      background: page === p.id ? `${TH.ac}22` : "transparent",
+      color: page === p.id ? TH.ac : TH.tm,
+      fontSize: 12,
+      fontWeight: page === p.id ? 600 : 400,
+      textAlign: "left",
+      transition: "all 0.2s"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 14,
+      width: 18,
+      textAlign: "center",
+      flexShrink: 0
+    }
+  }, p.icon), sb && /*#__PURE__*/React.createElement("span", {
+    style: {
+      whiteSpace: "nowrap"
+    }
+  }, p.label)))), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setSb(!sb),
+    style: {
+      padding: 14,
+      border: "none",
+      borderTop: `1px solid ${TH.br}`,
+      background: "transparent",
+      color: TH.td,
+      cursor: "pointer",
+      fontSize: 13
+    }
+  }, sb ? "◂" : "▸")), /*#__PURE__*/React.createElement("main", {
+    style: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("header", {
+    style: {
+      padding: "12px 20px",
+      borderBottom: `1px solid ${TH.br}`,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("h2", {
+    style: {
+      color: TH.tx,
+      fontSize: 17,
+      fontWeight: 700,
+      margin: 0
+    }
+  }, PG.find(p => p.id === page)?.label), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setUser(null),
+    style: {
+      padding: "5px 12px",
+      borderRadius: 7,
+      border: `1px solid ${TH.br}`,
+      background: "transparent",
+      color: TH.tm,
+      fontSize: 11,
+      cursor: "pointer"
+    }
+  }, "\xC7\u0131k\u0131\u015F")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      padding: 20,
+      overflowY: "auto",
+      paddingBottom: 72
+    }
+  }, /*#__PURE__*/React.createElement(MusicStory, {
+    page: page
+  }), pages[page])), /*#__PURE__*/React.createElement(MusicBar, {
+    page: page,
+    playing: playing,
+    setPlaying: setPlaying,
+    volume: volume,
+    setVolume: setVolume
+  }));
+}
+
+ReactDOM.render(React.createElement(App), document.getElementById('root'));
+</script>
+</body>
+</html>
