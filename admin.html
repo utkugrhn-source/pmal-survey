@@ -25,6 +25,34 @@ const {
   useEffect,
   useCallback
 } = React;
+
+// ── SUPABASE ──
+const SB_URL = "https://ozltzozlnfpqhgviidvc.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96bHR6b3psbmZwcWhndmlpZHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjY0OTMsImV4cCI6MjA5MTg0MjQ5M30.L3RZdu4lLqnPaXKGPyXsoYYQI53Lcv9B3bTYFsT5CVQ";
+const sbHeaders = {
+  "apikey": SB_KEY,
+  "Authorization": `Bearer ${SB_KEY}`,
+  "Content-Type": "application/json"
+};
+const sbGet = async (table, query = "") => {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
+    headers: {
+      ...sbHeaders,
+      "Prefer": "return=representation"
+    }
+  });
+  return r.json();
+};
+const sbPost = async (table, body) => {
+  await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: {
+      ...sbHeaders,
+      "Prefer": "return=minimal"
+    },
+    body: JSON.stringify(body)
+  });
+};
 const TH = {
   bg: "#0a0a0a",
   sf: "#141414",
@@ -530,28 +558,80 @@ function MusicBar({
 
 // ── DASHBOARD ──
 function DashPage() {
+  const [data, setData] = useState({
+    total: 0,
+    complete: 0,
+    avgDur: 0,
+    today: 0,
+    fixes: {}
+  });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = await sbGet("responses", "select=completed,duration_seconds,created_at,g1_case1_fix,g2_case2_fix,g3_case3_fix,g4_case4_fix");
+        const total = rows.length;
+        const complete = rows.filter(r => r.completed).length;
+        const durations = rows.filter(r => r.duration_seconds).map(r => r.duration_seconds);
+        const avgDur = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length / 60) : 0;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const today = rows.filter(r => r.created_at && r.created_at.startsWith(todayStr)).length;
+        const fixCount = key => {
+          const yes = rows.filter(r => r[key] === 'Evet' || r[key] === 'Yes').length;
+          return total ? Math.round(yes / total * 100) : 0;
+        };
+        setData({
+          total,
+          complete,
+          avgDur,
+          today,
+          fixes: {
+            c1: fixCount('g1_case1_fix'),
+            c2: fixCount('g2_case2_fix'),
+            c3: fixCount('g3_case3_fix'),
+            c4: fixCount('g4_case4_fix')
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    })();
+  }, []);
   const stats = [{
     label: "Toplam Yanıt",
-    val: "0",
+    val: loading ? "..." : data.total,
     icon: "📋",
     c: "#D97706"
   }, {
     label: "Tamamlanan",
-    val: "0",
+    val: loading ? "..." : data.complete,
     icon: "✓",
     c: "#16A34A"
   }, {
     label: "Ort. Süre",
-    val: "—",
+    val: loading ? "..." : data.avgDur ? `${data.avgDur} dk` : "—",
     icon: "⏱",
     c: "#5B8DBE"
   }, {
     label: "Bugün",
-    val: "0",
+    val: loading ? "..." : data.today,
     icon: "📅",
     c: "#C0392B"
   }];
-  const cases = ["Vaka 1 — 52Y K, Bart 2, %20", "Vaka 2 — 76Y E, Bart 3, %18", "Vaka 3 — 74Y K, Açık 3A, %28", "Vaka 4 — 47Y K, İzole PM, %26"];
+  const cases = [{
+    l: "Vaka 1 — 52Y K, Bart 2, %20",
+    pct: data.fixes.c1 || 0
+  }, {
+    l: "Vaka 2 — 76Y E, Bart 3, %18",
+    pct: data.fixes.c2 || 0
+  }, {
+    l: "Vaka 3 — 74Y K, Açık 3A, %28",
+    pct: data.fixes.c3 || 0
+  }, {
+    l: "Vaka 4 — 47Y K, İzole PM, %26",
+    pct: data.fixes.c4 || 0
+  }];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
@@ -600,7 +680,7 @@ function DashPage() {
       fontWeight: 600,
       margin: "0 0 16px"
     }
-  }, "Vaka Bazl\u0131 Fix Oranlar\u0131"), cases.map((l, i) => /*#__PURE__*/React.createElement("div", {
+  }, "Vaka Bazl\u0131 Fix Oranlar\u0131"), cases.map((c, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       marginBottom: 12
@@ -616,23 +696,26 @@ function DashPage() {
       color: TH.tm,
       fontSize: 11
     }
-  }, l), /*#__PURE__*/React.createElement("span", {
+  }, c.l), /*#__PURE__*/React.createElement("span", {
     style: {
-      color: TH.td,
-      fontSize: 11
+      color: TH.ac,
+      fontSize: 11,
+      fontWeight: 600
     }
-  }, "Hen\xFCz veri yok")), /*#__PURE__*/React.createElement("div", {
+  }, data.total ? `${c.pct}%` : "Henüz veri yok")), /*#__PURE__*/React.createElement("div", {
     style: {
       height: 8,
       background: TH.bg,
-      borderRadius: 4
+      borderRadius: 4,
+      overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: "0%",
+      width: `${c.pct}%`,
       height: "100%",
       background: TH.ac,
-      borderRadius: 4
+      borderRadius: 4,
+      transition: "width 0.5s"
     }
   }))))), /*#__PURE__*/React.createElement("h3", {
     style: {
@@ -700,6 +783,34 @@ function DashPage() {
 
 // ── RESPONSES ──
 function RespPage() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    (async () => {
+      try {
+        const d = await sbGet("responses", "select=*&order=created_at.desc");
+        setRows(d);
+      } catch (e) {
+        console.error(e);
+      }
+      setLoading(false);
+    })();
+  }, []);
+  const exportCSV = () => {
+    if (!rows.length) return;
+    const keys = Object.keys(rows[0]);
+    const csv = [keys.join(","), ...rows.map(r => keys.map(k => {
+      const v = r[k];
+      return typeof v === 'object' ? `"${JSON.stringify(v).replace(/"/g, "'")}"` : v == null ? "" : `"${String(v).replace(/"/g, "'")}"`;
+    }).join(","))].join("\n");
+    const blob = new Blob([csv], {
+      type: "text/csv"
+    });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `pmal_responses_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -714,13 +825,13 @@ function RespPage() {
       fontWeight: 600,
       margin: 0
     }
-  }, "Yan\u0131t Listesi"), /*#__PURE__*/React.createElement("div", {
+  }, "Yan\u0131t Listesi (", rows.length, ")"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
     }
-  }, ["📥 CSV", "📥 Excel"].map((b, i) => /*#__PURE__*/React.createElement("button", {
-    key: i,
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: exportCSV,
     style: {
       padding: "8px 14px",
       borderRadius: 8,
@@ -730,7 +841,16 @@ function RespPage() {
       fontSize: 11,
       cursor: "pointer"
     }
-  }, b)))), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCE5 CSV"))), loading ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      padding: 40
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tm
+    }
+  }, "Y\xFCkleniyor...")) : rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       background: TH.cd,
       border: `1px solid ${TH.br}`,
@@ -749,12 +869,58 @@ function RespPage() {
       color: TH.tm,
       fontSize: 13
     }
-  }, "Hen\xFCz yan\u0131t bulunmamaktad\u0131r."), /*#__PURE__*/React.createElement("p", {
+  }, "Hen\xFCz yan\u0131t bulunmamaktad\u0131r.")) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      overflow: "hidden"
+    }
+  }, rows.map((r, i) => /*#__PURE__*/React.createElement("div", {
+    key: r.id,
+    style: {
+      padding: "12px 16px",
+      borderBottom: i < rows.length - 1 ? `1px solid ${TH.br}` : "none",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 500
+    }
+  }, "#", i + 1), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      marginLeft: 8
+    }
+  }, r.a4_country || "—"), /*#__PURE__*/React.createElement("span", {
     style: {
       color: TH.td,
-      fontSize: 11
+      fontSize: 10,
+      marginLeft: 8
     }
-  }, "Anket yay\u0131nland\u0131\u011F\u0131nda yan\u0131tlar burada listelenecektir.")));
+  }, r.language?.toUpperCase())), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 12
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: r.completed ? "#16A34A" : "#E53E3E",
+      fontSize: 10,
+      fontWeight: 600
+    }
+  }, r.completed ? "Tamamlandı" : "Yarım"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 10
+    }
+  }, r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR') : ""))))));
 }
 
 // ── STATISTICS ──
