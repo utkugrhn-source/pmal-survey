@@ -75,6 +75,7 @@ const R = [{
   bwImg: "card_gilmour_bw_web.png",
   pTrack: "High Hopes",
   pYear: 1994,
+  pMp3: "highhopes.mp3",
   pStory: "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor."
 }, {
   id: "enes",
@@ -88,6 +89,7 @@ const R = [{
   bwImg: "card_hetfield_bw_web.png",
   pTrack: "Nothing Else Matters",
   pYear: 1991,
+  pMp3: "nothingelse.mp3",
   pStory: "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti."
 }, {
   id: "utku",
@@ -101,6 +103,7 @@ const R = [{
   bwImg: "card_slash_bw_web.png",
   pTrack: "Sweet Child O' Mine",
   pYear: 1987,
+  pMp3: "sweetchild.mp3",
   pStory: "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi."
 }, {
   id: "yakup",
@@ -114,12 +117,14 @@ const R = [{
   bwImg: "card_cobain_bw_web.png",
   pTrack: "Come As You Are",
   pYear: 1991,
+  pMp3: "comeasyouare.mp3",
   pStory: "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı."
 }];
 const PG = [{
   id: "dashboard",
   label: "Dashboard",
   icon: "◨",
+  mp3: "money.mp3",
   track: "Money for Nothing",
   artist: "Dire Straits",
   year: 1985,
@@ -128,6 +133,7 @@ const PG = [{
   id: "responses",
   label: "Yanıtlar",
   icon: "☰",
+  mp3: "bridge.mp3",
   track: "Under the Bridge",
   artist: "RHCP",
   year: 1991,
@@ -136,6 +142,7 @@ const PG = [{
   id: "statistics",
   label: "İstatistik",
   icon: "⊞",
+  mp3: "sandman.mp3",
   track: "Enter Sandman",
   artist: "Metallica",
   year: 1991,
@@ -144,6 +151,7 @@ const PG = [{
   id: "feedback",
   label: "Geri Bildirim",
   icon: "◉",
+  mp3: "teenspirit.mp3",
   track: "Smells Like Teen Spirit",
   artist: "Nirvana",
   year: 1991,
@@ -152,6 +160,7 @@ const PG = [{
   id: "backup",
   label: "Yedekleme",
   icon: "⟳",
+  mp3: "novemberrain.mp3",
   track: "November Rain",
   artist: "Guns N' Roses",
   year: 1991,
@@ -160,6 +169,7 @@ const PG = [{
   id: "settings",
   label: "Ayarlar",
   icon: "⚙",
+  mp3: "learningtofly.mp3",
   track: "Learning to Fly",
   artist: "Pink Floyd",
   year: 1987,
@@ -288,20 +298,51 @@ function LoginPage({
       marginTop: 24,
       textAlign: "center"
     }
-  }, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      const a = window._loginAudio || (window._loginAudio = new Audio('/welcome.mp3'));
+      if (a.paused) {
+        a.play().catch(() => {});
+        document.getElementById('lp_btn').textContent = '⏸';
+      } else {
+        a.pause();
+        document.getElementById('lp_btn').textContent = '▶';
+      }
+    },
+    id: "lp_btn",
+    style: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      border: `1px solid ${TH.br}`,
+      background: "transparent",
+      color: TH.ac,
+      fontSize: 12,
+      cursor: "pointer"
+    }
+  }, "\u25B6"), /*#__PURE__*/React.createElement("p", {
     style: {
       color: TH.td,
       fontSize: 10,
       margin: 0
     }
-  }, "\u266B Welcome to the Jungle \u2014 Guns N' Roses (1987)"), /*#__PURE__*/React.createElement("p", {
+  }, "\u266B Welcome to the Jungle \u2014 Guns N' Roses (1987)")), /*#__PURE__*/React.createElement("p", {
     style: {
       color: TH.td,
       fontSize: 9,
       fontStyle: "italic",
-      marginTop: 6,
+      marginTop: 8,
       maxWidth: 400,
-      lineHeight: 1.5
+      lineHeight: 1.5,
+      marginLeft: "auto",
+      marginRight: "auto"
     }
   }, "Axl Rose, \u015Fark\u0131n\u0131n s\xF6zlerini Greyhound otob\xFCs\xFCyle LA'e ilk geldi\u011Fi gece ya\u015Fad\u0131klar\u0131ndan yazd\u0131. Otob\xFCsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi."))) :
   /*#__PURE__*/
@@ -472,6 +513,54 @@ function MusicBar({
   setVolume
 }) {
   const p = PG.find(pg => pg.id === page) || PG[0];
+  const audioRef = React.useRef(null);
+  const [progress, setProgress] = React.useState(0);
+  const [duration, setDuration] = React.useState(0);
+  React.useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.addEventListener('timeupdate', () => {
+        const a = audioRef.current;
+        if (a && a.duration) setProgress(a.currentTime / a.duration * 100);
+      });
+      audioRef.current.addEventListener('loadedmetadata', () => {
+        setDuration(audioRef.current.duration);
+      });
+      audioRef.current.addEventListener('ended', () => {
+        setPlaying(false);
+        setProgress(0);
+      });
+    }
+    const a = audioRef.current;
+    if (p.mp3 && a.src !== window.location.origin + '/' + p.mp3) {
+      a.src = '/' + p.mp3;
+      a.load();
+      setProgress(0);
+      if (playing) a.play().catch(() => {});
+    }
+  }, [page, p.mp3]);
+  React.useEffect(() => {
+    const a = audioRef.current;
+    if (!a) return;
+    if (playing) a.play().catch(() => {});else a.pause();
+  }, [playing]);
+  React.useEffect(() => {
+    const a = audioRef.current;
+    if (a) a.volume = volume / 100;
+  }, [volume]);
+  const seekTo = e => {
+    const a = audioRef.current;
+    if (!a || !a.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    a.currentTime = pct * a.duration;
+  };
+  const fmt = s => {
+    if (!s || isNaN(s)) return "0:00";
+    const m = Math.floor(s / 60);
+    const sec = Math.floor(s % 60);
+    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+  };
   return /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#0d0d0d",
@@ -518,21 +607,42 @@ function MusicBar({
     }
   }, "\u2014 ", p.artist, " (", p.year, ")")), /*#__PURE__*/React.createElement("div", {
     style: {
-      height: 3,
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 9,
+      minWidth: 28
+    }
+  }, fmt(audioRef.current?.currentTime)), /*#__PURE__*/React.createElement("div", {
+    onClick: seekTo,
+    style: {
+      flex: 1,
+      height: 4,
       background: TH.br,
       borderRadius: 2,
-      marginTop: 4,
+      cursor: "pointer",
       overflow: "hidden"
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
-      width: playing ? "60%" : "0%",
+      width: `${progress}%`,
       height: "100%",
       background: TH.ac,
       borderRadius: 2,
-      transition: "width 2s linear"
+      transition: "width 0.3s linear"
     }
-  }))), /*#__PURE__*/React.createElement("div", {
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.td,
+      fontSize: 9,
+      minWidth: 28
+    }
+  }, fmt(duration)))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -727,7 +837,7 @@ function DashPage() {
   }, "Ara\u015Ft\u0131rma Ekibi"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
+      gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
       gap: 14
     }
   }, R.map(r => /*#__PURE__*/React.createElement("div", {
@@ -745,10 +855,14 @@ function DashPage() {
     }
   }), /*#__PURE__*/React.createElement("div", {
     style: {
-      padding: 14,
+      padding: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
       display: "flex",
       alignItems: "center",
-      gap: 10
+      gap: 10,
+      marginBottom: 10
     }
   }, /*#__PURE__*/React.createElement("img", {
     src: r.colorImg,
@@ -760,7 +874,12 @@ function DashPage() {
       objectFit: "cover",
       objectPosition: "top"
     }
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
     style: {
       color: TH.tx,
       fontSize: 13,
@@ -778,7 +897,68 @@ function DashPage() {
       fontSize: 9,
       fontStyle: "italic"
     }
-  }, r.band)))))));
+  }, r.band))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      paddingTop: 10,
+      borderTop: `1px solid ${TH.br}`
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      const id = `pr_${r.id}`;
+      if (!window._profAudio) window._profAudio = {};
+      const pa = window._profAudio;
+      Object.keys(pa).forEach(k => {
+        if (k !== r.id && pa[k]) {
+          pa[k].pause();
+          const el = document.getElementById(`pr_${k}`);
+          if (el) el.textContent = '▶';
+        }
+      });
+      if (!pa[r.id]) pa[r.id] = new Audio('/' + r.pMp3);
+      const el = document.getElementById(id);
+      if (pa[r.id].paused) {
+        pa[r.id].play().catch(() => {});
+        if (el) el.textContent = '⏸';
+      } else {
+        pa[r.id].pause();
+        if (el) el.textContent = '▶';
+      }
+    },
+    id: `pr_${r.id}`,
+    style: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      border: `1px solid ${r.color}`,
+      background: "transparent",
+      color: r.color,
+      fontSize: 10,
+      cursor: "pointer",
+      flexShrink: 0
+    }
+  }, "\u25B6"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 10,
+      fontWeight: 500,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, r.pTrack), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 8
+    }
+  }, r.band, " \xB7 ", r.pYear))))))));
 }
 
 // ── RESPONSES ──
