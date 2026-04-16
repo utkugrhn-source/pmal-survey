@@ -192,13 +192,18 @@ function IntroScreen({
       window._loginAudio.preload = "auto";
       window._loginAudio.volume = 0.5;
     }
+    // Start preloading money.mp3 (Dashboard) in parallel — this is the next audio user will hear
+    if (!window._preloadedMoney) {
+      window._preloadedMoney = new Audio('/mp3/money.mp3');
+      window._preloadedMoney.preload = "auto";
+      window._preloadedMoney.load();
+    }
     const audio = window._loginAudio;
     let proceeded = false;
     const startTime = Date.now();
     const proceed = () => {
       if (proceeded) return;
       proceeded = true;
-      // Minimum 800ms spinner display for UX
       const elapsed = Date.now() - startTime;
       const delay = Math.max(800 - elapsed, 0);
       setTimeout(() => {
@@ -206,23 +211,22 @@ function IntroScreen({
         setTimeout(onStart, 300);
       }, delay);
     };
-    const checkFullyLoaded = () => {
+    const updateProgress = () => {
       if (audio.buffered.length > 0 && audio.duration) {
         const loaded = audio.buffered.end(audio.buffered.length - 1);
-        const pct = Math.round(loaded / audio.duration * 100);
-        setLoadPct(pct);
-        // Only proceed when fully buffered (99% or more)
-        if (pct >= 99) proceed();
+        setLoadPct(Math.round(loaded / audio.duration * 100));
       }
     };
-    audio.addEventListener('progress', checkFullyLoaded);
-    audio.addEventListener('loadeddata', checkFullyLoaded);
-    audio.addEventListener('canplaythrough', checkFullyLoaded);
+    audio.addEventListener('progress', updateProgress);
+    audio.addEventListener('canplay', proceed, {
+      once: true
+    });
+    audio.addEventListener('loadeddata', proceed, {
+      once: true
+    });
+    if (audio.readyState >= 2) proceed();
     audio.load();
-    // Check immediately in case already cached
-    setTimeout(checkFullyLoaded, 50);
-    // Fallback timeout — 60s max wait
-    setTimeout(proceed, 60000);
+    setTimeout(proceed, 10000);
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -464,21 +468,44 @@ function LoginPage({
   const [selected, setSelected] = useState(null);
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
+
+  // Preload all page MP3s sequentially when login page mounts
+  // money.mp3 was already started by IntroScreen's handlePlay
+  useEffect(() => {
+    if (!window._pageAudios) window._pageAudios = {};
+    // Pre-use already-loaded money if available
+    if (window._preloadedMoney && !window._pageAudios.dashboard) {
+      window._pageAudios.dashboard = window._preloadedMoney;
+    }
+    // Queue all other pages for sequential preload
+    const remainingPages = PG.filter(pg => pg.mp3 && !window._pageAudios[pg.id]);
+    remainingPages.forEach((pg, idx) => {
+      // Stagger loads slightly so they don't all compete for bandwidth
+      setTimeout(() => {
+        if (!window._pageAudios[pg.id]) {
+          const audio = new Audio('/' + pg.mp3);
+          audio.preload = "auto";
+          audio.load();
+          window._pageAudios[pg.id] = audio;
+        }
+      }, idx * 200);
+    });
+  }, []);
   const handleLogin = () => {
     if (pass.length >= 4) {
-      // Pre-create all audio objects during user click so they inherit autoplay permission
-      if (!window._pageAudios) {
-        window._pageAudios = {};
-        PG.forEach(pg => {
-          if (pg.mp3) {
-            const audio = new Audio('/' + pg.mp3);
-            audio.preload = "auto";
-            // Trigger load during user interaction
-            audio.load();
-            window._pageAudios[pg.id] = audio;
-          }
-        });
-      }
+      // Ensure all audio objects exist (in case preload hasn't completed yet)
+      // Creating during click grants autoplay permission
+      if (!window._pageAudios) window._pageAudios = {};
+      PG.forEach(pg => {
+        if (pg.mp3 && !window._pageAudios[pg.id]) {
+          const audio = new Audio('/' + pg.mp3);
+          audio.preload = "auto";
+          audio.load();
+          window._pageAudios[pg.id] = audio;
+        }
+      });
+      // Also create researcher profile audios
+      if (!window._profAudio) window._profAudio = {};
       onLogin(selected);
     } else setErr("Geçersiz şifre");
   };
@@ -832,36 +859,22 @@ function MusicBar({
         setPlaying(false);
         setProgress(0);
       });
-      a.addEventListener('play', () => setPlaying(true));
-      a.addEventListener('pause', () => setPlaying(false));
     } else {
-      // Update progress/duration from current state
       if (a.duration) setDuration(a.duration);
       if (a.duration) setProgress(a.currentTime / a.duration * 100);
     }
     a.volume = volume / 100;
 
-    // Autoplay — since audio was created during user click, autoplay should work
-    const forcePlay = () => {
-      a.play().catch(() => {
-        const retry = () => {
-          a.play().catch(() => {});
-        };
-        a.addEventListener('canplay', retry, {
-          once: true
-        });
-        a.addEventListener('loadeddata', retry, {
-          once: true
-        });
-      });
-    };
-    forcePlay();
-    setTimeout(forcePlay, 100);
+    // Play once — no retries to avoid loops
+    if (a.paused) {
+      a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+    }
   }, [page]);
   React.useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
-    if (playing) a.play().catch(() => {});else a.pause();
+    // Only act if audio state differs from playing state (avoid feedback loop)
+    if (playing && a.paused) a.play().catch(() => {});else if (!playing && !a.paused) a.pause();
   }, [playing]);
   React.useEffect(() => {
     const a = audioRef.current;
