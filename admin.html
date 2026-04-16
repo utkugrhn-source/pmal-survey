@@ -75,7 +75,7 @@ const R = [{
   bwImg: "card_gilmour_bw_web.png",
   pTrack: "High Hopes",
   pYear: 1994,
-  pMp3: "highhopes.mp3",
+  pMp3: "mp3/highhopes.mp3",
   pStory: "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor."
 }, {
   id: "enes",
@@ -89,7 +89,7 @@ const R = [{
   bwImg: "card_hetfield_bw_web.png",
   pTrack: "Nothing Else Matters",
   pYear: 1991,
-  pMp3: "nothingelse.mp3",
+  pMp3: "mp3/nothingelse.mp3",
   pStory: "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti."
 }, {
   id: "utku",
@@ -103,7 +103,7 @@ const R = [{
   bwImg: "card_slash_bw_web.png",
   pTrack: "Sweet Child O' Mine",
   pYear: 1987,
-  pMp3: "sweetchild.mp3",
+  pMp3: "mp3/sweetchild.mp3",
   pStory: "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi."
 }, {
   id: "yakup",
@@ -117,14 +117,14 @@ const R = [{
   bwImg: "card_cobain_bw_web.png",
   pTrack: "Come As You Are",
   pYear: 1991,
-  pMp3: "comeasyouare.mp3",
+  pMp3: "mp3/comeasyouare.mp3",
   pStory: "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı."
 }];
 const PG = [{
   id: "dashboard",
   label: "Dashboard",
   icon: "◨",
-  mp3: "money.mp3",
+  mp3: "mp3/money.mp3",
   track: "Money for Nothing",
   artist: "Dire Straits",
   year: 1985,
@@ -133,7 +133,7 @@ const PG = [{
   id: "responses",
   label: "Yanıtlar",
   icon: "☰",
-  mp3: "bridge.mp3",
+  mp3: "mp3/bridge.mp3",
   track: "Under the Bridge",
   artist: "RHCP",
   year: 1991,
@@ -142,7 +142,7 @@ const PG = [{
   id: "statistics",
   label: "İstatistik",
   icon: "⊞",
-  mp3: "sandman.mp3",
+  mp3: "mp3/sandman.mp3",
   track: "Enter Sandman",
   artist: "Metallica",
   year: 1991,
@@ -151,7 +151,7 @@ const PG = [{
   id: "feedback",
   label: "Geri Bildirim",
   icon: "◉",
-  mp3: "teenspirit.mp3",
+  mp3: "mp3/teensprit.mp3",
   track: "Smells Like Teen Spirit",
   artist: "Nirvana",
   year: 1991,
@@ -160,7 +160,7 @@ const PG = [{
   id: "backup",
   label: "Yedekleme",
   icon: "⟳",
-  mp3: "novemberrain.mp3",
+  mp3: "mp3/novamberrain.mp3",
   track: "November Rain",
   artist: "Guns N' Roses",
   year: 1991,
@@ -169,7 +169,7 @@ const PG = [{
   id: "settings",
   label: "Ayarlar",
   icon: "⚙",
-  mp3: "learningtofly.mp3",
+  mp3: "mp3/learningtofly.mp3",
   track: "Learning to Fly",
   artist: "Pink Floyd",
   year: 1987,
@@ -307,7 +307,7 @@ function LoginPage({
     }
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      const a = window._loginAudio || (window._loginAudio = new Audio('/welcome.mp3'));
+      const a = window._loginAudio || (window._loginAudio = new Audio('/mp3/welcome.mp3'));
       if (a.paused) {
         a.play().catch(() => {});
         document.getElementById('lp_btn').textContent = '⏸';
