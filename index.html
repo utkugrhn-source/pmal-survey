@@ -1939,12 +1939,20 @@ function DicomViewerEmbed({ caseId, r2folder }) {
             }
 
             const plane = detectPlane({ iop, desc, ippDelta });
+            const thickNum = parseFloat(thick) || 0;
+
+            // Skip thin-slice reconstruction series (<1.5mm) — they produce
+            // hundreds of slices that are tedious to scroll and duplicate
+            // anatomical info already available in the standard 3mm series.
+            // Workstations keep them for reformats; survey viewer doesn't need them.
+            if (thickNum > 0 && thickNum < 1.5) continue;
+
             classified.push({
               sn: s.sn,
               files: s.files,
               plane,
               desc,
-              thick: parseFloat(thick) || 0,
+              thick: thickNum,
               count: s.files.length
             });
           } catch (e) {
@@ -1972,11 +1980,14 @@ function DicomViewerEmbed({ caseId, r2folder }) {
           if (arr.length === 0) return;
           // First one: primary for this plane
           list.push({ plane, planeIndex: 0, ...arr[0] });
-          // Second one: only if meaningfully different (different thickness or clearly oblique)
+          // Second one: include if meaningfully different (different thickness,
+          // count, or clearly different oblique angle). This handles cases
+          // where hospital produced 2 reformats of the same plane at different
+          // angles for different anatomic focus.
           if (arr.length >= 2) {
             const a = arr[0], b = arr[1];
             const thickDiff = Math.abs(a.thick - b.thick) > 0.5;
-            const countDiff = Math.abs(a.count - b.count) > 5;
+            const countDiff = Math.abs(a.count - b.count) >= 2;
             if (thickDiff || countDiff) {
               list.push({ plane, planeIndex: 1, ...b });
             }
