@@ -1,20 +1,18 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PMAL Admin — Control Room</title>
-<meta name="robots" content="noindex, nofollow">
+<title>Posterior Malleolus Fracture Survey</title>
+<meta name="description" content="International survey on current trends and practice variation in posterior malleolus fracture management">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-*{box-sizing:border-box}
-input:focus{outline:none}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#141414}
-::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:#555}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.animate-fadeIn{animation:fadeIn 0.4s ease-out}
+@keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 </style>
 </head>
 <body>
@@ -26,2451 +24,1292 @@ const {
   useCallback
 } = React;
 
-// ── SUPABASE ──
+// ── 12 LANGUAGES ──
+const LANGS = [{
+  code: "tr",
+  flag: "🇹🇷",
+  name: "Türkçe",
+  native: "Türkçe"
+}, {
+  code: "en",
+  flag: "🇬🇧",
+  name: "English",
+  native: "English"
+}, {
+  code: "de",
+  flag: "🇩🇪",
+  name: "Almanca",
+  native: "Deutsch"
+}, {
+  code: "fr",
+  flag: "🇫🇷",
+  name: "Fransızca",
+  native: "Français"
+}, {
+  code: "es",
+  flag: "🇪🇸",
+  name: "İspanyolca",
+  native: "Español"
+}, {
+  code: "it",
+  flag: "🇮🇹",
+  name: "İtalyanca",
+  native: "Italiano"
+}, {
+  code: "pt",
+  flag: "🇧🇷",
+  name: "Portekizce",
+  native: "Português"
+}, {
+  code: "ru",
+  flag: "🇷🇺",
+  name: "Rusça",
+  native: "Русский"
+}, {
+  code: "ja",
+  flag: "🇯🇵",
+  name: "Japonca",
+  native: "日本語"
+}, {
+  code: "ko",
+  flag: "🇰🇷",
+  name: "Korece",
+  native: "한국어"
+}, {
+  code: "zh",
+  flag: "🇨🇳",
+  name: "Çince",
+  native: "中文"
+}, {
+  code: "ar",
+  flag: "🇸🇦",
+  name: "Arapça",
+  native: "العربية"
+}];
+
+// ── SUPABASE CONFIG ──
 const SB_URL = "https://ozltzozlnfpqhgviidvc.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im96bHR6b3psbmZwcWhndmlpZHZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyNjY0OTMsImV4cCI6MjA5MTg0MjQ5M30.L3RZdu4lLqnPaXKGPyXsoYYQI53Lcv9B3bTYFsT5CVQ";
-const sbHeaders = {
-  "apikey": SB_KEY,
-  "Authorization": `Bearer ${SB_KEY}`,
-  "Content-Type": "application/json"
+const sbFetch = (table, method, body) => fetch(`${SB_URL}/rest/v1/${table}`, {
+  method,
+  headers: {
+    "apikey": SB_KEY,
+    "Authorization": `Bearer ${SB_KEY}`,
+    "Content-Type": "application/json",
+    "Prefer": "return=minimal"
+  },
+  body: body ? JSON.stringify(body) : undefined
+});
+
+// ── COUNTRY LIST ──
+const COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Belarus", "Belgium", "Bolivia", "Bosnia and Herzegovina", "Brazil", "Brunei", "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Northern Cyprus (TRNC)", "Denmark", "Dominican Republic", "Ecuador", "Egypt", "Estonia", "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece", "Guatemala", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Libya", "Lithuania", "Luxembourg", "Malaysia", "Maldives", "Malta", "Mexico", "Moldova", "Mongolia", "Montenegro", "Morocco", "Myanmar", "Nepal", "Netherlands", "New Zealand", "Nigeria", "North Macedonia", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saudi Arabia", "Senegal", "Serbia", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Tunisia", "Turkey", "Turkmenistan", "UAE", "Uganda", "Ukraine", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
+
+// ── UI TRANSLATIONS (TR + EN full, others fallback to EN) ──
+const T = {
+  tr: {
+    title: "Posterior Malleol Kırığı Yönetimi Anketi",
+    subtitle: "Uluslararası Cerrahi Pratik Varyasyonu Çalışması",
+    lang_title: "Lütfen dilinizi seçiniz",
+    lang_subtitle: "Please select your language",
+    consent_title: "Bilgilendirilmiş Onam",
+    consent_text: "Bu çalışma, posterior malleol kırıklarının cerrahi yönetimindeki güncel eğilimleri ve pratik varyasyonu değerlendirmeyi amaçlayan uluslararası bir anket çalışmasıdır. Katılımınız tamamen gönüllüdür ve anonim olarak kaydedilecektir. Herhangi bir hasta verisi toplanmamaktadır. Çalışma Dr. Suat Günsel Girne Üniversitesi Hastanesi Etik Kurulu tarafından onaylanmıştır.",
+    consent_agree: "Okudum, anladım ve katılmayı kabul ediyorum",
+    next: "Devam",
+    prev: "Geri",
+    submit: "Anketi Gönder",
+    save_warning: "Yanıtlarınız henüz kaydedilmedi!",
+    thank_title: "Teşekkürler!",
+    thank_text: "Anketi tamamladığınız için teşekkür ederiz. Katkınız son derece değerlidir.",
+    results_q: "Çalışma sonuçlarından haberdar olmak ister misiniz?",
+    email_ph: "E-posta adresiniz",
+    email_btn: "Gönder",
+    fix_q: "Bu vakada posterior malleolü fikse eder misiniz?",
+    pos_q: "Ameliyata hangi pozisyonda başlarsınız?",
+    app_q: "Hangi cerrahi yaklaşımı tercih edersiniz?",
+    seq_q: "Fiksasyon sıranız ne olur?",
+    tech_q: "PM fiksasyonu için hangi teknik ve implantı tercih edersiniz?",
+    fix_yes: "Evet",
+    fix_no: "Hayır",
+    likert: ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"],
+    view_ct: "BT'yi İncele",
+    select_all: "Birden fazla seçebilirsiniz",
+    last_section: "Bu anketin son bölümüdür. Yanıtlarınızı göndermek için lütfen tamamlayınız.",
+    country_ph: "Ülke arayın...",
+    country_label: "Çalıştığınız ülke",
+    badge_info: "soru · 8–10 dk · Anonim · Etik onaylı"
+  },
+  en: {
+    title: "Posterior Malleolus Fracture Management Survey",
+    subtitle: "International Surgical Practice Variation Study",
+    lang_title: "Lütfen dilinizi seçiniz",
+    lang_subtitle: "Please select your language",
+    consent_title: "Informed Consent",
+    consent_text: "This study is an international survey evaluating current trends and practice variation in the surgical management of posterior malleolus fractures. Your participation is entirely voluntary and will be recorded anonymously. No patient data is collected. This study has been approved by the Ethics Committee of Dr. Suat Günsel Kyrenia University Hospital.",
+    consent_agree: "I have read, understood, and agree to participate",
+    next: "Next",
+    prev: "Back",
+    submit: "Submit Survey",
+    save_warning: "Your responses have not been saved!",
+    thank_title: "Thank You!",
+    thank_text: "Thank you for completing the survey. Your contribution is extremely valuable.",
+    results_q: "Would you like to be notified about the study results?",
+    email_ph: "Your email address",
+    email_btn: "Submit",
+    fix_q: "Would you fix the posterior malleolus in this case?",
+    pos_q: "In what position would you start the surgery?",
+    app_q: "Which surgical approach would you prefer?",
+    seq_q: "What would be your fixation sequence?",
+    tech_q: "Which technique and implant would you prefer for PM fixation?",
+    fix_yes: "Yes",
+    fix_no: "No",
+    likert: ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"],
+    view_ct: "View CT",
+    select_all: "Select all that apply",
+    last_section: "This is the final section of the survey. Please complete it to submit your responses.",
+    country_ph: "Search country...",
+    country_label: "Country of practice",
+    badge_info: "questions · 8–10 min · Anonymous · Ethics approved"
+  }
 };
-const sbGet = async (table, query = "") => {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
-    headers: {
-      ...sbHeaders,
-      "Prefer": "return=representation"
-    }
-  });
-  return r.json();
+const t = (lang, key) => (T[lang] || T.en)[key] || T.en[key] || key;
+
+// ── SECTIONS ──
+const SECTIONS = {
+  A: {
+    title: {
+      tr: "A — Demografik Bilgiler",
+      en: "A — Demographics"
+    },
+    questions: [{
+      id: "a2",
+      type: "single",
+      text: {
+        tr: "Uzman olarak kaç yıldır çalışıyorsunuz?",
+        en: "How many years have you been practicing as a specialist?"
+      },
+      opts: [{
+        tr: "< 5 yıl",
+        en: "< 5 years"
+      }, {
+        tr: "5–10 yıl",
+        en: "5–10 years"
+      }, {
+        tr: "11–20 yıl",
+        en: "11–20 years"
+      }, {
+        tr: "> 20 yıl",
+        en: "> 20 years"
+      }]
+    }, {
+      id: "a3",
+      type: "single",
+      text: {
+        tr: "Çalıştığınız kurum tipi nedir?",
+        en: "What type of institution do you work in?"
+      },
+      opts: [{
+        tr: "Devlet hastanesi — 3. basamak",
+        en: "Public hospital — tertiary"
+      }, {
+        tr: "Özel hastane — 3. basamak",
+        en: "Private hospital — tertiary"
+      }, {
+        tr: "Devlet hastanesi — 2. basamak",
+        en: "Public hospital — secondary"
+      }, {
+        tr: "Özel hastane — 2. basamak",
+        en: "Private hospital — secondary"
+      }, {
+        tr: "Serbest hekim",
+        en: "Independent practitioner"
+      }]
+    }, {
+      id: "a4",
+      type: "country",
+      text: {
+        tr: "Çalıştığınız ülke",
+        en: "Country of practice"
+      }
+    }, {
+      id: "a5",
+      type: "single",
+      text: {
+        tr: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
+        en: "Approximately how many ankle fracture surgeries do you perform per year?"
+      },
+      opts: [{
+        tr: "< 20",
+        en: "< 20"
+      }, {
+        tr: "20–50",
+        en: "20–50"
+      }, {
+        tr: "51–100",
+        en: "51–100"
+      }, {
+        tr: "> 100",
+        en: "> 100"
+      }]
+    }]
+  },
+  B: {
+    title: {
+      tr: "B — PM Kırığı Deneyimi",
+      en: "B — PM Fracture Exposure"
+    },
+    questions: [{
+      id: "b1",
+      type: "single",
+      text: {
+        tr: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
+        en: "Approximately how many posterior malleolus fractures do you encounter per month?"
+      },
+      opts: [{
+        tr: "< 2",
+        en: "< 2"
+      }, {
+        tr: "2–5",
+        en: "2–5"
+      }, {
+        tr: "6–10",
+        en: "6–10"
+      }, {
+        tr: "> 10",
+        en: "> 10"
+      }]
+    }, {
+      id: "b2",
+      type: "single",
+      text: {
+        tr: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
+        en: "Do you routinely order CT scans for ankle fractures?"
+      },
+      opts: [{
+        tr: "Evet — tüm ayak bileği kırıklarında",
+        en: "Yes — for all ankle fractures"
+      }, {
+        tr: "Evet — sadece PM şüphesi varsa",
+        en: "Yes — only if PM fracture is suspected"
+      }, {
+        tr: "Evet — sadece trimalleolar kırıklarda",
+        en: "Yes — only for trimalleolar fractures"
+      }, {
+        tr: "Hayır — sadece grafiye dayanarak karar veririm",
+        en: "No — I decide based on plain radiographs only"
+      }]
+    }]
+  },
+  C: {
+    title: {
+      tr: "C — Sınıflama",
+      en: "C — Classification"
+    },
+    questions: [{
+      id: "c1",
+      type: "multi",
+      text: {
+        tr: "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?",
+        en: "Which classification systems do you use when evaluating PM fractures?"
+      },
+      opts: [{
+        tr: "Haraguchi sınıflaması",
+        en: "Haraguchi classification"
+      }, {
+        tr: "Bartoníček/Rammelt sınıflaması",
+        en: "Bartoníček/Rammelt classification"
+      }, {
+        tr: "Mason & Molloy sınıflaması",
+        en: "Mason & Molloy classification"
+      }, {
+        tr: "AO/OTA sınıflaması",
+        en: "AO/OTA classification"
+      }, {
+        tr: "Lauge-Hansen sınıflaması",
+        en: "Lauge-Hansen classification"
+      }, {
+        tr: "Fragment boyutu (% eklem yüzeyi)",
+        en: "Fragment size (% articular surface)"
+      }, {
+        tr: "Spesifik bir sınıflama kullanmıyorum",
+        en: "I do not use a specific classification"
+      }]
+    }, {
+      id: "c2",
+      type: "single",
+      text: {
+        tr: "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?",
+        en: "Does the classification system guide your treatment decisions?"
+      },
+      opts: [{
+        tr: "Evet — primer olarak sınıflamaya göre karar veririm",
+        en: "Yes — I primarily decide based on classification"
+      }, {
+        tr: "Kısmen — sınıflama faktörlerden biridir",
+        en: "Partially — classification is one of several factors"
+      }, {
+        tr: "Hayır — sınıflamadan bağımsız değerlendiririm",
+        en: "No — I evaluate independently of classification"
+      }]
+    }]
+  },
+  D: {
+    title: {
+      tr: "D — Fiksasyon Endikasyonları",
+      en: "D — Fixation Indications"
+    },
+    questions: [{
+      id: "d1",
+      type: "single",
+      text: {
+        tr: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
+        en: "What is your minimum articular surface involvement threshold for fixing the PM fragment?"
+      },
+      opts: [{
+        tr: "< %10",
+        en: "< 10%"
+      }, {
+        tr: "%10–25",
+        en: "10–25%"
+      }, {
+        tr: "%25–33",
+        en: "25–33%"
+      }, {
+        tr: "> %33",
+        en: "> 33%"
+      }, {
+        tr: "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim",
+        en: "I fix all PM fractures regardless of fragment size"
+      }, {
+        tr: "Boyut tek başına karar verdirici değildir",
+        en: "Size alone is not decisive"
+      }]
+    }, {
+      id: "d3",
+      type: "multi",
+      text: {
+        tr: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
+        en: "Which factors influence your PM fixation decision?"
+      },
+      opts: [{
+        tr: "Artiküler step-off miktarı",
+        en: "Articular step-off"
+      }, {
+        tr: "Fibular notch tutulumu",
+        en: "Fibular notch involvement"
+      }, {
+        tr: "Sindesmoz instabilitesi",
+        en: "Syndesmotic instability"
+      }, {
+        tr: "Fragment morfolojisi (Bartoníček/Haraguchi tipi)",
+        en: "Fragment morphology (Bartoníček/Haraguchi type)"
+      }, {
+        tr: "Hasta yaşı ve aktivite düzeyi",
+        en: "Patient age and activity level"
+      }, {
+        tr: "Kemik kalitesi (osteoporoz)",
+        en: "Bone quality (osteoporosis)"
+      }, {
+        tr: "Yumuşak doku durumu",
+        en: "Soft tissue condition"
+      }, {
+        tr: "İmpakte artiküler fragment varlığı",
+        en: "Presence of impacted articular fragments"
+      }, {
+        tr: "Komorbidite (DM, sigara vb.)",
+        en: "Comorbidities (DM, smoking, etc.)"
+      }]
+    }]
+  },
+  E: {
+    title: {
+      tr: "E — Teknik Tercihler",
+      en: "E — Technique Preferences"
+    },
+    questions: [{
+      id: "e1",
+      type: "single",
+      text: {
+        tr: "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?",
+        en: "What is your most commonly preferred technique for PM fixation?"
+      },
+      opts: [{
+        tr: "Perkütan AP lag vida",
+        en: "Percutaneous AP lag screw"
+      }, {
+        tr: "Perkütan PA lag vida",
+        en: "Percutaneous PA lag screw"
+      }, {
+        tr: "Trans-Achilles perkütan PA vida",
+        en: "Trans-Achilles percutaneous PA screw"
+      }, {
+        tr: "Açık posterolateral — buttress/locking plak",
+        en: "Open posterolateral — buttress/locking plate"
+      }, {
+        tr: "Açık posterolateral — lag vida",
+        en: "Open posterolateral — lag screw"
+      }]
+    }, {
+      id: "e2",
+      type: "single",
+      text: {
+        tr: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
+        en: "What is your most commonly preferred surgical approach for PM fractures?"
+      },
+      opts: [{
+        tr: "Posterolateral",
+        en: "Posterolateral"
+      }, {
+        tr: "Posteromedial",
+        en: "Posteromedial"
+      }, {
+        tr: "Kombine posterolateral + posteromedial",
+        en: "Combined posterolateral + posteromedial"
+      }, {
+        tr: "Anterior (perkütan)",
+        en: "Anterior (percutaneous)"
+      }, {
+        tr: "Artroskopik",
+        en: "Arthroscopic"
+      }, {
+        tr: "Vakaya göre değişir",
+        en: "Varies by case"
+      }]
+    }, {
+      id: "e3",
+      type: "single",
+      text: {
+        tr: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
+        en: "What is your most commonly preferred patient position for PM fractures?"
+      },
+      opts: [{
+        tr: "Supine",
+        en: "Supine"
+      }, {
+        tr: "Prone",
+        en: "Prone"
+      }, {
+        tr: "Lateral dekübitus",
+        en: "Lateral decubitus"
+      }]
+    }]
+  },
+  F: {
+    title: {
+      tr: "F — Fiksasyon Sırası ve Sindesmoz",
+      en: "F — Fixation Sequence and Syndesmosis"
+    },
+    questions: [{
+      id: "f1",
+      type: "single",
+      text: {
+        tr: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
+        en: "What is your general fixation sequence in trimalleolar fractures?"
+      },
+      opts: [{
+        tr: "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)",
+        en: "Fibula → PM → Medial malleolus → Syndesmosis (if unstable)"
+      }, {
+        tr: "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)",
+        en: "PM first → Fibula → Medial malleolus → Syndesmosis (if unstable)"
+      }, {
+        tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
+        en: "Fibula → Assess syndesmosis → PM → Medial malleolus"
+      }, {
+        tr: "Bireyselleştirilmiş — standart sıram yok",
+        en: "Individualised — no standard sequence"
+      }]
+    }, {
+      id: "f2",
+      type: "single",
+      text: {
+        tr: "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?",
+        en: "How do you assess the syndesmosis after PM fixation?"
+      },
+      opts: [{
+        tr: "İntraoperatif stres testi (eksternal rotasyon / hook test)",
+        en: "Intraoperative stress test (external rotation / hook test)"
+      }, {
+        tr: "Medial clear space değerlendirmesi yeterlidir",
+        en: "Medial clear space assessment is sufficient"
+      }, {
+        tr: "İntraoperatif artroskopi",
+        en: "Intraoperative arthroscopy"
+      }, {
+        tr: "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım",
+        en: "I routinely fix the syndesmosis regardless of stability"
+      }]
+    }, {
+      id: "f3",
+      type: "single",
+      text: {
+        tr: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
+        en: "In your experience, does PM fixation reduce the need for syndesmotic screw placement?"
+      },
+      opts: [{
+        tr: "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar",
+        en: "Yes — consistently; PM fixation restores syndesmotic stability"
+      }, {
+        tr: "Evet — bazı vakalarda",
+        en: "Yes — in some cases"
+      }, {
+        tr: "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder",
+        en: "No — syndesmotic instability often persists despite PM fixation"
+      }, {
+        tr: "Pratiğimde bunu spesifik olarak değerlendirmedim",
+        en: "I have not specifically assessed this in my practice"
+      }]
+    }]
+  }
 };
-const sbPost = async (table, body) => {
-  await fetch(`${SB_URL}/rest/v1/${table}`, {
-    method: "POST",
-    headers: {
-      ...sbHeaders,
-      "Prefer": "return=minimal"
-    },
-    body: JSON.stringify(body)
-  });
-};
-const TH = {
-  bg: "#0a0a0a",
-  sf: "#141414",
-  cd: "#1a1a1a",
-  br: "#2a2a2a",
-  ac: "#D97706",
-  tx: "#E5E5E5",
-  tm: "#888",
-  td: "#555"
-};
-const R = [{
-  id: "levent",
-  name: "Levent Umur",
-  title: "Doç. Dr.",
-  email: "dr.flumur@gmail.com",
-  char: "David Gilmour",
-  band: "Pink Floyd",
-  color: "#5B8DBE",
-  colorImg: "card_gilmour_color_web.png",
-  bwImg: "card_gilmour_bw_web.png",
-  pTrack: "High Hopes",
-  pYear: 1994,
-  pMp3: "mp3/highhopes.mp3",
-  pStory: "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor."
-}, {
-  id: "enes",
-  name: "Enes Sarı",
-  title: "Dr.",
-  email: "esari.md@gmail.com",
-  char: "James Hetfield",
-  band: "Metallica",
-  color: "#E6A817",
-  colorImg: "card_hetfield_color_web.png",
-  bwImg: "card_hetfield_bw_web.png",
-  pTrack: "Nothing Else Matters",
-  pYear: 1991,
-  pMp3: "mp3/nothingelse.mp3",
-  pStory: "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti."
-}, {
-  id: "utku",
-  name: "Utku Gürhan",
-  title: "Op. Dr.",
-  email: "utkugrhn@gmail.com",
-  char: "Slash",
-  band: "Guns N' Roses",
-  color: "#C0392B",
-  colorImg: "card_slash_color_web.png",
-  bwImg: "card_slash_bw_web.png",
-  pTrack: "Sweet Child O' Mine",
-  pYear: 1987,
-  pMp3: "mp3/sweetchild.mp3",
-  pStory: "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi."
-}, {
-  id: "yakup",
-  name: "Yakup Kahve",
-  title: "Dr.",
-  email: "ykahve@hotmail.com",
-  char: "Kurt Cobain",
-  band: "Nirvana",
-  color: "#B8860B",
-  colorImg: "card_cobain_color_web.png",
-  bwImg: "card_cobain_bw_web.png",
-  pTrack: "Come As You Are",
-  pYear: 1991,
-  pMp3: "mp3/comeasyouare.mp3",
-  pStory: "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı."
-}];
-const PG = [{
-  id: "dashboard",
-  label: "Dashboard",
-  icon: "◨",
-  mp3: "mp3/money.mp3",
-  track: "Money for Nothing",
-  artist: "Dire Straits",
-  year: 1985,
-  story: "Knopfler şarkıyı New York'ta bir beyaz eşya mağazasında duyduğu konuşmadan yazdı. Bir tesisatçı, mağazadaki TV'lerde MTV izlerken rock yıldızlarına küfrediyordu. Knopfler mikrodalgaların arasından adamı gizlice dinledi ve sözleri bir kağıt peçeteye not etti. Sting tesadüfen aynı stüdyodaydı ve ikonik intro'yu tek seferde söyledi."
-}, {
-  id: "responses",
-  label: "Yanıtlar",
-  icon: "☰",
-  mp3: "mp3/bridge.mp3",
-  track: "Under the Bridge",
-  artist: "RHCP",
-  year: 1991,
-  story: "Kiedis bu şarkıyı yalnızlık ve bağımlılıktan çıkış sürecinde yazdı. Sözleri bir şiir defterinde saklıyordu, kimseye göstermedi. Prodüktör Rick Rubin defteri karıştırırken buldu ve 'Bu bir şarkı olmalı' dedi. Kiedis ilk başta itiraz etti — çok kişisel buluyordu."
-}, {
-  id: "statistics",
-  label: "İstatistik",
-  icon: "⊞",
-  mp3: "mp3/sandman.mp3",
-  track: "Enter Sandman",
-  artist: "Metallica",
-  year: 1991,
-  story: "Hammett ana riff'i gece 2-3 civarında Soundgarden dinledikten sonra yazdı. Hetfield'ın orijinal sözleri bebek ölümü hakkındaydı. Prodüktör Bob Rock ve Ulrich, Hetfield'a ilk kez sözlerini değiştirmesini söyleme cesaretini gösterdi. Rock sonra anlattı: 'Kimse daha önce James'e sözleri hakkında bir şey söylememişti.'"
-}, {
-  id: "feedback",
-  label: "Geri Bildirim",
-  icon: "◉",
-  mp3: "mp3/teensprit.mp3",
-  track: "Smells Like Teen Spirit",
-  artist: "Nirvana",
-  year: 1991,
-  story: "Cobain, 1994'te Rolling Stone'a 'Mükemmel pop şarkısını yazmaya çalışıyordum. Pixies'i taklit etmeye çalışıyordum, itiraf etmeliyim' dedi. Şarkının adı, Kathleen Hanna'nın sarhoş bir gece Kurt'ün duvarına yazdığı 'Kurt smells like Teen Spirit' cümlesinden geldi. Kurt bunun devrimci bir slogan olduğunu sandı — aslında bir kız deodorantı markasıydı."
-}, {
-  id: "backup",
-  label: "Yedekleme",
-  icon: "⟳",
-  mp3: "mp3/novamberrain.mp3",
-  track: "November Rain",
-  artist: "Guns N' Roses",
-  year: 1991,
-  story: "Axl Rose bu şarkı üzerinde 1983'ten 1991'e kadar çalıştı. Orijinal demo 18 dakikaydı. Slash'in çölde yağmur altında solo çalması rock tarihinin en ikonik görüntülerinden biri oldu. Slash sonra 'O sahneyi çekerken gerçekten yağmur başladı, planlanmamıştı' dedi."
-}, {
-  id: "settings",
-  label: "Ayarlar",
-  icon: "⚙",
-  mp3: "mp3/learningtofly.mp3",
-  track: "Learning to Fly",
-  artist: "Pink Floyd",
-  year: 1987,
-  story: "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu."
-}];
-
-// ── INTRO (Vintage Amp) ──
-function IntroScreen({
-  onStart
-}) {
-  const [hover, setHover] = React.useState(false);
-  const [pressed, setPressed] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
-  const [loadPct, setLoadPct] = React.useState(0);
-  const handlePlay = () => {
-    setPressed(true);
-    setLoading(true);
-    if (!window._loginAudio) {
-      window._loginAudio = new Audio('/mp3/welcome.mp3');
-      window._loginAudio.preload = "auto";
-      window._loginAudio.volume = 0.5;
-    }
-    // Start preloading money.mp3 (Dashboard) in parallel — this is the next audio user will hear
-    if (!window._preloadedMoney) {
-      window._preloadedMoney = new Audio('/mp3/money.mp3');
-      window._preloadedMoney.preload = "auto";
-      window._preloadedMoney.load();
-    }
-    const audio = window._loginAudio;
-    let proceeded = false;
-    const startTime = Date.now();
-    const proceed = () => {
-      if (proceeded) return;
-      proceeded = true;
-      const elapsed = Date.now() - startTime;
-      const delay = Math.max(800 - elapsed, 0);
-      setTimeout(() => {
-        audio.play().catch(() => {});
-        setTimeout(onStart, 300);
-      }, delay);
-    };
-    const updateProgress = () => {
-      if (audio.buffered.length > 0 && audio.duration) {
-        const loaded = audio.buffered.end(audio.buffered.length - 1);
-        setLoadPct(Math.round(loaded / audio.duration * 100));
-      }
-    };
-    audio.addEventListener('progress', updateProgress);
-    audio.addEventListener('canplay', proceed, {
-      once: true
-    });
-    audio.addEventListener('loadeddata', proceed, {
-      once: true
-    });
-    if (audio.readyState >= 2) proceed();
-    audio.load();
-    setTimeout(proceed, 10000);
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      minHeight: "100vh",
-      background: "radial-gradient(ellipse at center,#1a0e00 0%,#0a0500 60%,#000 100%)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px",
-      overflow: "hidden",
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 0,
-      left: "15%",
-      width: 2,
-      height: "50%",
-      background: "linear-gradient(180deg,rgba(217,119,6,0.3),transparent)",
-      transform: "rotate(15deg)",
-      transformOrigin: "top"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 0,
-      right: "15%",
-      width: 2,
-      height: "50%",
-      background: "linear-gradient(180deg,rgba(91,141,190,0.3),transparent)",
-      transform: "rotate(-15deg)",
-      transformOrigin: "top"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      top: 0,
-      left: "40%",
-      width: 2,
-      height: "40%",
-      background: "linear-gradient(180deg,rgba(192,57,43,0.25),transparent)",
-      transform: "rotate(5deg)",
-      transformOrigin: "top"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      zIndex: 2
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 11,
-      color: "#6a4a1a",
-      letterSpacing: 8,
-      textTransform: "uppercase",
-      marginBottom: 12,
-      fontFamily: "Georgia,serif"
-    }
-  }, "Posterior Malleolus Survey"), /*#__PURE__*/React.createElement("h1", {
-    style: {
-      fontSize: "clamp(36px,8vw,72px)",
-      fontWeight: 900,
-      margin: "0 0 8px",
-      fontFamily: "Impact,'Arial Black',sans-serif",
-      letterSpacing: "4px",
-      color: "#F59E0B",
-      textShadow: "0 0 20px rgba(245,158,11,0.8), 0 0 40px rgba(245,158,11,0.4), 0 0 80px rgba(245,158,11,0.2)",
-      animation: "neonFlicker 3s ease-in-out infinite"
-    }
-  }, "CONTROL ROOM"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 16,
-      marginBottom: 48
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 60,
-      height: 1,
-      background: "linear-gradient(90deg,transparent,#D97706)"
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#D97706",
-      fontSize: 10,
-      letterSpacing: 4,
-      textTransform: "uppercase"
-    }
-  }, "Est. 2026 \xB7 Rock n' Roll Admin"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 60,
-      height: 1,
-      background: "linear-gradient(270deg,transparent,#D97706)"
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "center",
-      gap: 3,
-      marginBottom: 40,
-      height: 40,
-      alignItems: "flex-end"
-    }
-  }, [...Array(16)].map((_, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      width: 6,
-      height: `${20 + Math.sin(i * 0.8) * 15 + Math.cos(i * 0.3) * 10}px`,
-      background: i < 10 ? "linear-gradient(0deg,#D97706,#F59E0B)" : i < 14 ? "linear-gradient(0deg,#F59E0B,#EAB308)" : "linear-gradient(0deg,#EAB308,#DC2626)",
-      borderRadius: 1,
-      opacity: 0.4,
-      animation: `vuBar 1.${i % 9}s ease-in-out infinite alternate`
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "relative",
-      display: "inline-block"
-    }
-  }, loading ?
-  /*#__PURE__*/
-  // Hourglass / Loading spinner with % progress
-  React.createElement("div", {
-    style: {
-      width: 180,
-      height: 180,
-      borderRadius: "50%",
-      background: "radial-gradient(circle at 30% 30%,#2a1a08,#1a0a00 70%)",
-      border: "6px solid #000",
-      boxShadow: "0 0 40px rgba(245,158,11,0.4), inset 0 0 30px rgba(0,0,0,0.6)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      inset: 20,
-      border: "4px solid transparent",
-      borderTopColor: "#F59E0B",
-      borderRightColor: "rgba(245,158,11,0.5)",
-      borderRadius: "50%",
-      animation: "spinner 1s linear infinite"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 32,
-      color: "#F59E0B",
-      animation: "hourglassPulse 1.5s ease-in-out infinite"
-    }
-  }, "\u23F3"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: "#F59E0B",
-      fontSize: 16,
-      fontWeight: 700,
-      fontFamily: "Georgia,serif",
-      marginTop: 4
-    }
-  }, loadPct, "%")) : /*#__PURE__*/React.createElement("button", {
-    onMouseEnter: () => setHover(true),
-    onMouseLeave: () => setHover(false),
-    onClick: handlePlay,
-    style: {
-      width: 180,
-      height: 180,
-      borderRadius: "50%",
-      background: hover ? "radial-gradient(circle at 30% 30%,#F59E0B,#D97706 50%,#78350F)" : "radial-gradient(circle at 30% 30%,#E5E5E5,#737373 50%,#1a1a1a)",
-      border: "6px solid #000",
-      boxShadow: hover ? "0 0 60px rgba(245,158,11,0.8), inset 0 0 30px rgba(0,0,0,0.4), inset 0 4px 20px rgba(255,255,255,0.3)" : "0 0 30px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5), inset 0 4px 12px rgba(255,255,255,0.2)",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      transform: hover ? "scale(1.05)" : "scale(1)",
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 0,
-      height: 0,
-      borderLeft: `48px solid ${hover ? "#fff" : "#1a1a1a"}`,
-      borderTop: "30px solid transparent",
-      borderBottom: "30px solid transparent",
-      position: "absolute",
-      top: "50%",
-      left: "56%",
-      transform: "translate(-50%,-50%)",
-      filter: hover ? "drop-shadow(0 0 8px rgba(255,255,255,0.6))" : "none",
-      transition: "all 0.3s ease"
-    }
-  })), !loading && /*#__PURE__*/React.createElement("div", {
-    style: {
-      position: "absolute",
-      inset: -20,
-      borderRadius: "50%",
-      border: "2px solid rgba(245,158,11,0.3)",
-      animation: hover ? "pulse 1.5s ease-in-out infinite" : "none",
-      pointerEvents: "none"
-    }
-  })), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "#737373",
-      fontSize: 12,
-      letterSpacing: 6,
-      textTransform: "uppercase",
-      marginTop: 32,
-      fontWeight: 600,
-      animation: "blink 2s ease-in-out infinite"
-    }
-  }, loading ? `◈ LOADING TRACK ${loadPct}% ◈` : "▸ Press Play to Enter ◂"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 48,
-      display: "flex",
-      justifyContent: "center",
-      gap: 24,
-      color: "#404040",
-      fontSize: 9,
-      letterSpacing: 2,
-      textTransform: "uppercase"
-    }
-  }, /*#__PURE__*/React.createElement("span", null, "\u25C9 REC"), /*#__PURE__*/React.createElement("span", null, "\u25C6 33\u2153 RPM"), /*#__PURE__*/React.createElement("span", null, "\u266B STEREO"), /*#__PURE__*/React.createElement("span", null, "\u25A1 DOLBY"))), /*#__PURE__*/React.createElement("style", null, `
-        @keyframes neonFlicker { 0%,100%{opacity:1;text-shadow:0 0 20px rgba(245,158,11,0.8),0 0 40px rgba(245,158,11,0.4),0 0 80px rgba(245,158,11,0.2)} 50%{opacity:0.92;text-shadow:0 0 25px rgba(245,158,11,1),0 0 50px rgba(245,158,11,0.6),0 0 100px rgba(245,158,11,0.3)} 55%{opacity:0.85} }
-        @keyframes vuBar { 0%{height:8px;opacity:0.2} 100%{height:38px;opacity:0.9} }
-        @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.15);opacity:0.2} }
-        @keyframes blink { 0%,100%{opacity:0.8} 50%{opacity:0.3} }
-        @keyframes spinner { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        @keyframes hourglassPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.1)} }
-      `));
-}
-
-// ── LOGIN ──
-function LoginPage({
-  onLogin
-}) {
-  const [hover, setHover] = useState(null);
-  const [selected, setSelected] = useState(null);
-  const [pass, setPass] = useState("");
-  const [err, setErr] = useState("");
-
-  // Preload all page MP3s sequentially when login page mounts
-  // money.mp3 was already started by IntroScreen's handlePlay
-  useEffect(() => {
-    if (!window._pageAudios) window._pageAudios = {};
-    // Pre-use already-loaded money if available
-    if (window._preloadedMoney && !window._pageAudios.dashboard) {
-      window._pageAudios.dashboard = window._preloadedMoney;
-    }
-    // Queue all other pages for sequential preload
-    const remainingPages = PG.filter(pg => pg.mp3 && !window._pageAudios[pg.id]);
-    remainingPages.forEach((pg, idx) => {
-      // Stagger loads slightly so they don't all compete for bandwidth
-      setTimeout(() => {
-        if (!window._pageAudios[pg.id]) {
-          const audio = new Audio('/' + pg.mp3);
-          audio.preload = "auto";
-          audio.load();
-          window._pageAudios[pg.id] = audio;
-        }
-      }, idx * 200);
-    });
-  }, []);
-  const handleLogin = () => {
-    if (pass.length >= 4) {
-      // Ensure all audio objects exist (in case preload hasn't completed yet)
-      // Creating during click grants autoplay permission
-      if (!window._pageAudios) window._pageAudios = {};
-      PG.forEach(pg => {
-        if (pg.mp3 && !window._pageAudios[pg.id]) {
-          const audio = new Audio('/' + pg.mp3);
-          audio.preload = "auto";
-          audio.load();
-          window._pageAudios[pg.id] = audio;
-        }
-      });
-      // Also create researcher profile audios
-      if (!window._profAudio) window._profAudio = {};
-      onLogin(selected);
-    } else setErr("Geçersiz şifre");
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      minHeight: "100vh",
-      background: "linear-gradient(180deg,#080808 0%,#0f0a05 50%,#080808 100%)",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      marginBottom: 40
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 14,
-      color: TH.td,
-      letterSpacing: 6,
-      textTransform: "uppercase",
-      marginBottom: 8
-    }
-  }, "Posterior Malleolus Survey"), /*#__PURE__*/React.createElement("h1", {
-    style: {
-      color: TH.ac,
-      fontSize: 36,
-      fontWeight: 800,
-      margin: 0,
-      fontFamily: "Georgia,serif",
-      letterSpacing: 3
-    }
-  }, "CONTROL ROOM"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 60,
-      height: 2,
-      background: TH.ac,
-      margin: "12px auto 0",
-      borderRadius: 1
-    }
-  })), !selected ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 16,
-      flexWrap: "wrap",
-      justifyContent: "center",
-      maxWidth: 900
-    }
-  }, R.map((r, i) => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    onMouseEnter: () => setHover(r.id),
-    onMouseLeave: () => setHover(null),
-    onClick: () => {
-      setSelected(r);
-      setPass("");
-      setErr("");
-    },
-    style: {
-      width: 180,
-      cursor: "pointer",
-      transition: "all 0.4s ease",
-      transform: hover === r.id ? "translateY(-8px) scale(1.03)" : "scale(1)",
-      filter: hover === r.id ? "none" : hover ? "brightness(0.5)" : "grayscale(1)",
-      position: "relative"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      borderRadius: 12,
-      overflow: "hidden",
-      border: `2px solid ${hover === r.id ? r.color : TH.br}`,
-      transition: "border-color 0.3s"
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: hover === r.id ? r.colorImg : r.bwImg,
-    alt: r.char,
-    style: {
-      width: "100%",
-      display: "block",
-      transition: "all 0.4s ease"
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      marginTop: 10,
-      transition: "opacity 0.3s",
-      opacity: hover === r.id ? 1 : 0.5
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: hover === r.id ? r.color : TH.tm,
-      fontSize: 13,
-      fontWeight: 600,
-      transition: "color 0.3s"
-    }
-  }, r.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.td,
-      fontSize: 10
-    }
-  }, r.title))))), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.td,
-      fontSize: 12,
-      marginTop: 32,
-      textAlign: "center"
-    }
-  }, "Giri\u015F yapmak i\xE7in kart\u0131n\u0131z\u0131 se\xE7in"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 24,
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 10
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      const a = window._loginAudio || (window._loginAudio = new Audio('/mp3/welcome.mp3'));
-      if (a.paused) {
-        a.play().catch(() => {});
-        document.getElementById('lp_btn').textContent = '⏸';
-      } else {
-        a.pause();
-        document.getElementById('lp_btn').textContent = '▶';
-      }
-    },
-    id: "lp_btn",
-    style: {
-      width: 28,
-      height: 28,
-      borderRadius: 14,
-      border: `1px solid ${TH.br}`,
-      background: "transparent",
-      color: TH.ac,
-      fontSize: 12,
-      cursor: "pointer"
-    }
-  }, "\u25B6"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.td,
-      fontSize: 10,
-      margin: 0
-    }
-  }, "\u266B Welcome to the Jungle \u2014 Guns N' Roses (1987)")), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.td,
-      fontSize: 9,
-      fontStyle: "italic",
-      marginTop: 8,
-      maxWidth: 400,
-      lineHeight: 1.5,
-      marginLeft: "auto",
-      marginRight: "auto"
-    }
-  }, "Axl Rose, \u015Fark\u0131n\u0131n s\xF6zlerini Greyhound otob\xFCs\xFCyle LA'e ilk geldi\u011Fi gece ya\u015Fad\u0131klar\u0131ndan yazd\u0131. Otob\xFCsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi."))) :
-  /*#__PURE__*/
-  /* Password entry after card selection */
-  React.createElement("div", {
-    style: {
-      textAlign: "center",
-      maxWidth: 360
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 16,
-      marginBottom: 24
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: selected.colorImg,
-    alt: selected.char,
-    style: {
-      width: 80,
-      borderRadius: 8,
-      border: `2px solid ${selected.color}`
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "left"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 16,
-      fontWeight: 700
-    }
-  }, selected.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: selected.color,
-      fontSize: 12
-    }
-  }, selected.char), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.td,
-      fontSize: 10,
-      fontStyle: "italic"
-    }
-  }, selected.band))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 24
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "password",
-    placeholder: "\u015Eifre",
-    value: pass,
-    onChange: e => {
-      setPass(e.target.value);
-      setErr("");
-    },
-    onKeyDown: e => e.key === "Enter" && handleLogin(),
-    autoFocus: true,
-    style: {
-      width: "100%",
-      padding: "12px 16px",
-      borderRadius: 8,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg,
-      color: TH.tx,
-      fontSize: 14,
-      outline: "none",
-      boxSizing: "border-box",
-      marginBottom: 12
-    }
-  }), err && /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: "#E53E3E",
-      fontSize: 12,
-      margin: "0 0 8px"
-    }
-  }, err), /*#__PURE__*/React.createElement("button", {
-    onClick: handleLogin,
-    style: {
-      width: "100%",
-      padding: 12,
-      borderRadius: 8,
-      border: "none",
-      background: selected.color,
-      color: "#fff",
-      fontSize: 14,
-      fontWeight: 700,
-      cursor: "pointer",
-      transition: "opacity 0.2s"
-    }
-  }, "Giri\u015F Yap")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setSelected(null),
-    style: {
-      background: "none",
-      border: "none",
-      color: TH.tm,
-      fontSize: 12,
-      marginTop: 16,
-      cursor: "pointer"
-    }
-  }, "\u2190 Ba\u015Fka karakter se\xE7")));
-}
-
-// ── MUSIC STORY CARD ──
-function MusicStory({
-  page
-}) {
-  const p = PG.find(pg => pg.id === page) || PG[0];
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: `linear-gradient(135deg,${TH.cd} 0%,#1f1a14 100%)`,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 20
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 36,
-      height: 36,
-      borderRadius: 8,
-      background: `${TH.ac}22`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 16,
-      color: TH.ac
-    }
-  }, "\u266B"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.ac,
-      fontSize: 13,
-      fontWeight: 600
-    }
-  }, p.track), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tm,
-      fontSize: 11
-    }
-  }, p.artist, " \xB7 ", p.year))), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tm,
-      fontSize: 11,
-      lineHeight: 1.7,
-      margin: 0
-    }
-  }, p.story));
-}
-
-// ── MUSIC BAR ──
-function MusicBar({
-  page,
-  playing,
-  setPlaying,
-  volume,
-  setVolume
-}) {
-  const p = PG.find(pg => pg.id === page) || PG[0];
-  const audioRef = React.useRef(null);
-  const [progress, setProgress] = React.useState(0);
-  const [duration, setDuration] = React.useState(0);
-  React.useEffect(() => {
-    // Pause any previously playing audio from other pages
-    if (audioRef.current && audioRef.current !== window._pageAudios?.[page]) {
-      audioRef.current.pause();
-    }
-    // Get the pre-created audio for this page (created during login click)
-    const a = window._pageAudios?.[page];
-    if (!a) return;
-    audioRef.current = a;
-
-    // Attach listeners (idempotent — check flag to prevent duplicates)
-    if (!a._listenersAttached) {
-      a._listenersAttached = true;
-      a.addEventListener('timeupdate', () => {
-        if (a.duration) setProgress(a.currentTime / a.duration * 100);
-      });
-      a.addEventListener('loadedmetadata', () => setDuration(a.duration));
-      a.addEventListener('ended', () => {
-        setPlaying(false);
-        setProgress(0);
-      });
-      a.addEventListener('play', () => setPlaying(true));
-      a.addEventListener('pause', () => setPlaying(false));
-    } else {
-      if (a.duration) setDuration(a.duration);
-      if (a.duration) setProgress(a.currentTime / a.duration * 100);
-    }
-    a.volume = volume / 100;
-
-    // Only start playing if not already playing
-    if (a.paused) {
-      const forcePlay = () => {
-        if (a.paused) {
-          a.play().catch(() => {
-            const retry = () => {
-              if (a.paused) a.play().catch(() => {});
-            };
-            a.addEventListener('canplay', retry, {
-              once: true
-            });
-            a.addEventListener('loadeddata', retry, {
-              once: true
-            });
-          });
-        }
-      };
-      forcePlay();
-    }
-  }, [page]);
-  React.useEffect(() => {
-    const a = audioRef.current;
-    if (!a) return;
-    // Only act if audio state differs from playing state (avoid feedback loop)
-    if (playing && a.paused) a.play().catch(() => {});else if (!playing && !a.paused) a.pause();
-  }, [playing]);
-  React.useEffect(() => {
-    const a = audioRef.current;
-    if (a) a.volume = volume / 100;
-  }, [volume]);
-  const seekTo = e => {
-    const a = audioRef.current;
-    if (!a || !a.duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    a.currentTime = pct * a.duration;
-  };
-  const fmt = s => {
-    if (!s || isNaN(s)) return "0:00";
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec < 10 ? '0' : ''}${sec}`;
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: "#0d0d0d",
-      borderTop: `1px solid ${TH.br}`,
-      padding: "8px 20px",
-      display: "flex",
-      alignItems: "center",
-      gap: 16,
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      zIndex: 50
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setPlaying(!playing),
-    style: {
-      background: "none",
-      border: "none",
-      color: TH.ac,
-      fontSize: 18,
-      cursor: "pointer",
-      padding: 4,
-      width: 28
-    }
-  }, playing ? "⏸" : "▶"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 12,
-      fontWeight: 600,
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis"
-    }
-  }, p.track, " ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontWeight: 400
-    }
-  }, "\u2014 ", p.artist, " (", p.year, ")")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      marginTop: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 9,
-      minWidth: 28
-    }
-  }, fmt(audioRef.current?.currentTime)), /*#__PURE__*/React.createElement("div", {
-    onClick: seekTo,
-    style: {
-      flex: 1,
-      height: 4,
-      background: TH.br,
-      borderRadius: 2,
-      cursor: "pointer",
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: `${progress}%`,
-      height: "100%",
-      background: TH.ac,
-      borderRadius: 2,
-      transition: "width 0.3s linear"
-    }
-  })), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 9,
-      minWidth: 28
-    }
-  }, fmt(duration)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 6
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 11
-    }
-  }, "\uD83D\uDD0A"), /*#__PURE__*/React.createElement("input", {
-    type: "range",
-    min: "0",
-    max: "100",
-    value: volume,
-    onChange: e => setVolume(+e.target.value),
-    style: {
-      width: 70,
-      accentColor: TH.ac
-    }
-  })));
-}
-
-// ── DASHBOARD ──
-function DashPage() {
-  const [data, setData] = useState({
-    total: 0,
-    complete: 0,
-    avgDur: 0,
-    today: 0,
-    fixes: {}
-  });
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      try {
-        const rows = await sbGet("responses", "select=completed,duration_seconds,created_at,g1_case1_fix,g2_case2_fix,g3_case3_fix,g4_case4_fix");
-        const total = rows.length;
-        const complete = rows.filter(r => r.completed).length;
-        const durations = rows.filter(r => r.duration_seconds).map(r => r.duration_seconds);
-        const avgDur = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length / 60) : 0;
-        const todayStr = new Date().toISOString().split('T')[0];
-        const today = rows.filter(r => r.created_at && r.created_at.startsWith(todayStr)).length;
-        const fixCount = key => {
-          const yes = rows.filter(r => r[key] === 'Evet' || r[key] === 'Yes').length;
-          return total ? Math.round(yes / total * 100) : 0;
-        };
-        setData({
-          total,
-          complete,
-          avgDur,
-          today,
-          fixes: {
-            c1: fixCount('g1_case1_fix'),
-            c2: fixCount('g2_case2_fix'),
-            c3: fixCount('g3_case3_fix'),
-            c4: fixCount('g4_case4_fix')
-          }
-        });
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-    })();
-  }, []);
-  const stats = [{
-    label: "Toplam Yanıt",
-    val: loading ? "..." : data.total,
-    icon: "📋",
-    c: "#D97706"
-  }, {
-    label: "Tamamlanan",
-    val: loading ? "..." : data.complete,
-    icon: "✓",
-    c: "#16A34A"
-  }, {
-    label: "Ort. Süre",
-    val: loading ? "..." : data.avgDur ? `${data.avgDur} dk` : "—",
-    icon: "⏱",
-    c: "#5B8DBE"
-  }, {
-    label: "Bugün",
-    val: loading ? "..." : data.today,
-    icon: "📅",
-    c: "#C0392B"
-  }];
-  const cases = [{
-    l: "Vaka 1 — 52Y K, Bart 2, %20",
-    pct: data.fixes.c1 || 0
-  }, {
-    l: "Vaka 2 — 76Y E, Bart 3, %18",
-    pct: data.fixes.c2 || 0
-  }, {
-    l: "Vaka 3 — 74Y K, Açık 3A, %28",
-    pct: data.fixes.c3 || 0
-  }, {
-    l: "Vaka 4 — 47Y K, İzole PM, %26",
-    pct: data.fixes.c4 || 0
-  }];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-      gap: 14,
-      marginBottom: 24
-    }
-  }, stats.map((s, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: "18px 14px",
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 22,
-      marginBottom: 6
-    }
-  }, s.icon), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: s.c,
-      fontSize: 26,
-      fontWeight: 800
-    }
-  }, s.val), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tm,
-      fontSize: 11,
-      marginTop: 4
-    }
-  }, s.label)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 20
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 16px"
-    }
-  }, "Vaka Bazl\u0131 Fix Oranlar\u0131"), cases.map((c, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      marginBottom: 12
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginBottom: 4
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tm,
-      fontSize: 11
-    }
-  }, c.l), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.ac,
-      fontSize: 11,
-      fontWeight: 600
-    }
-  }, data.total ? `${c.pct}%` : "Henüz veri yok")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 8,
-      background: TH.bg,
-      borderRadius: 4,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: `${c.pct}%`,
-      height: "100%",
-      background: TH.ac,
-      borderRadius: 4,
-      transition: "width 0.5s"
-    }
-  }))))), /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 14px"
-    }
-  }, "Ara\u015Ft\u0131rma Ekibi"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))",
-      gap: 14
-    }
-  }, R.map(r => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      overflow: "hidden"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 3,
-      background: r.color
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: r.colorImg,
-    alt: r.char,
-    style: {
-      width: 40,
-      height: 40,
-      borderRadius: 6,
-      objectFit: "cover",
-      objectPosition: "top"
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 13,
-      fontWeight: 600
-    }
-  }, r.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: r.color,
-      fontSize: 10,
-      fontWeight: 500
-    }
-  }, r.char), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.td,
-      fontSize: 9,
-      fontStyle: "italic"
-    }
-  }, r.band))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      paddingTop: 10,
-      borderTop: `1px solid ${TH.br}`
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      const id = `pr_${r.id}`;
-      if (!window._profAudio) window._profAudio = {};
-      const pa = window._profAudio;
-      Object.keys(pa).forEach(k => {
-        if (k !== r.id && pa[k]) {
-          pa[k].pause();
-          const el = document.getElementById(`pr_${k}`);
-          if (el) el.textContent = '▶';
-        }
-      });
-      if (!pa[r.id]) pa[r.id] = new Audio('/' + r.pMp3);
-      const el = document.getElementById(id);
-      if (pa[r.id].paused) {
-        pa[r.id].play().catch(() => {});
-        if (el) el.textContent = '⏸';
-      } else {
-        pa[r.id].pause();
-        if (el) el.textContent = '▶';
-      }
-    },
-    id: `pr_${r.id}`,
-    style: {
-      width: 24,
-      height: 24,
-      borderRadius: 12,
-      border: `1px solid ${r.color}`,
-      background: "transparent",
-      color: r.color,
-      fontSize: 10,
-      cursor: "pointer",
-      flexShrink: 0
-    }
-  }, "\u25B6"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tm,
-      fontSize: 10,
-      fontWeight: 500,
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis"
-    }
-  }, r.pTrack), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.td,
-      fontSize: 8
-    }
-  }, r.band, " \xB7 ", r.pYear))))))));
-}
-
-// ── RESPONSES ──
-function RespPage() {
-  const [rows, setRows] = useState([]);
-  const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    (async () => {
-      try {
-        const d = await sbGet("responses", "select=*&order=created_at.desc");
-        setRows(d);
-      } catch (e) {
-        console.error(e);
-      }
-      setLoading(false);
-    })();
-  }, []);
-  const exportCSV = () => {
-    if (!rows.length) return;
-    const keys = Object.keys(rows[0]);
-    const csv = [keys.join(","), ...rows.map(r => keys.map(k => {
-      const v = r[k];
-      return typeof v === 'object' ? `"${JSON.stringify(v).replace(/"/g, "'")}"` : v == null ? "" : `"${String(v).replace(/"/g, "'")}"`;
-    }).join(","))].join("\n");
-    const blob = new Blob([csv], {
-      type: "text/csv"
-    });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `pmal_responses_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-  };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: 20
-    }
-  }, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: 0
-    }
-  }, "Yan\u0131t Listesi (", rows.length, ")"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: exportCSV,
-    style: {
-      padding: "8px 14px",
-      borderRadius: 8,
-      border: `1px solid ${TH.br}`,
-      background: TH.cd,
-      color: TH.tx,
-      fontSize: 11,
-      cursor: "pointer"
-    }
-  }, "\uD83D\uDCE5 CSV"))), loading ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: 40
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tm
-    }
-  }, "Y\xFCkleniyor...")) : rows.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 40,
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 42,
-      opacity: 0.3,
-      marginBottom: 10
-    }
-  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tm,
-      fontSize: 13
-    }
-  }, "Hen\xFCz yan\u0131t bulunmamaktad\u0131r.")) : /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      overflow: "hidden"
-    }
-  }, rows.map((r, i) => /*#__PURE__*/React.createElement("div", {
-    key: r.id,
-    style: {
-      padding: "12px 16px",
-      borderBottom: i < rows.length - 1 ? `1px solid ${TH.br}` : "none",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tx,
-      fontSize: 12,
-      fontWeight: 500
-    }
-  }, "#", i + 1), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tm,
-      fontSize: 11,
-      marginLeft: 8
-    }
-  }, r.a4_country || "—"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 10,
-      marginLeft: 8
-    }
-  }, r.language?.toUpperCase())), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: r.completed ? "#16A34A" : "#E53E3E",
-      fontSize: 10,
-      fontWeight: 600
-    }
-  }, r.completed ? "Tamamlandı" : "Yarım"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 10
-    }
-  }, r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR') : ""))))));
-}
-
-// ── STATISTICS ──
-function StatPage() {
-  const charts = ["Deneyim Yılı Dağılımı", "Kurum Tipi", "Boyut Eşiği Tercihi", "Teknik Tercih", "Pozisyon Tercihi", "Sınıflama Kullanımı"];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 18px"
-    }
-  }, "\u0130statistikler"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14
-    }
-  }, charts.map((t, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 18
-    }
-  }, /*#__PURE__*/React.createElement("h4", {
-    style: {
-      color: TH.tm,
-      fontSize: 12,
-      fontWeight: 500,
-      margin: "0 0 10px"
-    }
-  }, t), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 110,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 11
-    }
-  }, "Veri bekleniyor"))))));
-}
-
-// ── FEEDBACK — Full embedded survey with comment toggles ──
-const FB_SECTIONS = [{
-  id: "A",
-  title: "A — Demografik Bilgiler",
-  questions: [{
-    id: "a2",
-    text: "Uzman olarak kaç yıldır çalışıyorsunuz?",
-    type: "single",
-    opts: ["< 5 yıl", "5–10 yıl", "11–20 yıl", "> 20 yıl"]
-  }, {
-    id: "a3",
-    text: "Çalıştığınız kurum tipi nedir?",
-    type: "single",
-    opts: ["Devlet hastanesi — 3. basamak", "Özel hastane — 3. basamak", "Devlet hastanesi — 2. basamak", "Özel hastane — 2. basamak", "Serbest hekim"]
-  }, {
-    id: "a5",
-    text: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
-    type: "single",
-    opts: ["< 20", "20–50", "51–100", "> 100"]
-  }]
-}, {
-  id: "B",
-  title: "B — PM Kırığı Deneyimi",
-  questions: [{
-    id: "b1",
-    text: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
-    type: "single",
-    opts: ["< 2", "2–5", "6–10", "> 10"]
-  }, {
-    id: "b2",
-    text: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
-    type: "single",
-    opts: ["Evet — tüm ayak bileği kırıklarında", "Evet — sadece PM şüphesi varsa", "Evet — sadece trimalleolar kırıklarda", "Hayır — sadece grafiye dayanarak karar veririm"]
-  }]
-}, {
-  id: "C",
-  title: "C — Sınıflama",
-  questions: [{
-    id: "c1",
-    text: "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?",
-    type: "multi",
-    opts: ["Haraguchi sınıflaması", "Bartoníček/Rammelt sınıflaması", "Mason & Molloy sınıflaması", "AO/OTA sınıflaması", "Lauge-Hansen sınıflaması", "Fragment boyutu (% eklem yüzeyi)", "Spesifik bir sınıflama kullanmıyorum"]
-  }, {
-    id: "c2",
-    text: "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?",
-    type: "single",
-    opts: ["Evet — primer olarak sınıflamaya göre karar veririm", "Kısmen — sınıflama faktörlerden biridir", "Hayır — sınıflamadan bağımsız değerlendiririm"]
-  }]
-}, {
-  id: "D",
-  title: "D — Fiksasyon Endikasyonları",
-  questions: [{
-    id: "d1",
-    text: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
-    type: "single",
-    opts: ["< %10", "%10–25", "%25–33", "> %33", "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim", "Boyut tek başına karar verdirici değildir"]
-  }, {
-    id: "d3",
-    text: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
-    type: "multi",
-    opts: ["Artiküler step-off miktarı", "Fibular notch tutulumu", "Sindesmoz instabilitesi", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)", "Hasta yaşı ve aktivite düzeyi", "Kemik kalitesi (osteoporoz)", "Yumuşak doku durumu", "İmpakte artiküler fragment varlığı", "Komorbidite (DM, sigara vb.)"]
-  }]
-}, {
-  id: "E",
-  title: "E — Teknik Tercihler",
-  questions: [{
-    id: "e1",
-    text: "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?",
-    type: "single",
-    opts: ["Perkütan AP lag vida", "Perkütan PA lag vida", "Trans-Achilles perkütan PA vida", "Açık posterolateral — buttress/locking plak", "Açık posterolateral — lag vida"]
-  }, {
-    id: "e2",
-    text: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
-    type: "single",
-    opts: ["Posterolateral", "Posteromedial", "Kombine posterolateral + posteromedial", "Anterior (perkütan)", "Artroskopik", "Vakaya göre değişir"]
-  }, {
-    id: "e3",
-    text: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
-    type: "single",
-    opts: ["Supine", "Prone", "Lateral dekübitus"]
-  }]
-}, {
-  id: "F",
-  title: "F — Fiksasyon Sırası ve Sindesmoz",
-  questions: [{
-    id: "f1",
-    text: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
-    type: "single",
-    opts: ["Fibula → PM → Medial malleol → Sindesmoz (instabil ise)", "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)", "Fibula → Sindesmoz değerlendir → PM → Medial malleol", "Bireyselleştirilmiş — standart sıram yok"]
-  }, {
-    id: "f2",
-    text: "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?",
-    type: "multi",
-    opts: ["İntraoperatif stres testi (eksternal rotasyon / hook test)", "İntraoperatif artroskopi", "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım"]
-  }, {
-    id: "f3",
-    text: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
-    type: "single",
-    opts: ["Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar", "Evet — bazı vakalarda", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder", "Pratiğimde bunu spesifik olarak değerlendirmedim"]
-  }]
-}];
-const FB_CASES = [{
+const CASES = [{
   id: "case1",
-  title: "VAKA 1",
+  title: {
+    tr: "VAKA 1",
+    en: "CASE 1"
+  },
   color: "#E6A817",
-  bg: "#2a2210",
-  text: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %20'si. Bartoníček Tip 2, Haraguchi Tip 1.",
-  hasSeq: true
+  bg: "#FFF8E7",
+  vig: {
+    tr: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası ayak bileği ağrısı ve şişlik şikâyetiyle acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %20'sini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g1_case1",
+  hasSequence: true
 }, {
   id: "case2",
-  title: "VAKA 2",
+  title: {
+    tr: "VAKA 2",
+    en: "CASE 2"
+  },
   color: "#3A7D44",
-  bg: "#1a2a1a",
-  text: "76 yaşında aktif erkek hasta, bahçede düzensiz zeminde ayağının dönmesi sonrası başvurmuştur. Özgeçmişinde iyi kontrollü DM tip 2 ve BPH mevcuttur. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %18'i. Bartoníček Tip 3, Haraguchi Tip 2.",
-  hasSeq: true
+  bg: "#F0F7EE",
+  vig: {
+    tr: "76 yaşında aktif erkek hasta, bahçede yürürken düzensiz zeminde ayağının dönmesi sonrası ayak bileği ağrısı ve yürüyememe şikâyetiyle başvurmuştur. Özgeçmişinde iyi kontrollü tip 2 diabetes mellitus (metformin tedavisi altında, HbA1c %6.8) ve benign prostat hiperplazisi mevcuttur. Direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %18'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 3 ve Haraguchi Tip 2 olarak sınıflandırılmıştır.",
+    en: "A 76-year-old active male patient presented with ankle pain and inability to bear weight after his foot turned on uneven ground while walking in his garden. His medical history includes well-controlled type 2 diabetes mellitus (on metformin, HbA1c 6.8%) and benign prostatic hyperplasia. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 18% of the articular surface. The fracture was classified as Bartoníček Type 3 and Haraguchi Type 2."
+  },
+  prefix: "g2_case2",
+  hasSequence: true
 }, {
   id: "case3",
-  title: "VAKA 3",
+  title: {
+    tr: "VAKA 3",
+    en: "CASE 3"
+  },
   color: "#6A3D9A",
-  bg: "#1f1a28",
-  text: "74 yaşında kadın hasta, dış merkezden atelle sevk. Anteromedialde debride edilmiş yumuşak doku hasarı. Gustilo-Anderson Tip 3A açık trimalleolar kırık. Ext. fiksatör + VAC → 3. hafta büzüşme testi lat+post pozitif. Osteoporoz, HT. Weber B. BT: PM fragmenti %28. Bartoníček Tip 2, Haraguchi Tip 1.",
-  hasSeq: true
+  bg: "#F3EEF8",
+  vig: {
+    tr: "74 yaşında kadın hasta, evde düşme sonrası başka bir merkeze başvurmuş ve atelle stabilize edilerek kliniğimize sevk edilmiştir. İlk başvuruda anteromedialde yumuşak doku hasarı tespit edilmiş olup, debridman ve primer kapama uygulanmıştır; aktif enfeksiyon bulgusu yoktur. Hastaya Gustilo-Anderson Tip 3A açık trimalleolar kırık tanısı konularak eksternal fiksatör uygulanmış ve VAC tedavisi başlanmıştır. Üçüncü haftada yapılan değerlendirmede lateral ve posterior bölgelerde büzüşme testi pozitif bulunmuştur. Özgeçmişinde osteoporoz ve hipertansiyon mevcuttur. Weber B fibula kırığı eşlik etmektedir. Preoperatif bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %28'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 74-year-old female patient initially presented to another centre following a fall at home and was referred to our clinic after being stabilised with a splint. At the initial presentation, a soft tissue injury was identified on the anteromedial aspect; debridement and primary closure were performed with no signs of active infection. The patient was diagnosed with a Gustilo-Anderson Type 3A open trimalleolar fracture, and an external fixator was applied along with VAC therapy. At the third week of follow-up, the wrinkle test was found to be positive over the lateral and posterior aspects. Her medical history includes osteoporosis and hypertension. An associated Weber B fibula fracture is present. Preoperative computed tomography showed the posterior malleolus fragment involving approximately 28% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g3_case3",
+  hasSequence: true
 }, {
   id: "case4",
-  title: "VAKA 4",
+  title: {
+    tr: "VAKA 4",
+    en: "CASE 4"
+  },
   color: "#C0392B",
-  bg: "#2a1515",
-  text: "47 yaşında kadın hasta (VKİ 30.5), yürüyüş sırasında burkulma. İzole PM kırığı — fibula ve medial malleol intakt. BT: PM fragmenti %26, artiküler step-off yok. Bartoníček Tip 2, Haraguchi Tip 1.",
-  hasSeq: false
+  bg: "#FDEDEC",
+  vig: {
+    tr: "47 yaşında kadın hasta (vücut kitle indeksi 30.5), yürüyüş sırasında ayağının burkulması sonrası ayak bileği ağrısı şikâyetiyle başvurmuştur. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde izole posterior malleol kırığı saptanmış olup fibula ve medial malleol intakttır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %26'sını tuttuğu görülmüş, artiküler step-off izlenmemiştir. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 47-year-old female patient (body mass index 30.5) presented with ankle pain following a twisting injury while walking. Plain radiographs and computed tomography revealed an isolated posterior malleolus fracture; the fibula and medial malleolus were intact. On CT, the posterior malleolus fragment was found to involve approximately 26% of the articular surface with no articular step-off identified. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
+  },
+  prefix: "g4_case4",
+  hasSequence: false
 }];
-const FB_CASE_OPTS = {
-  fix: ["Evet", "Hayır"],
-  pos: ["Supine", "Prone", "Lateral dekübitus"],
-  app: ["Posterolateral", "Posteromedial", "Kombine PL+PM", "Anterior (perkütan)", "Artroskopik"],
-  seq: ["PM önce → Fibula → MM", "Fibula → PM → MM", "Fibula → Sindesmoz değerlendir → PM → MM", "Bireyselleştirilmiş"],
-  tech: ["Perkütan AP lag vida", "Perkütan PA lag vida", "Trans-Achilles perkütan PA vida", "Açık PL — buttress/locking plak", "Açık PL — lag vida"]
+const CASE_OPTS = {
+  pos: [{
+    tr: "Supine",
+    en: "Supine"
+  }, {
+    tr: "Prone",
+    en: "Prone"
+  }, {
+    tr: "Lateral dekübitus",
+    en: "Lateral decubitus"
+  }],
+  app: [{
+    tr: "Posterolateral",
+    en: "Posterolateral"
+  }, {
+    tr: "Posteromedial",
+    en: "Posteromedial"
+  }, {
+    tr: "Kombine posterolateral + posteromedial",
+    en: "Combined posterolateral + posteromedial"
+  }, {
+    tr: "Anterior (perkütan)",
+    en: "Anterior (percutaneous)"
+  }, {
+    tr: "Artroskopik",
+    en: "Arthroscopic"
+  }],
+  seq: [{
+    tr: "PM önce → Fibula → Medial malleol",
+    en: "PM first → Fibula → Medial malleolus"
+  }, {
+    tr: "Fibula → PM → Medial malleol",
+    en: "Fibula → PM → Medial malleolus"
+  }, {
+    tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
+    en: "Fibula → Assess syndesmosis → PM → Medial malleolus"
+  }, {
+    tr: "Bireyselleştirilmiş — standart sıram yok",
+    en: "Individualised — no standard sequence"
+  }],
+  tech: [{
+    tr: "Perkütan AP lag vida",
+    en: "Percutaneous AP lag screw"
+  }, {
+    tr: "Perkütan PA lag vida",
+    en: "Percutaneous PA lag screw"
+  }, {
+    tr: "Trans-Achilles perkütan PA vida",
+    en: "Trans-Achilles percutaneous PA screw"
+  }, {
+    tr: "Açık posterolateral — buttress/locking plak",
+    en: "Open posterolateral — buttress/locking plate"
+  }, {
+    tr: "Açık posterolateral — lag vida",
+    en: "Open posterolateral — lag screw"
+  }]
 };
-const FB_LIKERT = [{
+const LIKERT_QS = [{
   id: "h1",
-  text: "Fragment boyutu PM fiksasyon kararında en önemli faktördür."
+  tr: "Fragment boyutu PM fiksasyon kararında en önemli faktördür.",
+  en: "Fragment size is the most important factor in PM fixation decisions."
 }, {
   id: "h2",
-  text: "Fragment morfolojisi boyuttan daha önemlidir."
+  tr: "Fragment morfolojisi boyuttan daha önemlidir.",
+  en: "Fragment morphology is more important than size."
 }, {
   id: "h3",
-  text: "Direkt posterior yaklaşım perkütan tekniklerden üstündür."
+  tr: "Direkt posterior yaklaşım perkütan tekniklerden üstündür.",
+  en: "Direct posterior approach is superior to percutaneous techniques."
 }, {
   id: "h4",
-  text: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir."
-}, {
-  id: "h5",
-  text: "ARIF PM kırıklarında geleceğin tekniğidir."
-}, {
-  id: "h6",
-  text: "Biyomekanik çalışma sonuçları cerrahi kararlarımı etkiler."
+  tr: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir.",
+  en: "The complication rate of direct PM fixation (17-20%) is acceptable given the functional benefit."
 }];
-function CommentBox({
-  qid,
-  openId,
-  setOpenId
+const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "case1", "case2", "case3", "case4", "H", "thanks"];
+
+// ══════════════════════════════════════════════════
+// COMPONENTS
+// ══════════════════════════════════════════════════
+const g = lang => lang || "en"; // fallback getter
+
+function RadioGroup({
+  name,
+  options,
+  value,
+  onChange,
+  lang
 }) {
-  const isOpen = openId === qid;
   return /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 6
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => setOpenId(isOpen ? null : qid),
-    style: {
-      padding: "3px 10px",
-      borderRadius: 5,
-      border: `1px solid ${TH.br}`,
-      background: isOpen ? `${TH.ac}22` : "transparent",
-      color: isOpen ? TH.ac : TH.td,
-      fontSize: 10,
-      cursor: "pointer"
-    }
-  }, "\uD83D\uDCAC ", isOpen ? "Kapat" : "Yorum ekle"), isOpen && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 6,
-      display: "flex",
-      gap: 6
-    }
+    className: "flex flex-col gap-2 mt-2"
+  }, options.map((opt, i) => {
+    const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    return /*#__PURE__*/React.createElement("label", {
+      key: i,
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${value === label ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "radio",
+      name: name,
+      value: label,
+      checked: value === label,
+      onChange: e => onChange(e.target.value),
+      className: "accent-amber-600 w-4 h-4 flex-shrink-0"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-gray-800"
+    }, label));
+  }));
+}
+function CheckboxGroup({
+  name,
+  options,
+  values = [],
+  onChange,
+  lang
+}) {
+  const toggle = label => {
+    if (values.includes(label)) onChange(values.filter(v => v !== label));else onChange([...values, label]);
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-col gap-2 mt-2"
+  }, options.map((opt, i) => {
+    const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    return /*#__PURE__*/React.createElement("label", {
+      key: i,
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${values.includes(label) ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      checked: values.includes(label),
+      onChange: () => toggle(label),
+      className: "accent-amber-600 w-4 h-4 flex-shrink-0 rounded"
+    }), /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-gray-800"
+    }, label));
+  }));
+}
+function CountryDropdown({
+  value,
+  onChange,
+  lang
+}) {
+  const [search, setSearch] = useState("");
+  const [open, setOpen] = useState(false);
+  const filtered = COUNTRIES.filter(c => c.toLowerCase().includes(search.toLowerCase()));
+  const ph = t(lang, "country_ph");
+  return /*#__PURE__*/React.createElement("div", {
+    className: "relative mt-2"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    placeholder: "Yorumunuzu yaz\u0131n...",
-    style: {
-      flex: 1,
-      padding: "7px 10px",
-      borderRadius: 5,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg,
-      color: TH.tx,
-      fontSize: 10,
-      outline: "none"
-    }
-  }), /*#__PURE__*/React.createElement("button", {
-    style: {
-      padding: "7px 12px",
-      borderRadius: 5,
-      border: "none",
-      background: TH.ac,
-      color: "#fff",
-      fontSize: 10,
-      fontWeight: 600,
-      cursor: "pointer",
-      whiteSpace: "nowrap"
-    }
-  }, "Kaydet")));
+    value: search,
+    onChange: e => {
+      setSearch(e.target.value);
+      setOpen(true);
+    },
+    onFocus: () => setOpen(true),
+    placeholder: ph,
+    className: "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
+  }), value && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 text-xs text-amber-600 font-medium"
+  }, lang === 'tr' ? 'Seçili' : 'Selected', ": ", value), open && search.length > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+  }, filtered.length > 0 ? filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => {
+      onChange(c);
+      setSearch(c);
+      setOpen(false);
+    },
+    className: "w-full text-left px-4 py-2.5 text-sm hover:bg-amber-50 text-gray-800 border-b border-gray-50 last:border-0"
+  }, c)) : /*#__PURE__*/React.createElement("div", {
+    className: "px-4 py-3 text-sm text-gray-400"
+  }, lang === 'tr' ? 'Sonuç bulunamadı' : 'No results')));
 }
-function ReadOnlyRadio({
-  opts
+function LikertScale({
+  value,
+  onChange,
+  labels
 }) {
   return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 4,
-      marginTop: 6
-    }
-  }, opts.map((o, i) => /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1 mt-3 flex-wrap"
+  }, labels.map((label, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "6px 10px",
-      borderRadius: 6,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 14,
-      height: 14,
-      borderRadius: 7,
-      border: `2px solid ${TH.td}`,
-      flexShrink: 0
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tm,
-      fontSize: 11
-    }
-  }, o))));
+    onClick: () => onChange(i + 1),
+    className: `flex-1 min-w-14 px-1 py-3 rounded-lg text-xs font-medium border transition-all duration-200 ${value === i + 1 ? 'bg-amber-500 text-white border-amber-600 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:bg-amber-50'}`
+  }, label)));
 }
-function ReadOnlyCheckbox({
-  opts
+function ProgressBar({
+  current,
+  total
+}) {
+  const pct = Math.round(current / total * 100);
+  return /*#__PURE__*/React.createElement("div", {
+    className: "w-full bg-gray-200 rounded-full h-2 overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-full rounded-full transition-all duration-500 ease-out",
+    style: {
+      width: `${pct}%`,
+      background: 'linear-gradient(90deg,#D97706,#F59E0B)'
+    }
+  }));
+}
+function QuestionBlock({
+  q,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "space-y-1"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, q.text[l] || q.text.en), q.type === 'multi' && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-amber-600 font-medium mt-1"
+  }, tt.select_all), q.type === 'single' && /*#__PURE__*/React.createElement(RadioGroup, {
+    name: q.id,
+    options: q.opts,
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }), q.type === 'multi' && /*#__PURE__*/React.createElement(CheckboxGroup, {
+    name: q.id,
+    options: q.opts,
+    values: answers[q.id] || [],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }), q.type === 'country' && /*#__PURE__*/React.createElement(CountryDropdown, {
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    lang: l
+  }));
+}
+function SectionPage({
+  sectionKey,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const sec = SECTIONS[sectionKey];
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  return /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, sec.title[l] || sec.title.en), sec.questions.map(q => /*#__PURE__*/React.createElement(QuestionBlock, {
+    key: q.id,
+    q: q,
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  })));
+}
+function DicomViewerEmbed({
+  caseId
 }) {
   return /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-900 rounded-xl overflow-hidden mt-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between px-4 py-2.5 border-b border-gray-700"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, ['Axial', 'Sagittal', 'Coronal'].map(p => /*#__PURE__*/React.createElement("button", {
+    key: p,
+    className: "px-3 py-1 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white transition-colors"
+  }, p))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1.5"
+  }, ['W/L', 'Zoom', 'Pan', 'Measure', '⧉'].map(tl => /*#__PURE__*/React.createElement("button", {
+    key: tl,
+    className: "px-2 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
+  }, tl)))), /*#__PURE__*/React.createElement("div", {
+    className: "h-72 sm:h-96 flex items-center justify-center text-gray-500"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "48",
+    height: "48",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1",
+    className: "mx-auto mb-3 opacity-40"
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "2",
+    y: "2",
+    width: "20",
+    height: "20",
+    rx: "2"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 7v10M7 12h10"
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium"
+  }, "Cornerstone.js DICOM Viewer"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mt-1 text-gray-600"
+  }, "Cloudflare R2 \u2014 ", caseId))));
+}
+function CaseCard({
+  c,
+  lang,
+  answers,
+  setAnswer,
+  tt
+}) {
+  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const fixVal = answers[`${c.prefix}_fix`];
+  const showSub = fixVal === tt.fix_yes;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl overflow-hidden border-2 shadow-lg",
     style: {
-      display: "flex",
-      flexDirection: "column",
-      gap: 4,
-      marginTop: 6
-    }
-  }, opts.map((o, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "6px 10px",
-      borderRadius: 6,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg
+      borderColor: c.color
     }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "px-6 py-4",
     style: {
-      width: 14,
-      height: 14,
-      borderRadius: 3,
-      border: `2px solid ${TH.td}`,
-      flexShrink: 0
-    }
-  }), /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.tm,
-      fontSize: 11
-    }
-  }, o))));
-}
-function ReadOnlyLikert() {
-  const labels = ["Kesinlikle katılmıyorum", "Katılmıyorum", "Kararsızım", "Katılıyorum", "Kesinlikle katılıyorum"];
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 4,
-      marginTop: 6,
-      flexWrap: "wrap"
-    }
-  }, labels.map((l, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      flex: 1,
-      minWidth: 60,
-      padding: "8px 4px",
-      borderRadius: 6,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg,
-      textAlign: "center"
+      background: c.color
     }
   }, /*#__PURE__*/React.createElement("span", {
+    className: "text-white font-bold text-lg tracking-wide"
+  }, c.title[l] || c.title.en)), /*#__PURE__*/React.createElement("div", {
+    className: "px-5 sm:px-6 py-5",
     style: {
-      color: TH.td,
-      fontSize: 9
-    }
-  }, l))));
-}
-function FeedPage() {
-  const [openId, setOpenId] = useState(null);
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 6px"
-    }
-  }, "Geri Bildirim Paneli"), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tm,
-      fontSize: 12,
-      margin: "0 0 18px"
-    }
-  }, "Anketin tam kopyas\u0131. Her sorunun alt\u0131ndaki yorum butonuyla geri bildirim b\u0131rakabilirsiniz."), FB_SECTIONS.map(sec => /*#__PURE__*/React.createElement("div", {
-    key: sec.id,
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("h4", {
-    style: {
-      color: TH.ac,
-      fontSize: 13,
-      fontWeight: 600,
-      margin: "0 0 14px",
-      borderBottom: `1px solid ${TH.br}`,
-      paddingBottom: 8
-    }
-  }, sec.title), sec.questions.map((q, qi) => /*#__PURE__*/React.createElement("div", {
-    key: q.id,
-    style: {
-      marginBottom: qi < sec.questions.length - 1 ? 16 : 0,
-      paddingBottom: qi < sec.questions.length - 1 ? 14 : 0,
-      borderBottom: qi < sec.questions.length - 1 ? `1px solid ${TH.br}` : "none"
+      background: c.bg
     }
   }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 12,
-      fontWeight: 500,
-      margin: "0 0 2px"
-    }
-  }, q.text), q.type === "multi" && /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.ac,
-      fontSize: 9,
-      margin: "0 0 4px"
-    }
-  }, "Birden fazla se\xE7ebilirsiniz"), q.type === "single" && /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: q.opts
-  }), q.type === "multi" && /*#__PURE__*/React.createElement(ReadOnlyCheckbox, {
-    opts: q.opts
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: q.id,
-    openId: openId,
-    setOpenId: setOpenId
-  }))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("h4", {
-    style: {
-      color: TH.ac,
-      fontSize: 13,
-      fontWeight: 600,
-      margin: "0 0 14px",
-      borderBottom: `1px solid ${TH.br}`,
-      paddingBottom: 8
-    }
-  }, "G \u2014 Klinik Vaka Senaryolar\u0131"), FB_CASES.map((c, ci) => /*#__PURE__*/React.createElement("div", {
-    key: c.id,
-    style: {
-      marginBottom: ci < FB_CASES.length - 1 ? 20 : 0,
-      paddingBottom: ci < FB_CASES.length - 1 ? 18 : 0,
-      borderBottom: ci < FB_CASES.length - 1 ? `1px solid ${TH.br}` : "none"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "8px 12px",
-      borderRadius: 8,
-      background: c.bg,
-      border: `1px solid ${c.color}44`,
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: c.color,
-      fontSize: 12,
-      fontWeight: 700,
-      marginBottom: 4
-    }
-  }, c.title), /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tm,
-      fontSize: 11,
-      margin: 0,
-      lineHeight: 1.6
-    }
-  }, c.text)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 11,
-      fontWeight: 500,
-      margin: "0 0 4px"
-    }
-  }, "Bu vakada posterior malleol\xFC fikse eder misiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: FB_CASE_OPTS.fix
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: `${c.id}_fix`,
-    openId: openId,
-    setOpenId: setOpenId
+    className: "text-sm text-gray-800 leading-relaxed"
+  }, c.vig[l] || c.vig.en), /*#__PURE__*/React.createElement(DicomViewerEmbed, {
+    caseId: c.id
   })), /*#__PURE__*/React.createElement("div", {
+    className: "px-5 sm:px-6 py-5 space-y-6 bg-white"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.fix_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_fix`,
+    options: [tt.fix_yes, tt.fix_no],
+    value: fixVal,
+    onChange: v => setAnswer(`${c.prefix}_fix`, v),
+    lang: l
+  })), showSub && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-6 pl-4 border-l-4 border-amber-400",
     style: {
-      paddingLeft: 12,
-      borderLeft: `3px solid ${c.color}66`,
-      marginTop: 8
+      animation: 'slideDown 0.4s ease-out'
     }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.td,
-      fontSize: 9,
-      fontStyle: "italic",
-      margin: "0 0 8px"
-    }
-  }, "Evet ise a\u015Fa\u011F\u0131daki sorular a\xE7\u0131l\u0131r:"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 11,
-      fontWeight: 500,
-      margin: "0 0 4px"
-    }
-  }, "Ameliyata hangi pozisyonda ba\u015Flars\u0131n\u0131z?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: FB_CASE_OPTS.pos
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: `${c.id}_pos`,
-    openId: openId,
-    setOpenId: setOpenId
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 11,
-      fontWeight: 500,
-      margin: "0 0 4px"
-    }
-  }, "Hangi cerrahi yakla\u015F\u0131m\u0131 tercih edersiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: FB_CASE_OPTS.app
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: `${c.id}_app`,
-    openId: openId,
-    setOpenId: setOpenId
-  })), c.hasSeq && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 11,
-      fontWeight: 500,
-      margin: "0 0 4px"
-    }
-  }, "Fiksasyon s\u0131ran\u0131z ne olur?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: FB_CASE_OPTS.seq
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: `${c.id}_seq`,
-    openId: openId,
-    setOpenId: setOpenId
-  })), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: 4
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 11,
-      fontWeight: 500,
-      margin: "0 0 4px"
-    }
-  }, "PM fiksasyonu i\xE7in hangi teknik ve implant\u0131 tercih edersiniz?"), /*#__PURE__*/React.createElement(ReadOnlyRadio, {
-    opts: FB_CASE_OPTS.tech
-  }), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: `${c.id}_tech`,
-    openId: openId,
-    setOpenId: setOpenId
-  })))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("h4", {
-    style: {
-      color: TH.ac,
-      fontSize: 13,
-      fontWeight: 600,
-      margin: "0 0 14px",
-      borderBottom: `1px solid ${TH.br}`,
-      paddingBottom: 8
-    }
-  }, "H \u2014 Tutum ve G\xF6r\xFC\u015Fler"), FB_LIKERT.map((q, qi) => /*#__PURE__*/React.createElement("div", {
-    key: q.id,
-    style: {
-      marginBottom: qi < FB_LIKERT.length - 1 ? 14 : 0,
-      paddingBottom: qi < FB_LIKERT.length - 1 ? 12 : 0,
-      borderBottom: qi < FB_LIKERT.length - 1 ? `1px solid ${TH.br}` : "none"
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    style: {
-      color: TH.tx,
-      fontSize: 12,
-      fontWeight: 500,
-      margin: "0 0 2px"
-    }
-  }, q.text), /*#__PURE__*/React.createElement(ReadOnlyLikert, null), /*#__PURE__*/React.createElement(CommentBox, {
-    qid: q.id,
-    openId: openId,
-    setOpenId: setOpenId
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.pos_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_position`,
+    options: CASE_OPTS.pos,
+    value: answers[`${c.prefix}_position`],
+    onChange: v => setAnswer(`${c.prefix}_position`, v),
+    lang: l
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.app_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_approach`,
+    options: CASE_OPTS.app,
+    value: answers[`${c.prefix}_approach`],
+    onChange: v => setAnswer(`${c.prefix}_approach`, v),
+    lang: l
+  })), c.hasSequence && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.seq_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_sequence`,
+    options: CASE_OPTS.seq,
+    value: answers[`${c.prefix}_sequence`],
+    onChange: v => setAnswer(`${c.prefix}_sequence`, v),
+    lang: l
+  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, tt.tech_q), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_technique`,
+    options: CASE_OPTS.tech,
+    value: answers[`${c.prefix}_technique`],
+    onChange: v => setAnswer(`${c.prefix}_technique`, v),
+    lang: l
   })))));
 }
 
-// ── BACKUP ──
-function BackPage() {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 18px"
-    }
-  }, "Yedekleme"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 13,
-      fontWeight: 500
-    }
-  }, "Otomatik Yedekleme"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tm,
-      fontSize: 11,
-      marginTop: 4
-    }
-  }, "Her 2 g\xFCnde bir otomatik yedekleme")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 44,
-      height: 24,
-      borderRadius: 12,
-      background: "#16A34A",
-      position: "relative",
-      cursor: "pointer"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      background: "#fff",
-      position: "absolute",
-      top: 2,
-      right: 2
-    }
-  })))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tm,
-      fontSize: 12,
-      marginBottom: 12
-    }
-  }, "Yedekleme Ge\xE7mi\u015Fi"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: 20
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 11
-    }
-  }, "Hen\xFCz yedekleme yap\u0131lmad\u0131"))));
-}
-
-// ── SETTINGS ──
-function SetPage() {
-  const [copied, setCopied] = useState(false);
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 18px"
-    }
-  }, "Ayarlar"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 13,
-      fontWeight: 500,
-      marginBottom: 12
-    }
-  }, "Anket Durumu"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 10
-    }
-  }, [["Aktif", "#16A34A"], ["Duraklat", null], ["Kapat", null]].map(([l, bg], i) => /*#__PURE__*/React.createElement("button", {
-    key: i,
-    style: {
-      padding: "10px 18px",
-      borderRadius: 8,
-      border: bg ? `none` : `1px solid ${TH.br}`,
-      background: bg || "transparent",
-      color: bg ? "#fff" : TH.tm,
-      fontSize: 12,
-      fontWeight: bg ? 600 : 400,
-      cursor: "pointer"
-    }
-  }, l)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 14
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 13,
-      fontWeight: 500,
-      marginBottom: 12
-    }
-  }, "Anket Linki"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("input", {
-    readOnly: true,
-    value: "https://pmal.cyprusorthopaedics.com",
-    style: {
-      flex: 1,
-      padding: "10px 14px",
-      borderRadius: 8,
-      border: `1px solid ${TH.br}`,
-      background: TH.bg,
-      color: TH.ac,
-      fontSize: 12,
-      outline: "none"
-    }
-  }), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      navigator.clipboard?.writeText("https://pmal.cyprusorthopaedics.com");
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    },
-    style: {
-      padding: "10px 16px",
-      borderRadius: 8,
-      border: "none",
-      background: TH.ac,
-      color: "#fff",
-      fontSize: 11,
-      fontWeight: 600,
-      cursor: "pointer",
-      whiteSpace: "nowrap"
-    }
-  }, copied ? "✓ Kopyalandı" : "Kopyala"))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: TH.cd,
-      border: `1px solid ${TH.br}`,
-      borderRadius: 12,
-      padding: 20
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 13,
-      fontWeight: 500,
-      marginBottom: 12
-    }
-  }, "Mail Listesi"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      padding: 16
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 11
-    }
-  }, "Hen\xFCz kay\u0131tl\u0131 mail yok"))));
-}
-
-// ══════════════════════════════════════════════
-// MAIN
-// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// MAIN APP
+// ══════════════════════════════════════════════════
 function App() {
-  const [started, setStarted] = useState(false);
-  const [user, setUser] = useState(null);
-  const [page, setPage] = useState("dashboard");
-  const [playing, setPlaying] = useState(false);
-  const [volume, setVolume] = useState(50);
-  const [sb, setSb] = useState(true);
-
-  // Preload all card images (color + bw) on mount so they're cached when login shows
-  useEffect(() => {
-    ['card_gilmour_color_web.png', 'card_gilmour_bw_web.png', 'card_hetfield_color_web.png', 'card_hetfield_bw_web.png', 'card_slash_color_web.png', 'card_slash_bw_web.png', 'card_cobain_color_web.png', 'card_cobain_bw_web.png'].forEach(src => {
-      const img = new Image();
-      img.src = '/' + src;
-    });
+  const [lang, setLang] = useState(null);
+  const [step, setStep] = useState(0);
+  const [answers, setAnswers] = useState({});
+  const [consented, setConsented] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailSent, setEmailSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [startTime] = useState(Date.now());
+  const ll = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const tt = T[ll] || T.en;
+  const totalSteps = STEP_KEYS.length - 1;
+  const setAnswer = useCallback((key, val) => {
+    setAnswers(prev => ({
+      ...prev,
+      [key]: val
+    }));
   }, []);
-
-  // Autoplay when logging in (user has clicked, so interaction granted)
-  useEffect(() => {
-    if (user) {
-      // Stop login music when entering admin
-      if (window._loginAudio) {
-        window._loginAudio.pause();
-        window._loginAudio.currentTime = 0;
-      }
-      setPlaying(true);
+  const submitSurvey = async () => {
+    setSubmitting(true);
+    try {
+      const duration = Math.round((Date.now() - startTime) / 1000);
+      const row = {
+        language: lang,
+        a2_experience: answers.a2,
+        a3_institution: answers.a3,
+        a4_country: answers.a4,
+        a5_annual_volume: answers.a5,
+        b1_monthly_pm: answers.b1,
+        b2_routine_ct: answers.b2,
+        c1_classification: answers.c1 || [],
+        c2_classification_guides: answers.c2,
+        d1_size_threshold: answers.d1,
+        d3_influencing_factors: answers.d3 || [],
+        e1_technique: answers.e1,
+        e2_approach: answers.e2,
+        e3_position: answers.e3,
+        f1_fixation_sequence: answers.f1,
+        f2_syndesmosis_assessment: answers.f2,
+        f3_pm_reduces_syndesmosis: answers.f3,
+        g1_case1_fix: answers.g1_case1_fix,
+        g1_case1_position: answers.g1_case1_position,
+        g1_case1_approach: answers.g1_case1_approach,
+        g1_case1_sequence: answers.g1_case1_sequence,
+        g1_case1_technique: answers.g1_case1_technique,
+        g2_case2_fix: answers.g2_case2_fix,
+        g2_case2_position: answers.g2_case2_position,
+        g2_case2_approach: answers.g2_case2_approach,
+        g2_case2_sequence: answers.g2_case2_sequence,
+        g2_case2_technique: answers.g2_case2_technique,
+        g3_case3_fix: answers.g3_case3_fix,
+        g3_case3_position: answers.g3_case3_position,
+        g3_case3_approach: answers.g3_case3_approach,
+        g3_case3_sequence: answers.g3_case3_sequence,
+        g3_case3_technique: answers.g3_case3_technique,
+        g4_case4_fix: answers.g4_case4_fix,
+        g4_case4_position: answers.g4_case4_position,
+        g4_case4_approach: answers.g4_case4_approach,
+        g4_case4_technique: answers.g4_case4_technique,
+        h1_size_importance: answers.h1,
+        h2_morphology_over_size: answers.h2,
+        h3_direct_over_percutaneous: answers.h3,
+        h4_complication_acceptable: answers.h4,
+        completed: true,
+        duration_seconds: duration,
+        user_agent: navigator.userAgent
+      };
+      await sbFetch("responses", "POST", row);
+    } catch (e) {
+      console.error("Submit error:", e);
     }
-  }, [user]);
-  if (!started) return /*#__PURE__*/React.createElement(IntroScreen, {
-    onStart: () => setStarted(true)
-  });
-  if (!user) return /*#__PURE__*/React.createElement(LoginPage, {
-    onLogin: setUser
-  });
-  const pages = {
-    dashboard: /*#__PURE__*/React.createElement(DashPage, null),
-    responses: /*#__PURE__*/React.createElement(RespPage, null),
-    statistics: /*#__PURE__*/React.createElement(StatPage, null),
-    feedback: /*#__PURE__*/React.createElement(FeedPage, null),
-    backup: /*#__PURE__*/React.createElement(BackPage, null),
-    settings: /*#__PURE__*/React.createElement(SetPage, null)
+    setSubmitting(false);
+    setStep(step + 1);
   };
+  const saveEmail = async () => {
+    if (!email.includes('@')) return;
+    try {
+      await sbFetch("mailing_list", "POST", {
+        email
+      });
+    } catch (e) {
+      console.error(e);
+    }
+    setEmailSent(true);
+  };
+  useEffect(() => {
+    const handler = e => {
+      if (step > 1 && step < totalSteps) {
+        e.preventDefault();
+        e.returnValue = tt.save_warning;
+      }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [step, totalSteps, tt.save_warning]);
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, [step]);
+  const secForStep = s => {
+    const k = STEP_KEYS[s];
+    return ['A', 'B', 'C', 'D', 'E', 'F'].includes(k) ? k : null;
+  };
+  const caseForStep = s => {
+    const k = STEP_KEYS[s];
+    const idx = CASES.findIndex(c => c.id === k);
+    return idx >= 0 ? CASES[idx] : null;
+  };
+  const NavBtns = ({
+    hideBack,
+    isSubmit
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 mt-6"
+  }, !hideBack && /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step - 1),
+    className: "px-6 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+  }, tt.prev), isSubmit ? /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step + 1),
+    className: "flex-1 py-3 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-200 transition-all"
+  }, tt.submit, " \u2713") : /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step + 1),
+    className: "flex-1 py-3 rounded-xl bg-amber-500 text-white font-bold hover:bg-amber-600 shadow-lg shadow-amber-200 transition-all"
+  }, tt.next, " \u2192"));
   return /*#__PURE__*/React.createElement("div", {
+    className: "min-h-screen",
     style: {
-      minHeight: "100vh",
-      background: TH.bg,
-      display: "flex"
+      background: 'linear-gradient(135deg,#FAFAF9 0%,#F5F0EB 100%)'
     }
-  }, /*#__PURE__*/React.createElement("aside", {
-    style: {
-      width: sb ? 220 : 56,
-      background: TH.sf,
-      borderRight: `1px solid ${TH.br}`,
-      display: "flex",
-      flexDirection: "column",
-      transition: "width 0.3s",
-      overflow: "hidden",
-      flexShrink: 0
-    }
+  }, step > 0 && /*#__PURE__*/React.createElement("header", {
+    className: "sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/60"
   }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: "16px 14px",
-      borderBottom: `1px solid ${TH.br}`,
-      display: "flex",
-      alignItems: "center",
-      gap: 10
-    }
+    className: "max-w-3xl mx-auto px-4 py-3 flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      width: 28,
-      height: 28,
-      borderRadius: 6,
-      background: TH.ac,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexShrink: 0
-    }
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center"
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#fff",
-      fontWeight: 800,
-      fontSize: 10
-    }
-  }, "PM")), sb && /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.ac,
-      fontWeight: 700,
-      fontSize: 14,
-      whiteSpace: "nowrap"
-    }
-  }, "PMAL Admin")), sb && /*#__PURE__*/React.createElement("div", {
-    style: {
-      padding: 12,
-      borderBottom: `1px solid ${TH.br}`
-    }
+    className: "text-white font-black text-xs"
+  }, "PM")), /*#__PURE__*/React.createElement("span", {
+    className: "font-bold text-gray-800 text-sm hidden sm:block"
+  }, "PMAL Survey")), step > 1 && step < totalSteps && /*#__PURE__*/React.createElement("div", {
+    className: "flex-1 mx-4 sm:mx-6 max-w-xs"
+  }, /*#__PURE__*/React.createElement(ProgressBar, {
+    current: step - 1,
+    total: totalSteps - 2
+  })), lang && /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setStep(0);
+      setLang(null);
+    },
+    className: "px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center gap-1.5"
+  }, LANGS.find(l => l.code === lang)?.flag, " ", LANGS.find(l => l.code === lang)?.native, " \u25BE"))), /*#__PURE__*/React.createElement("main", {
+    className: "max-w-3xl mx-auto px-4 py-6 sm:py-8"
+  }, step === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "animate-fadeIn text-center"
   }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: user.colorImg,
-    alt: "",
-    style: {
-      width: 32,
-      height: 32,
-      borderRadius: 6,
-      objectFit: "cover",
-      objectPosition: "top"
-    }
-  }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: TH.tx,
-      fontSize: 12,
-      fontWeight: 600
-    }
-  }, user.name), /*#__PURE__*/React.createElement("div", {
-    style: {
-      color: user.color,
-      fontSize: 9
-    }
-  }, user.char)))), /*#__PURE__*/React.createElement("nav", {
-    style: {
-      flex: 1,
-      padding: "10px 6px"
-    }
-  }, PG.map(p => /*#__PURE__*/React.createElement("button", {
-    key: p.id,
-    onClick: () => setPage(p.id),
-    style: {
-      width: "100%",
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      padding: sb ? "9px 10px" : "9px 0",
-      justifyContent: sb ? "flex-start" : "center",
-      borderRadius: 7,
-      border: "none",
-      cursor: "pointer",
-      marginBottom: 3,
-      background: page === p.id ? `${TH.ac}22` : "transparent",
-      color: page === p.id ? TH.ac : TH.tm,
-      fontSize: 12,
-      fontWeight: page === p.id ? 600 : 400,
-      textAlign: "left",
-      transition: "all 0.2s"
-    }
+    className: "mb-8"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-16 h-16 rounded-2xl bg-amber-500 flex items-center justify-center mx-auto mb-4"
   }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 14,
-      width: 18,
-      textAlign: "center",
-      flexShrink: 0
-    }
-  }, p.icon), sb && /*#__PURE__*/React.createElement("span", {
-    style: {
-      whiteSpace: "nowrap"
-    }
-  }, p.label)))), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setSb(!sb),
-    style: {
-      padding: 14,
-      border: "none",
-      borderTop: `1px solid ${TH.br}`,
-      background: "transparent",
-      color: TH.td,
-      cursor: "pointer",
-      fontSize: 13
-    }
-  }, sb ? "◂" : "▸")), /*#__PURE__*/React.createElement("main", {
-    style: {
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      minWidth: 0
-    }
-  }, /*#__PURE__*/React.createElement("header", {
-    style: {
-      padding: "12px 20px",
-      borderBottom: `1px solid ${TH.br}`,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    }
+    className: "text-white font-black text-xl"
+  }, "PM")), /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl sm:text-2xl font-black text-gray-900 mb-1"
+  }, "Posterior Malleolus Fracture Survey"), /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-600 font-medium text-sm"
+  }, "International Surgical Practice Variation Study")), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600 text-sm mb-6"
+  }, "L\xFCtfen dilinizi se\xE7iniz \xB7 Please select your language"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-lg mx-auto"
+  }, LANGS.map(l => /*#__PURE__*/React.createElement("button", {
+    key: l.code,
+    onClick: () => {
+      setLang(l.code);
+      setStep(1);
+    },
+    className: "bg-white rounded-xl border border-gray-200 p-4 hover:border-amber-400 hover:shadow-md transition-all duration-200 text-center group"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-2xl mb-1"
+  }, l.flag), /*#__PURE__*/React.createElement("div", {
+    className: "text-sm font-bold text-gray-800 group-hover:text-amber-600 transition-colors"
+  }, l.native)))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-400 mt-8"
+  }, "pmal.cyprusorthopaedics.com")), step === 1 && lang && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-center space-y-2"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl sm:text-2xl font-black text-gray-900 tracking-tight"
+  }, tt.title), /*#__PURE__*/React.createElement("p", {
+    className: "text-amber-600 font-medium text-sm"
+  }, tt.subtitle)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-amber-50 border border-amber-200 rounded-xl p-5 sm:p-6"
   }, /*#__PURE__*/React.createElement("h2", {
-    style: {
-      color: TH.tx,
-      fontSize: 17,
-      fontWeight: 700,
-      margin: 0
-    }
-  }, PG.find(p => p.id === page)?.label), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setUser(null),
-    style: {
-      padding: "5px 12px",
-      borderRadius: 7,
-      border: `1px solid ${TH.br}`,
-      background: "transparent",
-      color: TH.tm,
-      fontSize: 11,
-      cursor: "pointer"
-    }
-  }, "\xC7\u0131k\u0131\u015F")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      flex: 1,
-      padding: 20,
-      overflowY: "auto",
-      paddingBottom: 72
-    }
-  }, /*#__PURE__*/React.createElement(MusicStory, {
-    page: page
-  }), pages[page])), /*#__PURE__*/React.createElement(MusicBar, {
-    page: page,
-    playing: playing,
-    setPlaying: setPlaying,
-    volume: volume,
-    setVolume: setVolume
-  }));
+    className: "font-bold text-amber-800 mb-3"
+  }, tt.consent_title), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-700 leading-relaxed"
+  }, tt.consent_text)), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-start gap-3 cursor-pointer"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: consented,
+    onChange: e => setConsented(e.target.checked),
+    className: "accent-amber-600 w-5 h-5 mt-0.5"
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm text-gray-800"
+  }, tt.consent_agree)), /*#__PURE__*/React.createElement("button", {
+    disabled: !consented,
+    onClick: () => setStep(2),
+    className: `w-full py-3.5 rounded-xl font-bold text-white transition-all duration-300 ${consented ? 'bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-200 cursor-pointer' : 'bg-gray-300 cursor-not-allowed'}`
+  }, tt.next, " \u2192")), secForStep(step) && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(SectionPage, {
+    sectionKey: secForStep(step),
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  }), /*#__PURE__*/React.createElement(NavBtns, null)), caseForStep(step) && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, ll === 'tr' ? 'G — Klinik Vaka Senaryoları' : 'G — Clinical Case Vignettes'), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-500 mt-1"
+  }, ll === 'tr' ? 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.' : 'Please evaluate the following clinical scenario. You may review the CT images.')), /*#__PURE__*/React.createElement(CaseCard, {
+    c: caseForStep(step),
+    lang: lang,
+    answers: answers,
+    setAnswer: setAnswer,
+    tt: tt
+  }), /*#__PURE__*/React.createElement(NavBtns, null)), STEP_KEYS[step] === 'H' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
+    className: "text-xl font-black text-gray-900"
+  }, ll === 'tr' ? 'H — Tutum ve Görüşler' : 'H — Attitudes and Opinions'), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-amber-800 font-medium"
+  }, tt.last_section))), LIKERT_QS.map(q => /*#__PURE__*/React.createElement("div", {
+    key: q.id,
+    className: "pb-5 border-b border-gray-100 last:border-0"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, q[ll] || q.en), /*#__PURE__*/React.createElement(LikertScale, {
+    value: answers[q.id],
+    onChange: v => setAnswer(q.id, v),
+    labels: tt.likert
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-3 mt-6"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(step - 1),
+    className: "px-6 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
+  }, tt.prev), /*#__PURE__*/React.createElement("button", {
+    disabled: submitting,
+    onClick: submitSurvey,
+    className: `flex-1 py-3 rounded-xl text-white font-bold shadow-lg shadow-green-200 transition-all ${submitting ? 'bg-gray-400 cursor-wait' : 'bg-green-600 hover:bg-green-700'}`
+  }, submitting ? ll === 'tr' ? 'Gönderiliyor...' : 'Submitting...' : tt.submit + ' ✓'))), STEP_KEYS[step] === 'thanks' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "40",
+    height: "40",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "#16A34A",
+    strokeWidth: "2.5",
+    strokeLinecap: "round"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "20 6 9 17 4 12"
+  }))), /*#__PURE__*/React.createElement("h2", {
+    className: "text-2xl font-black text-gray-900"
+  }, tt.thank_title), /*#__PURE__*/React.createElement("p", {
+    className: "text-gray-600"
+  }, tt.thank_text), /*#__PURE__*/React.createElement("div", {
+    className: "bg-gray-50 rounded-xl p-6 space-y-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium text-gray-700"
+  }, tt.results_q), !emailSent ? /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 max-w-sm mx-auto"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "email",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: tt.email_ph,
+    className: "flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:border-amber-500 outline-none"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: saveEmail,
+    className: "px-5 py-2.5 rounded-lg bg-amber-500 text-white font-bold text-sm hover:bg-amber-600 transition-colors"
+  }, tt.email_btn)) : /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2 justify-center text-green-600"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "18",
+    height: "18",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2.5"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "20 6 9 17 4 12"
+  })), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-medium"
+  }, ll === 'tr' ? 'Kaydedildi!' : 'Saved!'))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-gray-400 mt-6"
+  }, "pmal.cyprusorthopaedics.com"))), /*#__PURE__*/React.createElement("style", null, `
+        @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .animate-fadeIn{animation:fadeIn 0.4s ease-out}
+        @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+      `));
 }
 
 ReactDOM.render(React.createElement(App), document.getElementById('root'));
