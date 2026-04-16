@@ -35,7 +35,8 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,san
 const {
   useState,
   useEffect,
-  useCallback
+  useCallback,
+  useRef
 } = React;
 
 // ── 12 LANGUAGES ──
@@ -891,205 +892,999 @@ function SectionPage({
 }
 const R2_BASE = "https://pub-6af9dc948c2247c4b18c171bdc5bfb98.r2.dev/";
 const WORKER_API = "https://pmal-r2-api.utkugrhn.workers.dev/";
-function DicomViewerEmbed({
-  caseId,
-  r2folder
+
+// Window presets (WW / WC)
+const WL_PRESETS = [
+  { id: 'bone', label: { tr: 'Kemik', en: 'Bone' }, ww: 1800, wc: 400 },
+  { id: 'soft', label: { tr: 'Yumuşak Doku', en: 'Soft Tissue' }, ww: 400, wc: 40 },
+  { id: 'brain', label: { tr: 'Beyin', en: 'Brain' }, ww: 80, wc: 40 },
+  { id: 'lung', label: { tr: 'Akciğer', en: 'Lung' }, ww: 1500, wc: -600 }
+];
+
+// Determine anatomical plane from DICOM ImageOrientationPatient tag
+// Falls back to SeriesDescription regex
+function detectPlane(iop, desc) {
+  // Try IOP first
+  if (iop) {
+    const v = iop.split('\\').map(Number);
+    if (v.length >= 6 && v.every(x => !isNaN(x))) {
+      const ax = [
+        v[1] * v[5] - v[2] * v[4],
+        v[2] * v[3] - v[0] * v[5],
+        v[0] * v[4] - v[1] * v[3]
+      ];
+      const abs = ax.map(Math.abs);
+      const maxA = Math.max(...abs);
+      // Only trust IOP if it's reasonably aligned to a cardinal axis
+      if (maxA > 0.7) {
+        const i = abs.indexOf(maxA);
+        return ['sagittal', 'coronal', 'axial'][i];
+      }
+    }
+  }
+  // Fall back to description regex
+  if (desc) {
+    const d = desc.toLowerCase();
+    if (/\b(sag|sagittal)\b/.test(d)) return 'sagittal';
+    if (/\b(cor|coronal)\b/.test(d)) return 'coronal';
+    if (/\b(ax|axial|tra|transverse)\b/.test(d)) return 'axial';
+  }
+  return 'axial';
+}
+
+// Single viewport for one series
+function DicomSeriesViewer({
+  files,
+  plane,
+  label,
+  tool,
+  setTool,
+  wlPreset,
+  setWlPreset,
+  invert,
+  setInvert,
+  onReset,
+  measureActive,
+  fullscreen,
+  setFullscreen,
+  isMobile,
+  lang
 }) {
-  const containerRef = React.useRef(null);
-  const stateRef = React.useRef({
-    idx: 0,
-    ids: [],
-    cache: {},
-    mounted: true
+  const containerRef = useRef(null);
+  const canvasOverlayRef = useRef(null);
+  const stateRef = useRef({
+    idx: 0, ids: [], cache: {}, mounted: true,
+    measurePoints: [], lastViewport: null
   });
   const [loading, setLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
   const [error, setError] = useState(null);
-  const [info, setInfo] = useState({
-    cur: 0,
-    tot: 0,
-    ww: 0,
-    wc: 0
-  });
+  const [info, setInfo] = useState({ cur: 0, tot: 0, ww: 0, wc: 0, zoom: 1 });
+  const [measurement, setMeasurement] = useState(null);
+
+  // Load series
   useEffect(() => {
-    if (!containerRef.current || !r2folder || typeof cornerstone === 'undefined') return;
+    if (!containerRef.current || !files || files.length === 0 || typeof cornerstone === 'undefined') return;
     const el = containerRef.current;
     const st = stateRef.current;
     st.mounted = true;
+    st.idx = 0;
+    st.cache = {};
+    st.measurePoints = [];
+    setMeasurement(null);
+    setLoading(true);
+    setError(null);
+
     (async () => {
       try {
-        const res = await fetch(`${WORKER_API}?prefix=${r2folder}`);
-        const data = await res.json();
-        // Filter main CT series (_0002_, size>100KB) and sort by slice number
-        const series = data.files.filter(f => f.key.includes('_0002_') && f.size > 100000).sort((a, b) => a.key.localeCompare(b.key));
-        if (!st.mounted || series.length === 0) {
-          setError('No DICOM files found');
-          return;
-        }
         cornerstone.enable(el);
-        st.ids = series.map(f => `wadouri:${R2_BASE}${f.key}`);
+        st.ids = files.map(f => `wadouri:${R2_BASE}${f.key}`);
 
-        // Load and display first image
         const img = await cornerstone.loadImage(st.ids[0]);
         if (!st.mounted) return;
         st.cache[0] = img;
         cornerstone.displayImage(el, img);
+
         const vp = cornerstone.getViewport(el);
+        if (invert) vp.invert = true;
+        if (wlPreset) {
+          vp.voi.windowWidth = wlPreset.ww;
+          vp.voi.windowCenter = wlPreset.wc;
+        }
+        cornerstone.setViewport(el, vp);
+
         setInfo({
-          cur: 1,
-          tot: st.ids.length,
+          cur: 1, tot: st.ids.length,
           ww: Math.round(vp.voi.windowWidth),
-          wc: Math.round(vp.voi.windowCenter)
+          wc: Math.round(vp.voi.windowCenter),
+          zoom: vp.scale
         });
         setLoading(false);
 
-        // Preload next 15 slices
-        for (let i = 1; i < Math.min(16, st.ids.length); i++) {
+        // Preload first 20 slices
+        let loaded = 1;
+        for (let i = 1; i < Math.min(20, st.ids.length); i++) {
           cornerstone.loadImage(st.ids[i]).then(im => {
+            if (!st.mounted) return;
             st.cache[i] = im;
-          });
+            loaded++;
+            setLoadProgress(Math.round(loaded / Math.min(20, st.ids.length) * 100));
+          }).catch(() => {});
         }
       } catch (e) {
-        if (st.mounted) setError(e.message);
+        if (st.mounted) setError(e.message || 'Load failed');
       }
     })();
 
-    // Scroll handler
-    const onWheel = async e => {
+    return () => {
+      st.mounted = false;
+      try { cornerstone.disable(el); } catch (ex) {}
+    };
+  }, [files]);
+
+  // Apply W/L preset
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || loading || !wlPreset) return;
+    try {
+      const vp = cornerstone.getViewport(el);
+      vp.voi.windowWidth = wlPreset.ww;
+      vp.voi.windowCenter = wlPreset.wc;
+      cornerstone.setViewport(el, vp);
+      setInfo(p => ({ ...p, ww: wlPreset.ww, wc: wlPreset.wc }));
+    } catch (e) {}
+  }, [wlPreset]);
+
+  // Apply invert
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || loading) return;
+    try {
+      const vp = cornerstone.getViewport(el);
+      vp.invert = invert;
+      cornerstone.setViewport(el, vp);
+    } catch (e) {}
+  }, [invert]);
+
+  // Display a specific slice
+  const showSlice = useCallback(async (ni) => {
+    const el = containerRef.current;
+    const st = stateRef.current;
+    if (!el || ni < 0 || ni >= st.ids.length) return;
+    st.idx = ni;
+    try {
+      let img = st.cache[ni];
+      if (!img) {
+        img = await cornerstone.loadImage(st.ids[ni]);
+        if (!st.mounted) return;
+        st.cache[ni] = img;
+      }
+      cornerstone.displayImage(el, img);
+      const vp = cornerstone.getViewport(el);
+      setInfo(p => ({
+        ...p,
+        cur: ni + 1,
+        ww: Math.round(vp.voi.windowWidth),
+        wc: Math.round(vp.voi.windowCenter),
+        zoom: vp.scale
+      }));
+      // Preload neighbors
+      for (let j = 1; j <= 3; j++) {
+        [ni + j, ni - j].forEach(pi => {
+          if (pi >= 0 && pi < st.ids.length && !st.cache[pi]) {
+            cornerstone.loadImage(st.ids[pi]).then(im => { st.cache[pi] = im; }).catch(() => {});
+          }
+        });
+      }
+      // Redraw measurement overlay
+      drawMeasurementOverlay();
+    } catch (e) {}
+  }, []);
+
+  // Reset handler
+  useEffect(() => {
+    if (onReset) onReset.current = () => {
+      const el = containerRef.current;
+      if (!el || loading) return;
+      try {
+        const vp = cornerstone.getViewport(el);
+        vp.scale = 1;
+        vp.translation = { x: 0, y: 0 };
+        vp.invert = false;
+        if (wlPreset) {
+          vp.voi.windowWidth = wlPreset.ww;
+          vp.voi.windowCenter = wlPreset.wc;
+        }
+        cornerstone.setViewport(el, vp);
+        stateRef.current.measurePoints = [];
+        setMeasurement(null);
+        drawMeasurementOverlay();
+        setInfo(p => ({
+          ...p,
+          ww: Math.round(vp.voi.windowWidth),
+          wc: Math.round(vp.voi.windowCenter),
+          zoom: 1
+        }));
+        setInvert(false);
+      } catch (e) {}
+    };
+  }, [onReset, loading, wlPreset, setInvert]);
+
+  // Pointer-position to image-coordinates converter
+  const pageToImage = (pageX, pageY) => {
+    const el = containerRef.current;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const x = pageX - rect.left;
+    const y = pageY - rect.top;
+    try {
+      return cornerstone.pageToPixel(el, pageX, pageY);
+    } catch (e) {
+      return { x, y };
+    }
+  };
+
+  // Draw measurement overlay on canvas
+  const drawMeasurementOverlay = useCallback(() => {
+    const overlay = canvasOverlayRef.current;
+    const el = containerRef.current;
+    if (!overlay || !el) return;
+    const rect = el.getBoundingClientRect();
+    overlay.width = rect.width;
+    overlay.height = rect.height;
+    const ctx = overlay.getContext('2d');
+    ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+    const pts = stateRef.current.measurePoints;
+    if (pts.length === 0) return;
+
+    // Convert image coords back to canvas coords via cornerstone viewport
+    const toCanvas = (imgX, imgY) => {
+      try {
+        return cornerstone.pixelToCanvas(el, { x: imgX, y: imgY });
+      } catch (e) {
+        return { x: imgX, y: imgY };
+      }
+    };
+
+    ctx.strokeStyle = '#FFB547';
+    ctx.fillStyle = '#FFB547';
+    ctx.lineWidth = 2;
+    ctx.font = 'bold 13px -apple-system, sans-serif';
+
+    // Draw points as circles
+    pts.forEach(p => {
+      const c = toCanvas(p.x, p.y);
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    // Draw lines between consecutive points
+    if (pts.length >= 2) {
+      ctx.beginPath();
+      const c0 = toCanvas(pts[0].x, pts[0].y);
+      ctx.moveTo(c0.x, c0.y);
+      for (let i = 1; i < pts.length; i++) {
+        const c = toCanvas(pts[i].x, pts[i].y);
+        ctx.lineTo(c.x, c.y);
+      }
+      ctx.stroke();
+    }
+
+    // Compute and show measurement
+    const img = cornerstone.getEnabledElement(el).image;
+    const ps = (img && img.columnPixelSpacing) || 1;
+    if (pts.length === 2) {
+      const dx = (pts[1].x - pts[0].x) * ps;
+      const dy = (pts[1].y - pts[0].y) * ps;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const unit = (img && img.columnPixelSpacing) ? 'mm' : 'px';
+      const text = `${dist.toFixed(1)} ${unit}`;
+      const mid = toCanvas((pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2);
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(mid.x + 8, mid.y - 18, ctx.measureText(text).width + 10, 22);
+      ctx.fillStyle = '#FFB547';
+      ctx.fillText(text, mid.x + 13, mid.y - 3);
+      setMeasurement(text);
+    } else if (pts.length === 3) {
+      // Angle at pts[1] between pts[0]->pts[1] and pts[2]->pts[1]
+      const v1x = pts[0].x - pts[1].x, v1y = pts[0].y - pts[1].y;
+      const v2x = pts[2].x - pts[1].x, v2y = pts[2].y - pts[1].y;
+      const m1 = Math.sqrt(v1x * v1x + v1y * v1y);
+      const m2 = Math.sqrt(v2x * v2x + v2y * v2y);
+      const cos = (v1x * v2x + v1y * v2y) / (m1 * m2);
+      const ang = Math.acos(Math.max(-1, Math.min(1, cos))) * 180 / Math.PI;
+      const text = `${ang.toFixed(1)}°`;
+      const c = toCanvas(pts[1].x, pts[1].y);
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillRect(c.x + 12, c.y - 22, ctx.measureText(text).width + 10, 22);
+      ctx.fillStyle = '#FFB547';
+      ctx.fillText(text, c.x + 17, c.y - 7);
+      setMeasurement(text);
+    }
+  }, []);
+
+  // Cornerstone image rendered -> redraw overlay
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = () => drawMeasurementOverlay();
+    el.addEventListener('cornerstoneimagerendered', handler);
+    return () => el.removeEventListener('cornerstoneimagerendered', handler);
+  }, [drawMeasurementOverlay]);
+
+  // Mouse and touch handlers
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || loading) return;
+    const st = stateRef.current;
+
+    let dragging = false;
+    let startX = 0, startY = 0;
+    let startWW = 0, startWC = 0, startScale = 1;
+    let startTx = 0, startTy = 0;
+    let activeTool = tool;
+    let pinchStart = 0, pinchScaleStart = 1;
+    let touchLastY = 0;
+
+    const getViewport = () => { try { return cornerstone.getViewport(el); } catch (e) { return null; } };
+    const setViewport = (vp) => { try { cornerstone.setViewport(el, vp); } catch (e) {} };
+
+    // Mouse wheel = scroll slices
+    const onWheel = async (e) => {
       e.preventDefault();
       const dir = e.deltaY > 0 ? 1 : -1;
       const ni = Math.max(0, Math.min(st.ids.length - 1, st.idx + dir));
       if (ni === st.idx) return;
-      st.idx = ni;
-      try {
-        let img = st.cache[ni];
-        if (!img) {
-          img = await cornerstone.loadImage(st.ids[ni]);
-          st.cache[ni] = img;
-        }
-        cornerstone.displayImage(el, img);
-        const vp = cornerstone.getViewport(el);
-        setInfo({
-          cur: ni + 1,
-          tot: st.ids.length,
-          ww: Math.round(vp.voi.windowWidth),
-          wc: Math.round(vp.voi.windowCenter)
-        });
-        // Preload ahead
-        for (let j = 1; j <= 5; j++) {
-          const pi = ni + dir * j;
-          if (pi >= 0 && pi < st.ids.length && !st.cache[pi]) cornerstone.loadImage(st.ids[pi]).then(im => {
-            st.cache[pi] = im;
-          });
-        }
-      } catch (err) {}
+      showSlice(ni);
     };
 
-    // W/L drag handler
-    let dragging = false,
-      startX = 0,
-      startY = 0,
-      startWW = 0,
-      startWC = 0;
-    const onDown = e => {
+    const onDown = (e) => {
+      if (measureActive) {
+        const p = pageToImage(e.clientX, e.clientY);
+        if (!p) return;
+        if (st.measurePoints.length >= 3) st.measurePoints = [];
+        st.measurePoints.push(p);
+        drawMeasurementOverlay();
+        e.preventDefault();
+        return;
+      }
       dragging = true;
       startX = e.clientX;
       startY = e.clientY;
-      try {
-        const vp = cornerstone.getViewport(el);
-        startWW = vp.voi.windowWidth;
-        startWC = vp.voi.windowCenter;
-      } catch (ex) {}
+      activeTool = tool;
+      const vp = getViewport();
+      if (!vp) return;
+      startWW = vp.voi.windowWidth;
+      startWC = vp.voi.windowCenter;
+      startScale = vp.scale;
+      startTx = vp.translation.x;
+      startTy = vp.translation.y;
+      e.preventDefault();
     };
-    const onMove = e => {
+
+    const onMove = (e) => {
       if (!dragging) return;
-      const dx = e.clientX - startX,
-        dy = e.clientY - startY;
-      try {
-        const vp = cornerstone.getViewport(el);
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const vp = getViewport();
+      if (!vp) return;
+
+      if (activeTool === 'wl') {
         vp.voi.windowWidth = Math.max(1, startWW + dx * 2);
         vp.voi.windowCenter = startWC + dy * 2;
-        cornerstone.setViewport(el, vp);
-        setInfo(prev => ({
-          ...prev,
-          ww: Math.round(vp.voi.windowWidth),
-          wc: Math.round(vp.voi.windowCenter)
-        }));
-      } catch (ex) {}
+      } else if (activeTool === 'zoom') {
+        vp.scale = Math.max(0.1, Math.min(10, startScale * Math.pow(1.01, -dy)));
+      } else if (activeTool === 'pan') {
+        vp.translation.x = startTx + dx / vp.scale;
+        vp.translation.y = startTy + dy / vp.scale;
+      }
+      setViewport(vp);
+      setInfo(p => ({
+        ...p,
+        ww: Math.round(vp.voi.windowWidth),
+        wc: Math.round(vp.voi.windowCenter),
+        zoom: vp.scale
+      }));
     };
-    const onUp = () => {
+
+    const onUp = () => { dragging = false; };
+
+    // Touch handlers
+    const onTouchStart = (e) => {
+      if (measureActive && e.touches.length === 1) {
+        const t = e.touches[0];
+        const p = pageToImage(t.clientX, t.clientY);
+        if (!p) return;
+        if (st.measurePoints.length >= 3) st.measurePoints = [];
+        st.measurePoints.push(p);
+        drawMeasurementOverlay();
+        e.preventDefault();
+        return;
+      }
+      if (e.touches.length === 1) {
+        dragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        touchLastY = startY;
+        const vp = getViewport();
+        if (!vp) return;
+        startWW = vp.voi.windowWidth;
+        startWC = vp.voi.windowCenter;
+        activeTool = tool === 'wl' ? 'scroll' : tool;  // default single-touch = scroll slices
+      } else if (e.touches.length === 2) {
+        dragging = false;
+        const t1 = e.touches[0], t2 = e.touches[1];
+        pinchStart = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        const vp = getViewport();
+        if (vp) {
+          pinchScaleStart = vp.scale;
+          startTx = vp.translation.x;
+          startTy = vp.translation.y;
+          startX = (t1.clientX + t2.clientX) / 2;
+          startY = (t1.clientY + t2.clientY) / 2;
+        }
+      }
+      e.preventDefault();
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length === 1 && dragging) {
+        const cx = e.touches[0].clientX;
+        const cy = e.touches[0].clientY;
+        if (activeTool === 'scroll') {
+          // Swipe vertical = scroll slices
+          const dy = cy - touchLastY;
+          if (Math.abs(dy) > 6) {
+            const dir = dy > 0 ? 1 : -1;
+            const ni = Math.max(0, Math.min(st.ids.length - 1, st.idx + dir));
+            if (ni !== st.idx) showSlice(ni);
+            touchLastY = cy;
+          }
+        } else {
+          const dx = cx - startX, dy = cy - startY;
+          const vp = getViewport();
+          if (!vp) return;
+          if (activeTool === 'wl') {
+            vp.voi.windowWidth = Math.max(1, startWW + dx * 2);
+            vp.voi.windowCenter = startWC + dy * 2;
+          } else if (activeTool === 'pan') {
+            vp.translation.x = startTx + dx / vp.scale;
+            vp.translation.y = startTy + dy / vp.scale;
+          }
+          setViewport(vp);
+          setInfo(p => ({
+            ...p,
+            ww: Math.round(vp.voi.windowWidth),
+            wc: Math.round(vp.voi.windowCenter),
+            zoom: vp.scale
+          }));
+        }
+      } else if (e.touches.length === 2) {
+        const t1 = e.touches[0], t2 = e.touches[1];
+        const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+        const cx = (t1.clientX + t2.clientX) / 2;
+        const cy = (t1.clientY + t2.clientY) / 2;
+        const vp = getViewport();
+        if (!vp) return;
+        // Pinch zoom
+        vp.scale = Math.max(0.1, Math.min(10, pinchScaleStart * (dist / pinchStart)));
+        // Two-finger pan
+        vp.translation.x = startTx + (cx - startX) / vp.scale;
+        vp.translation.y = startTy + (cy - startY) / vp.scale;
+        setViewport(vp);
+        setInfo(p => ({ ...p, zoom: vp.scale }));
+      }
+      e.preventDefault();
+    };
+
+    const onTouchEnd = (e) => {
       dragging = false;
+      if (e.touches.length === 0) pinchStart = 0;
     };
-    el.addEventListener('wheel', onWheel, {
-      passive: false
-    });
+
+    el.addEventListener('wheel', onWheel, { passive: false });
     el.addEventListener('mousedown', onDown);
     window.addEventListener('mousemove', onMove);
     window.addEventListener('mouseup', onUp);
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+
     return () => {
-      st.mounted = false;
       el.removeEventListener('wheel', onWheel);
       el.removeEventListener('mousedown', onDown);
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
-      try {
-        cornerstone.disable(el);
-      } catch (ex) {}
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
     };
+  }, [tool, loading, measureActive, showSlice, drawMeasurementOverlay]);
+
+  // Slice slider
+  const onSliderChange = (e) => {
+    const ni = parseInt(e.target.value);
+    showSlice(ni);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const onKey = (e) => {
+      if (loading) return;
+      // Only when viewer is focused or hovered
+      const el = containerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const isHovered = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2) === el
+        || el.contains(document.activeElement);
+      if (!isHovered && !fullscreen) return;
+      // Don't steal focus if typing
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        showSlice(Math.max(0, stateRef.current.idx - 1));
+        e.preventDefault();
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        showSlice(Math.min(stateRef.current.ids.length - 1, stateRef.current.idx + 1));
+        e.preventDefault();
+      } else if (e.key === '+' || e.key === '=') {
+        const vp = cornerstone.getViewport(el);
+        vp.scale = Math.min(10, vp.scale * 1.15);
+        cornerstone.setViewport(el, vp);
+        setInfo(p => ({ ...p, zoom: vp.scale }));
+        e.preventDefault();
+      } else if (e.key === '-' || e.key === '_') {
+        const vp = cornerstone.getViewport(el);
+        vp.scale = Math.max(0.1, vp.scale / 1.15);
+        cornerstone.setViewport(el, vp);
+        setInfo(p => ({ ...p, zoom: vp.scale }));
+        e.preventDefault();
+      } else if (e.key.toLowerCase() === 'i') {
+        setInvert(!invert);
+        e.preventDefault();
+      } else if (e.key.toLowerCase() === 'r') {
+        if (onReset.current) onReset.current();
+        e.preventDefault();
+      } else if (e.key.toLowerCase() === 'f') {
+        setFullscreen(!fullscreen);
+        e.preventDefault();
+      } else if (e.key >= '1' && e.key <= '4') {
+        const preset = WL_PRESETS[parseInt(e.key) - 1];
+        if (preset) setWlPreset(preset);
+        e.preventDefault();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [loading, invert, fullscreen, showSlice, setInvert, setFullscreen, setWlPreset, onReset]);
+
+  // Viewer JSX (all createElement form)
+  const h = React.createElement;
+  const height = fullscreen ? '100vh' : (isMobile ? 340 : 420);
+
+  return h('div', {
+    className: 'relative bg-black',
+    style: { height: height, overflow: 'hidden' }
+  },
+    // Plane label (top-left)
+    h('div', {
+      className: 'absolute top-2 left-2 z-20 text-xs font-bold px-2 py-1 rounded',
+      style: { background: 'rgba(0,0,0,0.6)', color: '#FFB547' }
+    }, label),
+    // Info overlay (top-right)
+    !loading && h('div', {
+      className: 'absolute top-2 right-2 z-20 text-xs font-mono text-gray-300 text-right',
+      style: { background: 'rgba(0,0,0,0.6)', padding: '4px 8px', borderRadius: 4 }
+    },
+      h('div', null, `${info.cur}/${info.tot}`),
+      h('div', null, `W:${info.ww} L:${info.wc}`),
+      h('div', null, `Zoom: ${(info.zoom * 100).toFixed(0)}%`)
+    ),
+    // Measurement display
+    measurement && h('div', {
+      className: 'absolute bottom-16 right-2 z-20 text-sm font-bold',
+      style: { background: 'rgba(0,0,0,0.75)', color: '#FFB547', padding: '4px 10px', borderRadius: 4 }
+    }, (lang === 'tr' ? 'Ölçüm: ' : 'Measure: ') + measurement),
+    // Image container
+    h('div', {
+      ref: containerRef,
+      tabIndex: 0,
+      style: {
+        width: '100%',
+        height: '100%',
+        touchAction: 'none',
+        cursor: measureActive ? 'crosshair' : (tool === 'pan' ? 'move' : (tool === 'zoom' ? 'ns-resize' : 'crosshair')),
+        background: '#000',
+        outline: 'none'
+      }
+    }),
+    // Canvas overlay for measurements
+    h('canvas', {
+      ref: canvasOverlayRef,
+      style: {
+        position: 'absolute',
+        top: 0, left: 0,
+        width: '100%', height: '100%',
+        pointerEvents: 'none',
+        zIndex: 10
+      }
+    }),
+    // Loading state
+    loading && !error && h('div', {
+      className: 'absolute inset-0 flex items-center justify-center z-10',
+      style: { background: 'rgba(0,0,0,0.8)' }
+    },
+      h('div', { style: { textAlign: 'center' } },
+        h('div', {
+          className: 'text-amber-500',
+          style: { fontSize: 36, animation: 'spin 1s linear infinite' }
+        }, '⏳'),
+        h('p', { className: 'text-sm text-gray-300 mt-2' },
+          lang === 'tr' ? 'CT yükleniyor...' : 'Loading CT...'),
+        loadProgress > 0 && h('p', { className: 'text-xs text-gray-500 mt-1' }, `${loadProgress}%`)
+      )
+    ),
+    // Error state
+    error && h('div', {
+      className: 'absolute inset-0 flex items-center justify-center',
+      style: { background: 'rgba(0,0,0,0.8)' }
+    },
+      h('p', { className: 'text-sm text-red-400' }, error)
+    ),
+    // Slice slider (bottom)
+    !loading && h('div', {
+      className: 'absolute bottom-0 left-0 right-0 z-20 px-3 py-2',
+      style: { background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }
+    },
+      h('input', {
+        type: 'range',
+        min: 0,
+        max: Math.max(0, (stateRef.current.ids.length || 1) - 1),
+        value: Math.max(0, info.cur - 1),
+        onChange: onSliderChange,
+        style: { width: '100%', accentColor: '#FFB547', cursor: 'pointer' }
+      })
+    )
+  );
+}
+
+// Multi-series case viewer with toolbar and MPR layout
+function DicomViewerEmbed({ caseId, r2folder }) {
+  const [seriesList, setSeriesList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [tool, setTool] = useState('wl'); // wl | zoom | pan
+  const [wlPreset, setWlPreset] = useState(WL_PRESETS[0]); // Bone default
+  const [invert, setInvert] = useState(false);
+  const [measureActive, setMeasureActive] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [activePlane, setActivePlane] = useState('axial');
+  const [threePanel, setThreePanel] = useState(false);
+  const [lang, setLang] = useState('tr');
+  const resetRefs = { axial: useRef(null), sagittal: useRef(null), coronal: useRef(null) };
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
+    // Read language from document
+    const l = document.documentElement.lang || 'tr';
+    setLang(l.startsWith('tr') ? 'tr' : 'en');
+  }, []);
+
+  // Load and classify all series
+  useEffect(() => {
+    if (!r2folder) return;
+    setLoading(true);
+    setError(null);
+
+    (async () => {
+      try {
+        const res = await fetch(`${WORKER_API}?prefix=${r2folder}`);
+        const data = await res.json();
+        if (!data.files || data.files.length === 0) {
+          setError(lang === 'tr' ? 'DICOM dosyası bulunamadı' : 'No DICOM files found');
+          return;
+        }
+
+        // Group by series number (from filename pattern)
+        const bySeries = {};
+        data.files.forEach(f => {
+          const m = f.key.match(/_(\d{4})_\d{6}_/);
+          if (!m) return;
+          if (!bySeries[m[1]]) bySeries[m[1]] = [];
+          bySeries[m[1]].push(f);
+        });
+
+        // For each significant series (>20 slices, size filter), fetch metadata from first file
+        const candidates = Object.entries(bySeries)
+          .filter(([, files]) => files.length > 20)
+          .map(([sn, files]) => ({
+            sn,
+            files: files.sort((a, b) => a.key.localeCompare(b.key)),
+            avgSize: files.reduce((s, f) => s + f.size, 0) / files.length
+          }))
+          .filter(s => s.avgSize > 80000); // Exclude tiny thumbnails
+
+        const classified = [];
+        for (const s of candidates) {
+          const sample = s.files[Math.floor(s.files.length / 2)]; // middle file
+          try {
+            const buf = await (await fetch(R2_BASE + sample.key)).arrayBuffer();
+            const ds = dicomParser.parseDicom(new Uint8Array(buf));
+            const iop = ds.string('x00200037');
+            const desc = ds.string('x0008103e') || '';
+            const thick = ds.string('x00180050') || '';
+            const modality = ds.string('x00080060') || '';
+            // Skip non-CT
+            if (modality && modality !== 'CT') continue;
+            const plane = detectPlane(iop, desc);
+            classified.push({
+              sn: s.sn,
+              files: s.files,
+              plane,
+              desc,
+              thick: parseFloat(thick) || 0,
+              count: s.files.length
+            });
+          } catch (e) {
+            // skip this series
+          }
+        }
+
+        // For each plane, pick the best series (prefer thicker slices for nav: 3mm over 0.75mm)
+        const pickBest = (plane) => {
+          const opts = classified.filter(c => c.plane === plane);
+          if (opts.length === 0) return null;
+          // Prefer 2.5-3.5mm thickness, moderate slice count (30-200)
+          opts.sort((a, b) => {
+            const scoreA = (a.thick >= 2 && a.thick <= 4 ? 100 : 0) +
+                           (a.count >= 30 && a.count <= 200 ? 50 : 0) +
+                           (a.count < 30 ? -100 : 0) - Math.abs(a.thick - 3);
+            const scoreB = (b.thick >= 2 && b.thick <= 4 ? 100 : 0) +
+                           (b.count >= 30 && b.count <= 200 ? 50 : 0) +
+                           (b.count < 30 ? -100 : 0) - Math.abs(b.thick - 3);
+            return scoreB - scoreA;
+          });
+          return opts[0];
+        };
+
+        const picked = {
+          axial: pickBest('axial'),
+          sagittal: pickBest('sagittal'),
+          coronal: pickBest('coronal')
+        };
+
+        const list = [];
+        if (picked.axial) list.push({ plane: 'axial', ...picked.axial });
+        if (picked.sagittal) list.push({ plane: 'sagittal', ...picked.sagittal });
+        if (picked.coronal) list.push({ plane: 'coronal', ...picked.coronal });
+
+        if (list.length === 0) {
+          // Fallback: use any axial-filtered old logic
+          const fallback = data.files.filter(f => f.key.includes('_0002_') && f.size > 100000)
+            .sort((a, b) => a.key.localeCompare(b.key));
+          if (fallback.length > 0) {
+            list.push({ plane: 'axial', sn: '0002', files: fallback, desc: 'Axial', thick: 3, count: fallback.length });
+          }
+        }
+
+        setSeriesList(list);
+        // Default to axial if available, else first
+        if (list.find(s => s.plane === 'axial')) setActivePlane('axial');
+        else if (list.length > 0) setActivePlane(list[0].plane);
+        setLoading(false);
+      } catch (e) {
+        setError(e.message || 'Load failed');
+      }
+    })();
   }, [r2folder]);
-  return /*#__PURE__*/React.createElement("div", {
-    className: "bg-gray-900 rounded-xl overflow-hidden mt-4"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between px-3 py-2 border-b border-gray-700"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "text-amber-500 text-xs font-bold"
-  }, loading ? '⏳' : '▶', " CT"), !loading && /*#__PURE__*/React.createElement("span", {
-    className: "text-gray-400 text-xs"
-  }, info.cur, "/", info.tot)), !loading && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center gap-3 text-gray-500 text-xs"
-  }, /*#__PURE__*/React.createElement("span", null, "W:", info.ww, " L:", info.wc), /*#__PURE__*/React.createElement("span", {
-    className: "text-gray-600"
-  }, "Scroll: slice \xB7 Drag: W/L"))), /*#__PURE__*/React.createElement("div", {
-    ref: containerRef,
-    style: {
-      height: 384,
-      touchAction: 'none',
-      cursor: 'crosshair',
-      background: '#000'
+
+  // Fullscreen effect
+  useEffect(() => {
+    if (fullscreen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
-  }, loading && !error && /*#__PURE__*/React.createElement("div", {
+    return () => { document.body.style.overflow = ''; };
+  }, [fullscreen]);
+
+  const h = React.createElement;
+
+  const planeLabels = {
+    axial: { tr: 'Aksiyel', en: 'Axial' },
+    sagittal: { tr: 'Sagittal', en: 'Sagittal' },
+    coronal: { tr: 'Koronal', en: 'Coronal' }
+  };
+
+  const toolLabels = {
+    wl: { tr: 'W/L', en: 'W/L' },
+    zoom: { tr: 'Zoom', en: 'Zoom' },
+    pan: { tr: 'Pan', en: 'Pan' }
+  };
+
+  // Toolbar button factory
+  const tbBtn = (key, label, isActive, onClick, title) => h('button', {
+    key,
+    type: 'button',
+    onClick: (e) => { e.preventDefault(); onClick(); },
+    title: title || label,
+    className: 'px-2 py-1 text-xs font-medium rounded transition',
     style: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%'
+      background: isActive ? '#FFB547' : 'rgba(255,255,255,0.1)',
+      color: isActive ? '#000' : '#ddd',
+      border: `1px solid ${isActive ? '#FFB547' : 'rgba(255,255,255,0.2)'}`,
+      whiteSpace: 'nowrap'
     }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: 'center'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "text-amber-500",
-    style: {
-      fontSize: 24,
-      animation: 'spin 1s linear infinite'
-    }
-  }, "\u23F3"), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-gray-400",
-    style: {
-      marginTop: 8
-    }
-  }, "Loading CT images..."))), error && /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100%'
-    }
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-red-400"
-  }, error))));
+  }, label);
+
+  if (loading) {
+    return h('div', {
+      className: 'bg-gray-900 rounded-xl mt-4 flex items-center justify-center',
+      style: { height: 200 }
+    },
+      h('div', { style: { textAlign: 'center' } },
+        h('div', { className: 'text-amber-500', style: { fontSize: 28, animation: 'spin 1s linear infinite' } }, '⏳'),
+        h('p', { className: 'text-sm text-gray-400 mt-2' },
+          lang === 'tr' ? 'Seriler taranıyor...' : 'Scanning series...')
+      )
+    );
+  }
+
+  if (error) {
+    return h('div', {
+      className: 'bg-gray-900 rounded-xl mt-4 flex items-center justify-center',
+      style: { height: 120 }
+    },
+      h('p', { className: 'text-sm text-red-400' }, error)
+    );
+  }
+
+  if (seriesList.length === 0) {
+    return h('div', {
+      className: 'bg-gray-900 rounded-xl mt-4 flex items-center justify-center',
+      style: { height: 120 }
+    },
+      h('p', { className: 'text-sm text-gray-400' },
+        lang === 'tr' ? 'Uygun CT serisi bulunamadı' : 'No suitable CT series found')
+    );
+  }
+
+  // Toolbar
+  const toolbar = h('div', {
+    className: 'flex items-center gap-1 px-2 py-2 border-b',
+    style: { background: '#1a1a1a', borderColor: '#333', flexWrap: 'wrap' }
+  },
+    // Plane tabs (only if MPR available)
+    seriesList.length > 1 && !threePanel && h('div', {
+      className: 'flex gap-0.5 mr-2',
+      key: 'planes'
+    },
+      ...seriesList.map(s => tbBtn(
+        `p-${s.plane}`,
+        planeLabels[s.plane][lang],
+        activePlane === s.plane,
+        () => setActivePlane(s.plane),
+        `${s.desc} (${s.count} ${lang === 'tr' ? 'kesit' : 'slices'})`
+      ))
+    ),
+    // 3-panel toggle (only on desktop, if multiple planes)
+    seriesList.length > 1 && !isMobile && tbBtn(
+      '3p',
+      threePanel ? '◻' : '⬚⬚⬚',
+      threePanel,
+      () => setThreePanel(!threePanel),
+      lang === 'tr' ? '3 Panel' : '3-Panel View'
+    ),
+    h('div', { key: 'sep1', style: { width: 1, height: 20, background: '#444', margin: '0 4px' } }),
+    // Tool modes
+    tbBtn('wl', 'W/L', tool === 'wl' && !measureActive, () => { setTool('wl'); setMeasureActive(false); }, lang === 'tr' ? 'Pencere (W/L)' : 'Window/Level'),
+    tbBtn('zoom', 'Zoom', tool === 'zoom' && !measureActive, () => { setTool('zoom'); setMeasureActive(false); }, lang === 'tr' ? 'Yakınlaştır' : 'Zoom'),
+    tbBtn('pan', 'Pan', tool === 'pan' && !measureActive, () => { setTool('pan'); setMeasureActive(false); }, lang === 'tr' ? 'Kaydır' : 'Pan'),
+    tbBtn('measure', '📏', measureActive, () => setMeasureActive(!measureActive), lang === 'tr' ? 'Ölçüm (mesafe / açı)' : 'Measure (distance / angle)'),
+    h('div', { key: 'sep2', style: { width: 1, height: 20, background: '#444', margin: '0 4px' } }),
+    // W/L presets
+    ...WL_PRESETS.map((p, i) => tbBtn(
+      `wl-${p.id}`,
+      p.label[lang],
+      wlPreset && wlPreset.id === p.id,
+      () => setWlPreset(p),
+      `${p.label[lang]} (${i + 1}) — WW:${p.ww} WC:${p.wc}`
+    )),
+    h('div', { key: 'sep3', style: { width: 1, height: 20, background: '#444', margin: '0 4px' } }),
+    // Invert + Reset + Fullscreen
+    tbBtn('inv', lang === 'tr' ? 'Ters' : 'Invert', invert, () => setInvert(!invert), lang === 'tr' ? 'Renk tersle (I)' : 'Invert (I)'),
+    tbBtn('reset', lang === 'tr' ? 'Sıfırla' : 'Reset', false, () => {
+      if (resetRefs.axial.current) resetRefs.axial.current();
+      if (resetRefs.sagittal.current) resetRefs.sagittal.current();
+      if (resetRefs.coronal.current) resetRefs.coronal.current();
+    }, lang === 'tr' ? 'Sıfırla (R)' : 'Reset (R)'),
+    tbBtn('fs', fullscreen ? '✕' : '⛶', fullscreen, () => setFullscreen(!fullscreen), lang === 'tr' ? 'Tam ekran (F)' : 'Fullscreen (F)')
+  );
+
+  // Renders a single panel
+  const renderPanel = (series) => h(DicomSeriesViewer, {
+    key: series.plane,
+    files: series.files,
+    plane: series.plane,
+    label: `${planeLabels[series.plane][lang]} · ${series.count}`,
+    tool,
+    setTool,
+    wlPreset,
+    setWlPreset,
+    invert,
+    setInvert,
+    onReset: resetRefs[series.plane],
+    measureActive,
+    fullscreen,
+    setFullscreen,
+    isMobile,
+    lang
+  });
+
+  // Determine viewport content
+  let content;
+  if (threePanel && !isMobile) {
+    // 3-panel grid
+    content = h('div', {
+      style: {
+        display: 'grid',
+        gridTemplateColumns: `repeat(${seriesList.length}, 1fr)`,
+        gap: 2,
+        background: '#000'
+      }
+    },
+      ...seriesList.map(s => renderPanel(s))
+    );
+  } else {
+    const s = seriesList.find(x => x.plane === activePlane) || seriesList[0];
+    content = renderPanel(s);
+  }
+
+  const wrapperStyle = fullscreen ? {
+    position: 'fixed',
+    top: 0, left: 0, right: 0, bottom: 0,
+    zIndex: 9999,
+    background: '#000',
+    display: 'flex',
+    flexDirection: 'column'
+  } : {};
+
+  return h('div', {
+    className: fullscreen ? '' : 'bg-gray-900 rounded-xl overflow-hidden mt-4',
+    style: wrapperStyle
+  },
+    toolbar,
+    h('div', { style: { flex: fullscreen ? 1 : 'initial', minHeight: 0 } }, content),
+    // Help text (desktop only, non-fullscreen)
+    !fullscreen && !isMobile && h('div', {
+      className: 'px-3 py-1.5 text-xs text-gray-500 border-t',
+      style: { background: '#111', borderColor: '#333' }
+    },
+      lang === 'tr'
+        ? 'Scroll: kesit · Drag: aktif araç · Klavye: ↑↓ kesit, +/- zoom, I invert, R reset, F tam ekran, 1-4 pencere'
+        : 'Scroll: slice · Drag: active tool · Keys: ↑↓ slice, +/- zoom, I invert, R reset, F fullscreen, 1-4 window'
+    ),
+    // Mobile help text
+    !fullscreen && isMobile && h('div', {
+      className: 'px-3 py-1.5 text-xs text-gray-500 border-t',
+      style: { background: '#111', borderColor: '#333' }
+    },
+      lang === 'tr'
+        ? '1 parmak kaydır: kesit · 2 parmak: zoom+pan · Araç seç: drag ile uygula'
+        : '1-finger swipe: slice · 2-finger: zoom+pan · Pick tool then drag'
+    )
+  );
 }
 function CaseCard({
   c,
