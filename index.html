@@ -821,44 +821,160 @@ function LikertScale({
     className: `flex-1 min-w-14 px-1 py-3 rounded-lg text-xs font-medium border transition-all duration-200 ${value === i + 1 ? 'bg-amber-500 text-white border-amber-600 shadow-md scale-105' : 'bg-white text-gray-600 border-gray-200 hover:border-amber-300 hover:bg-amber-50'}`
   }, label)));
 }
+// ═══════════════════════════════════════════════════════════
+// SECTION COMPLETION LOGIC
+// Computes per-section completion: 'empty' | 'partial' | 'complete'
+// Also returns list of missing question IDs for validation/UX.
+// ═══════════════════════════════════════════════════════════
+function computeSectionCompletion(answers) {
+  // Collect required question IDs per section.
+  const reqA = SECTIONS.A.questions.map(q => q.id);
+  const reqB = SECTIONS.B.questions.map(q => q.id);
+  const reqC = SECTIONS.C.questions.map(q => q.id);
+  const reqD = SECTIONS.D.questions.map(q => q.id);
+  const reqE = SECTIONS.E.questions.map(q => q.id);
+  const reqF = SECTIONS.F.questions.map(q => q.id);
+  const reqH = LIKERT_QS.map(q => q.id);
+
+  // Case sections: each case requires <prefix>_fix at minimum. If fix === 'yes',
+  // also requires position, approach, technique, and (if hasSequence) sequence.
+  const caseReqs = (c, answers) => {
+    const ids = [`${c.prefix}_fix`];
+    // We need to detect "yes" regardless of language. Answer is stored as the
+    // localized string; read both TR and EN translations.
+    const fixAns = answers[`${c.prefix}_fix`];
+    const yesTR = 'Evet', yesEN = 'Yes';
+    if (fixAns === yesTR || fixAns === yesEN) {
+      ids.push(`${c.prefix}_position`, `${c.prefix}_approach`, `${c.prefix}_technique`);
+      if (c.hasSequence) ids.push(`${c.prefix}_sequence`);
+    }
+    return ids;
+  };
+
+  const isFilled = (id) => {
+    const v = answers[id];
+    if (v === undefined || v === null || v === '') return false;
+    if (Array.isArray(v) && v.length === 0) return false;
+    return true;
+  };
+
+  const checkSection = (ids) => {
+    const missing = ids.filter(id => !isFilled(id));
+    if (missing.length === ids.length) return { state: 'empty', missing };
+    if (missing.length === 0) return { state: 'complete', missing: [] };
+    return { state: 'partial', missing };
+  };
+
+  // Case subsections
+  const caseStates = {};
+  CASES.forEach((c, idx) => {
+    const ids = caseReqs(c, answers);
+    caseStates[`case${idx + 1}`] = checkSection(ids);
+  });
+
+  // Aggregate G = all 4 cases
+  const allCaseIds = CASES.flatMap(c => caseReqs(c, answers));
+  const gState = checkSection(allCaseIds);
+
+  return {
+    A: checkSection(reqA),
+    B: checkSection(reqB),
+    C: checkSection(reqC),
+    D: checkSection(reqD),
+    E: checkSection(reqE),
+    F: checkSection(reqF),
+    G: gState,
+    H: checkSection(reqH),
+    cases: caseStates
+  };
+}
+
 function ProgressBar({
   current,
   total,
   step,
   setStep,
-  lang
+  lang,
+  completion
 }) {
   const pct = Math.round(current / total * 100);
 
-  // Section map: which STEP_KEYS belong to which display section
-  // STEP_KEYS = [langSelect(0), consent(1), A(2), B(3), C(4), D(5), E(6), F(7), case1(8), case2(9), case3(10), case4(11), H(12), thanks(13)]
+  // STEP_KEYS = [langSelect(0), consent(1), A(2), B(3), C(4), D(5), E(6), F(7),
+  //              case1(8), case2(9), case3(10), case4(11), H(12), thanks(13)]
   const sections = [
-    { key: 'A', step: 2, label: 'A' },
-    { key: 'B', step: 3, label: 'B' },
-    { key: 'C', step: 4, label: 'C' },
-    { key: 'D', step: 5, label: 'D' },
-    { key: 'E', step: 6, label: 'E' },
-    { key: 'F', step: 7, label: 'F' },
-    { key: 'G', step: 8, label: 'G', span: [8, 11] }, // case1..case4
-    { key: 'H', step: 12, label: 'H' }
+    { key: 'A', step: 2 },
+    { key: 'B', step: 3 },
+    { key: 'C', step: 4 },
+    { key: 'D', step: 5 },
+    { key: 'E', step: 6 },
+    { key: 'F', step: 7 },
+    { key: 'G', step: 8, span: [8, 11] }, // case1..case4
+    { key: 'H', step: 12 }
   ];
 
-  // Tooltips
-  const titles = {
-    tr: { A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon', E: 'Teknik', F: 'Sıra/Sindesmoz', G: 'Vakalar', H: 'Tutumlar' },
-    en: { A: 'Demographics', B: 'Exposure', C: 'Classification', D: 'Indications', E: 'Technique', F: 'Sequence/Syndesmosis', G: 'Cases', H: 'Attitudes' }
+  // Short section labels for the jump bar — fit on mobile
+  const SHORT = {
+    tr: {
+      A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon',
+      E: 'Teknik', F: 'Sıra', G: 'Vakalar', H: 'Görüş'
+    },
+    en: {
+      A: 'Demogr', B: 'Exp', C: 'Class', D: 'Indic',
+      E: 'Tech', F: 'Seq', G: 'Cases', H: 'Attitude'
+    }
+  };
+  const TIPS = {
+    tr: {
+      A: 'Demografi', B: 'PM Deneyimi', C: 'Sınıflama',
+      D: 'Fiksasyon Endikasyonları', E: 'Teknik Tercihler',
+      F: 'Fiksasyon Sırası ve Sindesmoz', G: 'Klinik Vaka Senaryoları', H: 'Tutum ve Görüşler'
+    },
+    en: {
+      A: 'Demographics', B: 'PM Experience', C: 'Classification',
+      D: 'Fixation Indications', E: 'Technique Preferences',
+      F: 'Fixation Sequence / Syndesmosis', G: 'Clinical Cases', H: 'Attitudes & Opinions'
+    }
   };
   const l = (lang === 'tr' || lang === 'en') ? lang : 'en';
-  const tl = titles[l];
+  const lbl = SHORT[l];
+  const tip = TIPS[l];
 
   const isActive = (s) => s.span
     ? (step >= s.span[0] && step <= s.span[1])
     : step === s.step;
-  const isPast = (s) => s.span ? step > s.span[1] : step > s.step;
+
+  // 3-state color logic driven by completion data
+  // States: empty (not yet filled), partial (some filled), complete (all filled)
+  // Active section gets outline ring on top of its state color.
+  const stateOf = (s) => {
+    const c = completion ? completion[s.key] : null;
+    return c ? c.state : 'empty';
+  };
+
+  // Color palette
+  // empty     → gray  (bg #F3F4F6, border #E5E7EB, text #9CA3AF)
+  // partial   → amber (bg #FEF3C7, border #F59E0B, text #92400E)
+  // complete  → orange (bg #D97706, border #D97706, text #fff)
+  // +active   → ring (ring-2 ring-amber-500 offset)
+  const styleFor = (state, active) => {
+    let s;
+    if (state === 'complete') {
+      s = { background: '#D97706', color: '#FFFFFF', border: '1px solid #D97706' };
+    } else if (state === 'partial') {
+      s = { background: '#FEF3C7', color: '#92400E', border: '1px solid #F59E0B' };
+    } else {
+      s = { background: '#F3F4F6', color: '#6B7280', border: '1px solid #E5E7EB' };
+    }
+    if (active) {
+      s.boxShadow = '0 0 0 2px #FBBF24';
+      s.fontWeight = '800';
+    }
+    return s;
+  };
 
   const h = React.createElement;
   return h('div', { className: 'flex flex-col gap-1.5' },
-    // Progress bar
+    // Progress bar (thin, based on numeric step progress)
     h('div', {
       className: 'w-full bg-gray-200 rounded-full h-1.5 overflow-hidden'
     },
@@ -876,22 +992,16 @@ function ProgressBar({
     },
       ...sections.map(s => {
         const active = isActive(s);
-        const past = isPast(s);
+        const state = stateOf(s);
         const targetStep = s.span ? (step >= s.span[0] && step <= s.span[1] ? step : s.span[0]) : s.step;
         return h('button', {
           key: s.key,
           type: 'button',
           onClick: () => setStep(targetStep),
-          title: tl[s.key],
-          className: 'flex-1 min-w-0 py-1 px-1 text-[10px] sm:text-xs font-bold rounded transition-all',
-          style: {
-            background: active ? '#D97706' : (past ? '#FDE68A' : 'transparent'),
-            color: active ? '#fff' : (past ? '#92400E' : '#9CA3AF'),
-            border: active ? '1px solid #D97706' : (past ? '1px solid #FDE68A' : '1px solid #E5E7EB'),
-            cursor: 'pointer',
-            letterSpacing: '0.02em'
-          }
-        }, s.label)
+          title: `${tip[s.key]} — ${state === 'complete' ? (l === 'tr' ? 'Tamamlandı ✓' : 'Complete ✓') : state === 'partial' ? (l === 'tr' ? 'Kısmen dolu' : 'Partial') : (l === 'tr' ? 'Boş' : 'Empty')}`,
+          className: 'flex-1 min-w-0 py-1 px-0.5 text-[10px] sm:text-xs font-semibold rounded transition-all truncate',
+          style: { ...styleFor(state, active), cursor: 'pointer', letterSpacing: '0.01em' }
+        }, lbl[s.key]);
       })
     )
   );
@@ -2151,16 +2261,54 @@ function App() {
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitBlock, setSubmitBlock] = useState(null); // { section, count } for modal
   const [startTime] = useState(Date.now());
   const ll = lang === 'tr' || lang === 'en' ? lang : 'en';
   const tt = T[ll] || T.en;
   const totalSteps = STEP_KEYS.length - 1;
+
+  // Completion per section (recalculated each render when answers change)
+  const completion = React.useMemo(() => computeSectionCompletion(answers), [answers]);
+
+  // Find the first section that is not complete (for submit-time redirection)
+  const firstIncompleteSection = () => {
+    const order = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+    for (const k of order) {
+      if (completion[k].state !== 'complete') return k;
+    }
+    return null;
+  };
+
+  // Section → step map for jumping on submit-guard
+  const sectionToStep = { A: 2, B: 3, C: 4, D: 5, E: 6, F: 7, G: 8, H: 12 };
+
   const setAnswer = useCallback((key, val) => {
     setAnswers(prev => ({
       ...prev,
       [key]: val
     }));
   }, []);
+
+  const tryAttemptSubmit = () => {
+    const incomplete = firstIncompleteSection();
+    if (incomplete) {
+      // Find first incomplete case specifically if G is the issue
+      let targetStep = sectionToStep[incomplete];
+      if (incomplete === 'G') {
+        for (let i = 0; i < 4; i++) {
+          if (completion.cases[`case${i + 1}`].state !== 'complete') {
+            targetStep = 8 + i;
+            break;
+          }
+        }
+      }
+      setSubmitBlock({ section: incomplete, targetStep });
+      return false;
+    }
+    setSubmitBlock(null);
+    submitSurvey();
+    return true;
+  };
   const submitSurvey = async () => {
     setSubmitting(true);
     try {
@@ -2273,7 +2421,73 @@ function App() {
     style: {
       background: 'linear-gradient(135deg,#FAFAF9 0%,#F5F0EB 100%)'
     }
-  }, step > 0 && /*#__PURE__*/React.createElement("header", {
+  }, submitBlock && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-50 flex items-center justify-center p-4",
+    style: { background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' },
+    onClick: () => setSubmitBlock(null)
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-fadeIn",
+    onClick: e => e.stopPropagation()
+  },
+    /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-3 mb-4"
+    },
+      /*#__PURE__*/React.createElement("div", {
+        className: "w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-xl"
+      }, '⚠️'),
+      /*#__PURE__*/React.createElement("h3", {
+        className: "text-lg font-black text-gray-900"
+      }, ll === 'tr' ? 'Eksik Yanıtlar' : 'Incomplete Answers')
+    ),
+    /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-700 mb-2"
+    }, ll === 'tr'
+      ? `Anketi tamamlamadan önce eksik bir bölüm var: `
+      : `There are unanswered questions before you can submit: `),
+    /*#__PURE__*/React.createElement("div", {
+      className: "my-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
+    },
+      /*#__PURE__*/React.createElement("p", {
+        className: "text-sm font-bold text-amber-900"
+      },
+        (() => {
+          const SHORT_TR = { A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon', E: 'Teknik', F: 'Sıra/Sindesmoz', G: 'Vakalar', H: 'Tutumlar' };
+          const SHORT_EN = { A: 'Demographics', B: 'Experience', C: 'Classification', D: 'Indications', E: 'Technique', F: 'Sequence/Syndesmosis', G: 'Cases', H: 'Attitudes' };
+          const s = submitBlock.section;
+          return (ll === 'tr' ? SHORT_TR : SHORT_EN)[s] + ' (' + s + ')';
+        })()
+      ),
+      /*#__PURE__*/React.createElement("p", {
+        className: "text-xs text-amber-800 mt-1"
+      },
+        (() => {
+          const missing = submitBlock.section === 'G'
+            ? Object.values(completion.cases).reduce((a, c) => a + c.missing.length, 0)
+            : completion[submitBlock.section].missing.length;
+          return ll === 'tr'
+            ? `${missing} soru yanıtlanmamış`
+            : `${missing} question${missing === 1 ? '' : 's'} unanswered`;
+        })()
+      )
+    ),
+    /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600 mb-5"
+    }, ll === 'tr'
+      ? 'Lütfen bu bölüme dönüp yanıtlarınızı tamamlayın. Anketinizi tam olarak göndermeden kaydedemiyoruz.'
+      : 'Please return to this section and complete your answers. The survey cannot be submitted until all sections are complete.'),
+    /*#__PURE__*/React.createElement("div", {
+      className: "flex gap-2"
+    },
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => setSubmitBlock(null),
+        className: "flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
+      }, ll === 'tr' ? 'Kapat' : 'Close'),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: () => { setStep(submitBlock.targetStep); setSubmitBlock(null); },
+        className: "flex-1 px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 shadow-lg shadow-amber-200 transition"
+      }, ll === 'tr' ? 'Bölüme Git →' : 'Go to Section →')
+    )
+  )), step > 0 && /*#__PURE__*/React.createElement("header", {
     className: "sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/60"
   }, /*#__PURE__*/React.createElement("div", {
     className: "max-w-3xl mx-auto px-4 py-3 flex items-center justify-between"
@@ -2292,7 +2506,8 @@ function App() {
     total: totalSteps - 2,
     step: step,
     setStep: setStep,
-    lang: lang
+    lang: lang,
+    completion: completion
   })), lang && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStep(0);
@@ -2399,7 +2614,7 @@ function App() {
     className: "px-6 py-3 rounded-xl border border-gray-300 text-gray-600 font-medium hover:bg-gray-50 transition-colors"
   }, tt.prev), /*#__PURE__*/React.createElement("button", {
     disabled: submitting,
-    onClick: submitSurvey,
+    onClick: tryAttemptSubmit,
     className: `flex-1 py-3 rounded-xl text-white font-bold shadow-lg shadow-green-200 transition-all ${submitting ? 'bg-gray-400 cursor-wait' : 'bg-green-600 hover:bg-green-700'}`
   }, submitting ? ll === 'tr' ? 'Gönderiliyor...' : 'Submitting...' : tt.submit + ' ✓'))), STEP_KEYS[step] === 'thanks' && /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn text-center"
