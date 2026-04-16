@@ -176,6 +176,287 @@ const PG = [{
   story: "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu."
 }];
 
+// ── INTRO (Vintage Amp) ──
+function IntroScreen({
+  onStart
+}) {
+  const [hover, setHover] = React.useState(false);
+  const [pressed, setPressed] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+  const [loadPct, setLoadPct] = React.useState(0);
+  const handlePlay = () => {
+    setPressed(true);
+    setLoading(true);
+    if (!window._loginAudio) {
+      window._loginAudio = new Audio('/mp3/welcome.mp3');
+      window._loginAudio.preload = "auto";
+      window._loginAudio.volume = 0.5;
+    }
+    const audio = window._loginAudio;
+    let proceeded = false;
+    const proceed = () => {
+      if (proceeded) return;
+      proceeded = true;
+      audio.play().catch(() => {});
+      setTimeout(onStart, 500);
+    };
+    // Track buffer progress
+    const updateProgress = () => {
+      if (audio.buffered.length > 0 && audio.duration) {
+        const loaded = audio.buffered.end(audio.buffered.length - 1);
+        const pct = Math.round(loaded / audio.duration * 100);
+        setLoadPct(pct);
+      }
+    };
+    audio.addEventListener('progress', updateProgress);
+    audio.addEventListener('canplaythrough', proceed, {
+      once: true
+    });
+    // If already fully loaded
+    if (audio.readyState >= 4) {
+      setLoadPct(100);
+      proceed();
+    } else {
+      audio.load();
+      // Fallback timeout — don't hang forever (30s max)
+      setTimeout(proceed, 30000);
+    }
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      minHeight: "100vh",
+      background: "radial-gradient(ellipse at center,#1a0e00 0%,#0a0500 60%,#000 100%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px",
+      overflow: "hidden",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: "15%",
+      width: 2,
+      height: "50%",
+      background: "linear-gradient(180deg,rgba(217,119,6,0.3),transparent)",
+      transform: "rotate(15deg)",
+      transformOrigin: "top"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      right: "15%",
+      width: 2,
+      height: "50%",
+      background: "linear-gradient(180deg,rgba(91,141,190,0.3),transparent)",
+      transform: "rotate(-15deg)",
+      transformOrigin: "top"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: "40%",
+      width: 2,
+      height: "40%",
+      background: "linear-gradient(180deg,rgba(192,57,43,0.25),transparent)",
+      transform: "rotate(5deg)",
+      transformOrigin: "top"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      zIndex: 2,
+      transition: "all 0.8s ease",
+      opacity: pressed ? 0 : 1,
+      transform: pressed ? "scale(1.1)" : "scale(1)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6a4a1a",
+      letterSpacing: 8,
+      textTransform: "uppercase",
+      marginBottom: 12,
+      fontFamily: "Georgia,serif"
+    }
+  }, "Posterior Malleolus Survey"), /*#__PURE__*/React.createElement("h1", {
+    style: {
+      fontSize: "clamp(36px,8vw,72px)",
+      fontWeight: 900,
+      margin: "0 0 8px",
+      fontFamily: "Impact,'Arial Black',sans-serif",
+      letterSpacing: "4px",
+      color: "#F59E0B",
+      textShadow: "0 0 20px rgba(245,158,11,0.8), 0 0 40px rgba(245,158,11,0.4), 0 0 80px rgba(245,158,11,0.2)",
+      animation: "neonFlicker 3s ease-in-out infinite"
+    }
+  }, "CONTROL ROOM"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 16,
+      marginBottom: 48
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 60,
+      height: 1,
+      background: "linear-gradient(90deg,transparent,#D97706)"
+    }
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#D97706",
+      fontSize: 10,
+      letterSpacing: 4,
+      textTransform: "uppercase"
+    }
+  }, "Est. 2026 \xB7 Rock n' Roll Admin"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 60,
+      height: 1,
+      background: "linear-gradient(270deg,transparent,#D97706)"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "center",
+      gap: 3,
+      marginBottom: 40,
+      height: 40,
+      alignItems: "flex-end"
+    }
+  }, [...Array(16)].map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      width: 6,
+      height: `${20 + Math.sin(i * 0.8) * 15 + Math.cos(i * 0.3) * 10}px`,
+      background: i < 10 ? "linear-gradient(0deg,#D97706,#F59E0B)" : i < 14 ? "linear-gradient(0deg,#F59E0B,#EAB308)" : "linear-gradient(0deg,#EAB308,#DC2626)",
+      borderRadius: 1,
+      opacity: 0.4,
+      animation: `vuBar 1.${i % 9}s ease-in-out infinite alternate`
+    }
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      display: "inline-block"
+    }
+  }, loading ?
+  /*#__PURE__*/
+  // Hourglass / Loading spinner with % progress
+  React.createElement("div", {
+    style: {
+      width: 180,
+      height: 180,
+      borderRadius: "50%",
+      background: "radial-gradient(circle at 30% 30%,#2a1a08,#1a0a00 70%)",
+      border: "6px solid #000",
+      boxShadow: "0 0 40px rgba(245,158,11,0.4), inset 0 0 30px rgba(0,0,0,0.6)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 20,
+      border: "4px solid transparent",
+      borderTopColor: "#F59E0B",
+      borderRightColor: "rgba(245,158,11,0.5)",
+      borderRadius: "50%",
+      animation: "spinner 1s linear infinite"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 32,
+      color: "#F59E0B",
+      animation: "hourglassPulse 1.5s ease-in-out infinite"
+    }
+  }, "\u23F3"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#F59E0B",
+      fontSize: 16,
+      fontWeight: 700,
+      fontFamily: "Georgia,serif",
+      marginTop: 4
+    }
+  }, loadPct, "%")) : /*#__PURE__*/React.createElement("button", {
+    onMouseEnter: () => setHover(true),
+    onMouseLeave: () => setHover(false),
+    onClick: handlePlay,
+    style: {
+      width: 180,
+      height: 180,
+      borderRadius: "50%",
+      background: hover ? "radial-gradient(circle at 30% 30%,#F59E0B,#D97706 50%,#78350F)" : "radial-gradient(circle at 30% 30%,#E5E5E5,#737373 50%,#1a1a1a)",
+      border: "6px solid #000",
+      boxShadow: hover ? "0 0 60px rgba(245,158,11,0.8), inset 0 0 30px rgba(0,0,0,0.4), inset 0 4px 20px rgba(255,255,255,0.3)" : "0 0 30px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.5), inset 0 4px 12px rgba(255,255,255,0.2)",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      transform: hover ? "scale(1.05)" : "scale(1)",
+      position: "relative"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 0,
+      height: 0,
+      borderLeft: `48px solid ${hover ? "#fff" : "#1a1a1a"}`,
+      borderTop: "30px solid transparent",
+      borderBottom: "30px solid transparent",
+      position: "absolute",
+      top: "50%",
+      left: "56%",
+      transform: "translate(-50%,-50%)",
+      filter: hover ? "drop-shadow(0 0 8px rgba(255,255,255,0.6))" : "none",
+      transition: "all 0.3s ease"
+    }
+  })), !loading && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: -20,
+      borderRadius: "50%",
+      border: "2px solid rgba(245,158,11,0.3)",
+      animation: hover ? "pulse 1.5s ease-in-out infinite" : "none",
+      pointerEvents: "none"
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    style: {
+      color: "#737373",
+      fontSize: 12,
+      letterSpacing: 6,
+      textTransform: "uppercase",
+      marginTop: 32,
+      fontWeight: 600,
+      animation: "blink 2s ease-in-out infinite"
+    }
+  }, loading ? `◈ LOADING TRACK ${loadPct}% ◈` : "▸ Press Play to Enter ◂"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 48,
+      display: "flex",
+      justifyContent: "center",
+      gap: 24,
+      color: "#404040",
+      fontSize: 9,
+      letterSpacing: 2,
+      textTransform: "uppercase"
+    }
+  }, /*#__PURE__*/React.createElement("span", null, "\u25C9 REC"), /*#__PURE__*/React.createElement("span", null, "\u25C6 33\u2153 RPM"), /*#__PURE__*/React.createElement("span", null, "\u266B STEREO"), /*#__PURE__*/React.createElement("span", null, "\u25A1 DOLBY"))), /*#__PURE__*/React.createElement("style", null, `
+        @keyframes neonFlicker { 0%,100%{opacity:1;text-shadow:0 0 20px rgba(245,158,11,0.8),0 0 40px rgba(245,158,11,0.4),0 0 80px rgba(245,158,11,0.2)} 50%{opacity:0.92;text-shadow:0 0 25px rgba(245,158,11,1),0 0 50px rgba(245,158,11,0.6),0 0 100px rgba(245,158,11,0.3)} 55%{opacity:0.85} }
+        @keyframes vuBar { 0%{height:8px;opacity:0.2} 100%{height:38px;opacity:0.9} }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:0.6} 50%{transform:scale(1.15);opacity:0.2} }
+        @keyframes blink { 0%,100%{opacity:0.8} 50%{opacity:0.3} }
+        @keyframes spinner { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        @keyframes hourglassPulse { 0%,100%{opacity:0.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.1)} }
+      `));
+}
+
 // ── LOGIN ──
 function LoginPage({
   onLogin
@@ -519,6 +800,7 @@ function MusicBar({
   React.useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
+      audioRef.current.preload = "auto";
       audioRef.current.addEventListener('timeupdate', () => {
         const a = audioRef.current;
         if (a && a.duration) setProgress(a.currentTime / a.duration * 100);
@@ -536,7 +818,8 @@ function MusicBar({
       a.src = '/' + p.mp3;
       a.load();
       setProgress(0);
-      if (playing) a.play().catch(() => {});
+      // Autoplay on page change if user has already interacted
+      a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
     }
   }, [page, p.mp3]);
   React.useEffect(() => {
@@ -1904,11 +2187,35 @@ function SetPage() {
 // MAIN
 // ══════════════════════════════════════════════
 function App() {
+  const [started, setStarted] = useState(false);
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("dashboard");
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
   const [sb, setSb] = useState(true);
+
+  // Preload all card images (color + bw) on mount so they're cached when login shows
+  useEffect(() => {
+    ['card_gilmour_color_web.png', 'card_gilmour_bw_web.png', 'card_hetfield_color_web.png', 'card_hetfield_bw_web.png', 'card_slash_color_web.png', 'card_slash_bw_web.png', 'card_cobain_color_web.png', 'card_cobain_bw_web.png'].forEach(src => {
+      const img = new Image();
+      img.src = '/' + src;
+    });
+  }, []);
+
+  // Autoplay when logging in (user has clicked, so interaction granted)
+  useEffect(() => {
+    if (user) {
+      // Stop login music when entering admin
+      if (window._loginAudio) {
+        window._loginAudio.pause();
+        window._loginAudio.currentTime = 0;
+      }
+      setPlaying(true);
+    }
+  }, [user]);
+  if (!started) return /*#__PURE__*/React.createElement(IntroScreen, {
+    onStart: () => setStarted(true)
+  });
   if (!user) return /*#__PURE__*/React.createElement(LoginPage, {
     onLogin: setUser
   });
