@@ -823,18 +823,78 @@ function LikertScale({
 }
 function ProgressBar({
   current,
-  total
+  total,
+  step,
+  setStep,
+  lang
 }) {
   const pct = Math.round(current / total * 100);
-  return /*#__PURE__*/React.createElement("div", {
-    className: "w-full bg-gray-200 rounded-full h-2 overflow-hidden"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "h-full rounded-full transition-all duration-500 ease-out",
-    style: {
-      width: `${pct}%`,
-      background: 'linear-gradient(90deg,#D97706,#F59E0B)'
-    }
-  }));
+
+  // Section map: which STEP_KEYS belong to which display section
+  // STEP_KEYS = [langSelect(0), consent(1), A(2), B(3), C(4), D(5), E(6), F(7), case1(8), case2(9), case3(10), case4(11), H(12), thanks(13)]
+  const sections = [
+    { key: 'A', step: 2, label: 'A' },
+    { key: 'B', step: 3, label: 'B' },
+    { key: 'C', step: 4, label: 'C' },
+    { key: 'D', step: 5, label: 'D' },
+    { key: 'E', step: 6, label: 'E' },
+    { key: 'F', step: 7, label: 'F' },
+    { key: 'G', step: 8, label: 'G', span: [8, 11] }, // case1..case4
+    { key: 'H', step: 12, label: 'H' }
+  ];
+
+  // Tooltips
+  const titles = {
+    tr: { A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon', E: 'Teknik', F: 'Sıra/Sindesmoz', G: 'Vakalar', H: 'Tutumlar' },
+    en: { A: 'Demographics', B: 'Exposure', C: 'Classification', D: 'Indications', E: 'Technique', F: 'Sequence/Syndesmosis', G: 'Cases', H: 'Attitudes' }
+  };
+  const l = (lang === 'tr' || lang === 'en') ? lang : 'en';
+  const tl = titles[l];
+
+  const isActive = (s) => s.span
+    ? (step >= s.span[0] && step <= s.span[1])
+    : step === s.step;
+  const isPast = (s) => s.span ? step > s.span[1] : step > s.step;
+
+  const h = React.createElement;
+  return h('div', { className: 'flex flex-col gap-1.5' },
+    // Progress bar
+    h('div', {
+      className: 'w-full bg-gray-200 rounded-full h-1.5 overflow-hidden'
+    },
+      h('div', {
+        className: 'h-full rounded-full transition-all duration-500 ease-out',
+        style: {
+          width: `${pct}%`,
+          background: 'linear-gradient(90deg,#D97706,#F59E0B)'
+        }
+      })
+    ),
+    // Section jump bar
+    h('div', {
+      className: 'flex items-center justify-between gap-0.5 sm:gap-1'
+    },
+      ...sections.map(s => {
+        const active = isActive(s);
+        const past = isPast(s);
+        const targetStep = s.span ? (step >= s.span[0] && step <= s.span[1] ? step : s.span[0]) : s.step;
+        return h('button', {
+          key: s.key,
+          type: 'button',
+          onClick: () => setStep(targetStep),
+          title: tl[s.key],
+          className: 'flex-1 min-w-0 py-1 px-1 text-[10px] sm:text-xs font-bold rounded transition-all',
+          style: {
+            background: active ? '#D97706' : (past ? '#FDE68A' : 'transparent'),
+            color: active ? '#fff' : (past ? '#92400E' : '#9CA3AF'),
+            border: active ? '1px solid #D97706' : (past ? '1px solid #FDE68A' : '1px solid #E5E7EB'),
+            cursor: 'pointer',
+            letterSpacing: '0.02em'
+          }
+        }, s.label)
+      })
+    )
+  );
 }
 function QuestionBlock({
   q,
@@ -988,12 +1048,18 @@ function DicomSeriesViewer({
         st.cache[0] = img;
         cornerstone.displayImage(el, img);
 
+        // Fit image to window — ensures large images (e.g. foot extending
+        // beyond frame) are centered and fully visible at initial view.
+        try { cornerstone.fitToWindow(el); } catch (ex) {}
+
         const vp = cornerstone.getViewport(el);
         if (invert) vp.invert = true;
         if (wlPreset) {
           vp.voi.windowWidth = wlPreset.ww;
           vp.voi.windowCenter = wlPreset.wc;
         }
+        // Ensure translation is zeroed (fitToWindow may leave small offsets)
+        vp.translation = { x: 0, y: 0 };
         cornerstone.setViewport(el, vp);
 
         setInfo({
@@ -1128,8 +1194,9 @@ function DicomSeriesViewer({
       const el = containerRef.current;
       if (!el || loading) return;
       try {
+        // Fit image back to viewport first, then apply preset/invert
+        try { cornerstone.fitToWindow(el); } catch (ex) {}
         const vp = cornerstone.getViewport(el);
-        vp.scale = 1;
         vp.translation = { x: 0, y: 0 };
         vp.invert = false;
         if (wlPreset) {
@@ -1731,33 +1798,36 @@ function DicomViewerEmbed({ caseId, r2folder }) {
           }
         }
 
-        // For each plane, pick the best series (prefer thicker slices for nav: 3mm over 0.75mm)
-        const pickBest = (plane) => {
-          const opts = classified.filter(c => c.plane === plane);
-          if (opts.length === 0) return null;
-          // Prefer 2.5-3.5mm thickness, moderate slice count (30-200)
-          opts.sort((a, b) => {
-            const scoreA = (a.thick >= 2 && a.thick <= 4 ? 100 : 0) +
-                           (a.count >= 30 && a.count <= 200 ? 50 : 0) +
-                           (a.count < 30 ? -100 : 0) - Math.abs(a.thick - 3);
-            const scoreB = (b.thick >= 2 && b.thick <= 4 ? 100 : 0) +
-                           (b.count >= 30 && b.count <= 200 ? 50 : 0) +
-                           (b.count < 30 ? -100 : 0) - Math.abs(b.thick - 3);
-            return scoreB - scoreA;
-          });
-          return opts[0];
-        };
+        // Score & sort within each plane; take up to 2 best per plane
+        // (e.g. two oblique sagittal reformats → "Sagittal 1" and "Sagittal 2")
+        const scoreSeries = (a) =>
+          (a.thick >= 2 && a.thick <= 4 ? 100 : 0) +
+          (a.count >= 30 && a.count <= 300 ? 50 : 0) +
+          (a.count < 30 ? -100 : 0) -
+          Math.abs(a.thick - 3);
 
-        const picked = {
-          axial: pickBest('axial'),
-          sagittal: pickBest('sagittal'),
-          coronal: pickBest('coronal')
-        };
+        const byPlane = { axial: [], sagittal: [], coronal: [] };
+        classified.forEach(c => { if (byPlane[c.plane]) byPlane[c.plane].push(c); });
+        Object.keys(byPlane).forEach(p => {
+          byPlane[p].sort((a, b) => scoreSeries(b) - scoreSeries(a));
+        });
 
         const list = [];
-        if (picked.axial) list.push({ plane: 'axial', ...picked.axial });
-        if (picked.sagittal) list.push({ plane: 'sagittal', ...picked.sagittal });
-        if (picked.coronal) list.push({ plane: 'coronal', ...picked.coronal });
+        ['axial', 'sagittal', 'coronal'].forEach(plane => {
+          const arr = byPlane[plane];
+          if (arr.length === 0) return;
+          // First one: primary for this plane
+          list.push({ plane, planeIndex: 0, ...arr[0] });
+          // Second one: only if meaningfully different (different thickness or clearly oblique)
+          if (arr.length >= 2) {
+            const a = arr[0], b = arr[1];
+            const thickDiff = Math.abs(a.thick - b.thick) > 0.5;
+            const countDiff = Math.abs(a.count - b.count) > 5;
+            if (thickDiff || countDiff) {
+              list.push({ plane, planeIndex: 1, ...b });
+            }
+          }
+        });
 
         if (list.length === 0) {
           // Fallback: use any axial-filtered old logic
@@ -1768,10 +1838,14 @@ function DicomViewerEmbed({ caseId, r2folder }) {
           }
         }
 
+        // Add unique key per series for tab tracking
+        list.forEach(s => { s.key = s.planeIndex > 0 ? `${s.plane}-${s.planeIndex}` : s.plane; });
+
         setSeriesList(list);
         // Default to axial if available, else first
-        if (list.find(s => s.plane === 'axial')) setActivePlane('axial');
-        else if (list.length > 0) setActivePlane(list[0].plane);
+        const axialFirst = list.find(s => s.plane === 'axial');
+        if (axialFirst) setActivePlane(axialFirst.key);
+        else if (list.length > 0) setActivePlane(list[0].key);
         setLoading(false);
       } catch (e) {
         setError(e.message || 'Load failed');
@@ -1855,18 +1929,26 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     className: 'flex items-center gap-1 px-2 py-2 border-b',
     style: { background: '#1a1a1a', borderColor: '#333', flexWrap: 'wrap' }
   },
-    // Plane tabs (only if MPR available)
+    // Plane tabs (only if multiple series available)
     seriesList.length > 1 && !threePanel && h('div', {
       className: 'flex gap-0.5 mr-2',
       key: 'planes'
     },
-      ...seriesList.map(s => tbBtn(
-        `p-${s.plane}`,
-        planeLabels[s.plane][lang],
-        activePlane === s.plane,
-        () => setActivePlane(s.plane),
-        `${s.desc} (${s.count} ${lang === 'tr' ? 'kesit' : 'slices'})`
-      ))
+      ...seriesList.map(s => {
+        const baseName = planeLabels[s.plane][lang];
+        // Count duplicates of same plane before this one to label "Sagittal 1", "Sagittal 2"
+        const duplicatesOfThisPlane = seriesList.filter(x => x.plane === s.plane).length;
+        const labelText = duplicatesOfThisPlane > 1
+          ? `${baseName} ${s.planeIndex + 1}`
+          : baseName;
+        return tbBtn(
+          `p-${s.key}`,
+          labelText,
+          activePlane === s.key,
+          () => setActivePlane(s.key),
+          `${s.desc} · ${s.count} ${lang === 'tr' ? 'kesit' : 'slices'}`
+        );
+      })
     ),
     // 3-panel toggle (only on desktop, if multiple planes)
     seriesList.length > 1 && !isMobile && tbBtn(
@@ -1904,7 +1986,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
 
   // Renders a single panel
   const renderPanel = (series) => h(DicomSeriesViewer, {
-    key: series.plane,
+    key: series.key,
     files: series.files,
     plane: series.plane,
     label: `${planeLabels[series.plane][lang]} · ${series.count}`,
@@ -1937,7 +2019,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
       ...seriesList.map(s => renderPanel(s))
     );
   } else {
-    const s = seriesList.find(x => x.plane === activePlane) || seriesList[0];
+    const s = seriesList.find(x => x.key === activePlane) || seriesList[0];
     content = renderPanel(s);
   }
 
@@ -2204,10 +2286,13 @@ function App() {
   }, "PM")), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-gray-800 text-sm hidden sm:block"
   }, "PMAL Survey")), step > 1 && step < totalSteps && /*#__PURE__*/React.createElement("div", {
-    className: "flex-1 mx-4 sm:mx-6 max-w-xs"
+    className: "flex-1 mx-4 sm:mx-6 max-w-sm"
   }, /*#__PURE__*/React.createElement(ProgressBar, {
     current: step - 1,
-    total: totalSteps - 2
+    total: totalSteps - 2,
+    step: step,
+    setStep: setStep,
+    lang: lang
   })), lang && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStep(0);
