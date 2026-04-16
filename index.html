@@ -1071,19 +1071,30 @@ const WL_PRESETS = [
   { id: 'lung', label: { tr: 'Akciğer', en: 'Lung' }, ww: 1500, wc: -600 }
 ];
 
-// Determine anatomical plane from DICOM ImageOrientationPatient tag
-// Falls back to SeriesDescription regex
-function detectPlane(iop, desc) {
-  // Description keyword wins if explicit — modality PACS labels MPR reformats
-  // as "MPR sag" / "MPR cor" / "MPR ax" consistently. IOP can be oblique
-  // and misclassified for off-axis reformats.
-  if (desc) {
-    const d = desc.toLowerCase();
-    if (/(^|\W)(sag|sagittal)(\W|$)/.test(d)) return 'sagittal';
-    if (/(^|\W)(cor|coronal)(\W|$)/.test(d)) return 'coronal';
-    if (/(^|\W)(ax|axial|tra|transverse)(\W|$)/.test(d)) return 'axial';
+// Determine anatomical plane.
+// Priority order — most reliable first:
+//  1) Stacking axis from IPP delta (first → last slice physical position change) —
+//     this reflects the TRUE physical slice propagation direction regardless of
+//     description or IOP obliquity. A coronal stack moves in +Y (A-P), a sagittal
+//     stack moves in ±X (L-R), an axial stack moves in ±Z (S-I).
+//  2) IOP normal (cross product of row/col vectors) — only trust if well aligned.
+//  3) SeriesDescription regex — least reliable because PACS technicians mis-label
+//     (observed in the field: Case 2 "MPR sag" descriptions on coronal reformats).
+function detectPlane({ iop, desc, ippDelta }) {
+  // 1) Stacking axis (authoritative when available)
+  if (ippDelta && Array.isArray(ippDelta) && ippDelta.length === 3) {
+    const abs = ippDelta.map(Math.abs);
+    const total = abs[0] + abs[1] + abs[2];
+    if (total > 1) { // non-degenerate delta
+      const maxI = abs.indexOf(Math.max(...abs));
+      const dominance = abs[maxI] / total;
+      // High-confidence axis alignment (≥0.5 of total variation on one axis)
+      if (dominance >= 0.5) {
+        return ['sagittal', 'coronal', 'axial'][maxI];
+      }
+    }
   }
-  // Fall back to IOP cross-product for anything unlabeled
+  // 2) IOP normal cross product
   if (iop) {
     const v = iop.split('\\').map(Number);
     if (v.length >= 6 && v.every(x => !isNaN(x))) {
@@ -1094,11 +1105,18 @@ function detectPlane(iop, desc) {
       ];
       const abs = ax.map(Math.abs);
       const maxA = Math.max(...abs);
-      if (maxA > 0.5) {
+      if (maxA > 0.85) {
         const i = abs.indexOf(maxA);
         return ['sagittal', 'coronal', 'axial'][i];
       }
     }
+  }
+  // 3) Description regex (last resort; PACS labels unreliable)
+  if (desc) {
+    const d = desc.toLowerCase();
+    if (/(^|\W)(sag|sagittal)(\W|$)/.test(d)) return 'sagittal';
+    if (/(^|\W)(cor|coronal)(\W|$)/.test(d)) return 'coronal';
+    if (/(^|\W)(ax|axial|tra|transverse)(\W|$)/.test(d)) return 'axial';
   }
   return 'axial';
 }
@@ -1884,17 +1902,43 @@ function DicomViewerEmbed({ caseId, r2folder }) {
 
         const classified = [];
         for (const s of candidates) {
-          const sample = s.files[Math.floor(s.files.length / 2)]; // middle file
           try {
-            const buf = await (await fetch(R2_BASE + sample.key)).arrayBuffer();
-            const ds = dicomParser.parseDicom(new Uint8Array(buf));
-            const iop = ds.string('x00200037');
-            const desc = ds.string('x0008103e') || '';
-            const thick = ds.string('x00180050') || '';
-            const modality = ds.string('x00080060') || '';
-            // Skip non-CT
+            // Fetch first + middle + last files to: (a) get metadata, (b) compute
+            // IPP delta between first & last for true stacking-axis detection.
+            const firstFile = s.files[0];
+            const midFile = s.files[Math.floor(s.files.length / 2)];
+            const lastFile = s.files[s.files.length - 1];
+
+            // Read middle file for descriptive metadata (IOP, desc, thick, modality)
+            const [bufMid, bufFirst, bufLast] = await Promise.all([
+              fetch(R2_BASE + midFile.key).then(r => r.arrayBuffer()),
+              fetch(R2_BASE + firstFile.key).then(r => r.arrayBuffer()),
+              fetch(R2_BASE + lastFile.key).then(r => r.arrayBuffer())
+            ]);
+            const dsMid = dicomParser.parseDicom(new Uint8Array(bufMid));
+            const dsFirst = dicomParser.parseDicom(new Uint8Array(bufFirst));
+            const dsLast = dicomParser.parseDicom(new Uint8Array(bufLast));
+
+            const iop = dsMid.string('x00200037');
+            const desc = dsMid.string('x0008103e') || '';
+            const thick = dsMid.string('x00180050') || '';
+            const modality = dsMid.string('x00080060') || '';
             if (modality && modality !== 'CT') continue;
-            const plane = detectPlane(iop, desc);
+
+            // Compute IPP delta (first slice → last slice) for stacking axis detection
+            const ippFirst = (dsFirst.string('x00200032') || '').split('\\').map(Number);
+            const ippLast = (dsLast.string('x00200032') || '').split('\\').map(Number);
+            let ippDelta = null;
+            if (ippFirst.length === 3 && ippLast.length === 3 &&
+                ippFirst.every(x => !isNaN(x)) && ippLast.every(x => !isNaN(x))) {
+              ippDelta = [
+                ippLast[0] - ippFirst[0],
+                ippLast[1] - ippFirst[1],
+                ippLast[2] - ippFirst[2]
+              ];
+            }
+
+            const plane = detectPlane({ iop, desc, ippDelta });
             classified.push({
               sn: s.sn,
               files: s.files,
