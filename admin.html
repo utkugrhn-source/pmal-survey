@@ -465,7 +465,22 @@ function LoginPage({
   const [pass, setPass] = useState("");
   const [err, setErr] = useState("");
   const handleLogin = () => {
-    if (pass.length >= 4) onLogin(selected);else setErr("Geçersiz şifre");
+    if (pass.length >= 4) {
+      // Pre-create all audio objects during user click so they inherit autoplay permission
+      if (!window._pageAudios) {
+        window._pageAudios = {};
+        PG.forEach(pg => {
+          if (pg.mp3) {
+            const audio = new Audio('/' + pg.mp3);
+            audio.preload = "auto";
+            // Trigger load during user interaction
+            audio.load();
+            window._pageAudios[pg.id] = audio;
+          }
+        });
+      }
+      onLogin(selected);
+    } else setErr("Geçersiz şifre");
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -797,48 +812,52 @@ function MusicBar({
   const [progress, setProgress] = React.useState(0);
   const [duration, setDuration] = React.useState(0);
   React.useEffect(() => {
-    if (!audioRef.current) {
-      audioRef.current = new Audio();
-      audioRef.current.preload = "auto";
-      audioRef.current.addEventListener('timeupdate', () => {
-        const a = audioRef.current;
-        if (a && a.duration) setProgress(a.currentTime / a.duration * 100);
+    // Pause any previously playing audio from other pages
+    if (audioRef.current && audioRef.current !== window._pageAudios?.[page]) {
+      audioRef.current.pause();
+    }
+    // Get the pre-created audio for this page (created during login click)
+    const a = window._pageAudios?.[page];
+    if (!a) return;
+    audioRef.current = a;
+
+    // Attach listeners (idempotent — check flag to prevent duplicates)
+    if (!a._listenersAttached) {
+      a._listenersAttached = true;
+      a.addEventListener('timeupdate', () => {
+        if (a.duration) setProgress(a.currentTime / a.duration * 100);
       });
-      audioRef.current.addEventListener('loadedmetadata', () => {
-        setDuration(audioRef.current.duration);
-      });
-      audioRef.current.addEventListener('ended', () => {
+      a.addEventListener('loadedmetadata', () => setDuration(a.duration));
+      a.addEventListener('ended', () => {
         setPlaying(false);
         setProgress(0);
       });
+      a.addEventListener('play', () => setPlaying(true));
+      a.addEventListener('pause', () => setPlaying(false));
+    } else {
+      // Update progress/duration from current state
+      if (a.duration) setDuration(a.duration);
+      if (a.duration) setProgress(a.currentTime / a.duration * 100);
     }
-    const a = audioRef.current;
-    if (p.mp3 && a.src !== window.location.origin + '/' + p.mp3) {
-      a.src = '/' + p.mp3;
-      a.load();
-      setProgress(0);
-      // Force autoplay — try immediately, fallback to canplay event, fallback to loadeddata
-      const forcePlay = () => {
-        a.play().then(() => setPlaying(true)).catch(() => {
-          // If play fails, wait for next ready state and try again
-          const retry = () => {
-            a.play().then(() => setPlaying(true)).catch(() => {});
-          };
-          a.addEventListener('canplay', retry, {
-            once: true
-          });
-          a.addEventListener('loadeddata', retry, {
-            once: true
-          });
+    a.volume = volume / 100;
+
+    // Autoplay — since audio was created during user click, autoplay should work
+    const forcePlay = () => {
+      a.play().catch(() => {
+        const retry = () => {
+          a.play().catch(() => {});
+        };
+        a.addEventListener('canplay', retry, {
+          once: true
         });
-      };
-      // Try immediately
-      forcePlay();
-      // Backup retry after short delay (in case audio object wasn't ready)
-      setTimeout(forcePlay, 100);
-      setTimeout(forcePlay, 500);
-    }
-  }, [page, p.mp3]);
+        a.addEventListener('loadeddata', retry, {
+          once: true
+        });
+      });
+    };
+    forcePlay();
+    setTimeout(forcePlay, 100);
+  }, [page]);
   React.useEffect(() => {
     const a = audioRef.current;
     if (!a) return;
