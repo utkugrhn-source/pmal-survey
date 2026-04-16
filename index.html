@@ -8,10 +8,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Cornerstone.js DICOM Viewer -->
+<script src="https://unpkg.com/dicom-parser@1.8.21/dist/dicomParser.min.js"></script>
+<script src="https://unpkg.com/cornerstone-core@2.6.1/dist/cornerstone.min.js"></script>
+<script src="https://unpkg.com/cornerstone-wado-image-loader@4.13.2/dist/cornerstoneWADOImageLoader.bundle.min.js"></script>
+<script>
+// Configure cornerstone WADO image loader
+window.addEventListener('DOMContentLoaded', function() {
+  if (typeof cornerstoneWADOImageLoader !== 'undefined' && typeof cornerstone !== 'undefined') {
+    cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
+    cornerstoneWADOImageLoader.external.dicomParser = dicomParser;
+  }
+});
+</script>
 <style>
 @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 .animate-fadeIn{animation:fadeIn 0.4s ease-out}
 @keyframes slideDown{from{opacity:0;max-height:0}to{opacity:1;max-height:3000px}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
 </style>
 </head>
@@ -574,7 +588,8 @@ const CASES = [{
     en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
   },
   prefix: "g1_case1",
-  hasSequence: true
+  hasSequence: true,
+  r2folder: "case1/do/"
 }, {
   id: "case2",
   title: {
@@ -588,7 +603,8 @@ const CASES = [{
     en: "A 76-year-old active male patient presented with ankle pain and inability to bear weight after his foot turned on uneven ground while walking in his garden. His medical history includes well-controlled type 2 diabetes mellitus (on metformin, HbA1c 6.8%) and benign prostatic hyperplasia. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 18% of the articular surface. The fracture was classified as Bartoníček Type 3 and Haraguchi Type 2."
   },
   prefix: "g2_case2",
-  hasSequence: true
+  hasSequence: true,
+  r2folder: "case1/ak/"
 }, {
   id: "case3",
   title: {
@@ -602,7 +618,8 @@ const CASES = [{
     en: "A 74-year-old female patient initially presented to another centre following a fall at home and was referred to our clinic after being stabilised with a splint. At the initial presentation, a soft tissue injury was identified on the anteromedial aspect; debridement and primary closure were performed with no signs of active infection. The patient was diagnosed with a Gustilo-Anderson Type 3A open trimalleolar fracture, and an external fixator was applied along with VAC therapy. At the third week of follow-up, the wrinkle test was found to be positive over the lateral and posterior aspects. Her medical history includes osteoporosis and hypertension. An associated Weber B fibula fracture is present. Preoperative computed tomography showed the posterior malleolus fragment involving approximately 28% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
   },
   prefix: "g3_case3",
-  hasSequence: true
+  hasSequence: true,
+  r2folder: "case1/sb/"
 }, {
   id: "case4",
   title: {
@@ -616,7 +633,8 @@ const CASES = [{
     en: "A 47-year-old female patient (body mass index 30.5) presented with ankle pain following a twisting injury while walking. Plain radiographs and computed tomography revealed an isolated posterior malleolus fracture; the fibula and medial malleolus were intact. On CT, the posterior malleolus fragment was found to involve approximately 26% of the articular surface with no articular step-off identified. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1."
   },
   prefix: "g4_case4",
-  hasSequence: false
+  hasSequence: false,
+  r2folder: "case1/em/"
 }];
 const CASE_OPTS = {
   pos: [{
@@ -871,52 +889,207 @@ function SectionPage({
     tt: tt
   })));
 }
+const R2_BASE = "https://pub-6af9dc948c2247c4b18c171bdc5bfb98.r2.dev/";
+const WORKER_API = "https://pmal-r2-api.utkugrhn.workers.dev/";
 function DicomViewerEmbed({
-  caseId
+  caseId,
+  r2folder
 }) {
+  const containerRef = React.useRef(null);
+  const stateRef = React.useRef({
+    idx: 0,
+    ids: [],
+    cache: {},
+    mounted: true
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [info, setInfo] = useState({
+    cur: 0,
+    tot: 0,
+    ww: 0,
+    wc: 0
+  });
+  useEffect(() => {
+    if (!containerRef.current || !r2folder || typeof cornerstone === 'undefined') return;
+    const el = containerRef.current;
+    const st = stateRef.current;
+    st.mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`${WORKER_API}?prefix=${r2folder}`);
+        const data = await res.json();
+        // Filter main CT series (_0002_, size>100KB) and sort by slice number
+        const series = data.files.filter(f => f.key.includes('_0002_') && f.size > 100000).sort((a, b) => a.key.localeCompare(b.key));
+        if (!st.mounted || series.length === 0) {
+          setError('No DICOM files found');
+          return;
+        }
+        cornerstone.enable(el);
+        st.ids = series.map(f => `wadouri:${R2_BASE}${f.key}`);
+
+        // Load and display first image
+        const img = await cornerstone.loadImage(st.ids[0]);
+        if (!st.mounted) return;
+        st.cache[0] = img;
+        cornerstone.displayImage(el, img);
+        const vp = cornerstone.getViewport(el);
+        setInfo({
+          cur: 1,
+          tot: st.ids.length,
+          ww: Math.round(vp.voi.windowWidth),
+          wc: Math.round(vp.voi.windowCenter)
+        });
+        setLoading(false);
+
+        // Preload next 15 slices
+        for (let i = 1; i < Math.min(16, st.ids.length); i++) {
+          cornerstone.loadImage(st.ids[i]).then(im => {
+            st.cache[i] = im;
+          });
+        }
+      } catch (e) {
+        if (st.mounted) setError(e.message);
+      }
+    })();
+
+    // Scroll handler
+    const onWheel = async e => {
+      e.preventDefault();
+      const dir = e.deltaY > 0 ? 1 : -1;
+      const ni = Math.max(0, Math.min(st.ids.length - 1, st.idx + dir));
+      if (ni === st.idx) return;
+      st.idx = ni;
+      try {
+        let img = st.cache[ni];
+        if (!img) {
+          img = await cornerstone.loadImage(st.ids[ni]);
+          st.cache[ni] = img;
+        }
+        cornerstone.displayImage(el, img);
+        const vp = cornerstone.getViewport(el);
+        setInfo({
+          cur: ni + 1,
+          tot: st.ids.length,
+          ww: Math.round(vp.voi.windowWidth),
+          wc: Math.round(vp.voi.windowCenter)
+        });
+        // Preload ahead
+        for (let j = 1; j <= 5; j++) {
+          const pi = ni + dir * j;
+          if (pi >= 0 && pi < st.ids.length && !st.cache[pi]) cornerstone.loadImage(st.ids[pi]).then(im => {
+            st.cache[pi] = im;
+          });
+        }
+      } catch (err) {}
+    };
+
+    // W/L drag handler
+    let dragging = false,
+      startX = 0,
+      startY = 0,
+      startWW = 0,
+      startWC = 0;
+    const onDown = e => {
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      try {
+        const vp = cornerstone.getViewport(el);
+        startWW = vp.voi.windowWidth;
+        startWC = vp.voi.windowCenter;
+      } catch (ex) {}
+    };
+    const onMove = e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX,
+        dy = e.clientY - startY;
+      try {
+        const vp = cornerstone.getViewport(el);
+        vp.voi.windowWidth = Math.max(1, startWW + dx * 2);
+        vp.voi.windowCenter = startWC + dy * 2;
+        cornerstone.setViewport(el, vp);
+        setInfo(prev => ({
+          ...prev,
+          ww: Math.round(vp.voi.windowWidth),
+          wc: Math.round(vp.voi.windowCenter)
+        }));
+      } catch (ex) {}
+    };
+    const onUp = () => {
+      dragging = false;
+    };
+    el.addEventListener('wheel', onWheel, {
+      passive: false
+    });
+    el.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      st.mounted = false;
+      el.removeEventListener('wheel', onWheel);
+      el.removeEventListener('mousedown', onDown);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      try {
+        cornerstone.disable(el);
+      } catch (ex) {}
+    };
+  }, [r2folder]);
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-gray-900 rounded-xl overflow-hidden mt-4"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-center justify-between px-4 py-2.5 border-b border-gray-700"
+    className: "flex items-center justify-between px-3 py-2 border-b border-gray-700"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, ['Axial', 'Sagittal', 'Coronal'].map(p => /*#__PURE__*/React.createElement("button", {
-    key: p,
-    className: "px-3 py-1 rounded text-xs font-medium bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white transition-colors"
-  }, p))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-1.5"
-  }, ['W/L', 'Zoom', 'Pan', 'Measure', '⧉'].map(tl => /*#__PURE__*/React.createElement("button", {
-    key: tl,
-    className: "px-2 py-1 rounded text-xs bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-colors"
-  }, tl)))), /*#__PURE__*/React.createElement("div", {
-    className: "h-72 sm:h-96 flex items-center justify-center text-gray-500"
+    className: "flex items-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-amber-500 text-xs font-bold"
+  }, loading ? '⏳' : '▶', " CT"), !loading && /*#__PURE__*/React.createElement("span", {
+    className: "text-gray-400 text-xs"
+  }, info.cur, "/", info.tot)), !loading && /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 text-gray-500 text-xs"
+  }, /*#__PURE__*/React.createElement("span", null, "W:", info.ww, " L:", info.wc), /*#__PURE__*/React.createElement("span", {
+    className: "text-gray-600"
+  }, "Scroll: slice \xB7 Drag: W/L"))), /*#__PURE__*/React.createElement("div", {
+    ref: containerRef,
+    style: {
+      height: 384,
+      touchAction: 'none',
+      cursor: 'crosshair',
+      background: '#000'
+    }
+  }, loading && !error && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%'
+    }
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-center"
-  }, /*#__PURE__*/React.createElement("svg", {
-    width: "48",
-    height: "48",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: "1",
-    className: "mx-auto mb-3 opacity-40"
-  }, /*#__PURE__*/React.createElement("rect", {
-    x: "2",
-    y: "2",
-    width: "20",
-    height: "20",
-    rx: "2"
-  }), /*#__PURE__*/React.createElement("circle", {
-    cx: "12",
-    cy: "12",
-    r: "5"
-  }), /*#__PURE__*/React.createElement("path", {
-    d: "M12 7v10M7 12h10"
-  })), /*#__PURE__*/React.createElement("p", {
-    className: "text-sm font-medium"
-  }, "Cornerstone.js DICOM Viewer"), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs mt-1 text-gray-600"
-  }, "Cloudflare R2 \u2014 ", caseId))));
+    style: {
+      textAlign: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-amber-500",
+    style: {
+      fontSize: 24,
+      animation: 'spin 1s linear infinite'
+    }
+  }, "\u23F3"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-gray-400",
+    style: {
+      marginTop: 8
+    }
+  }, "Loading CT images..."))), error && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-red-400"
+  }, error))));
 }
 function CaseCard({
   c,
@@ -948,7 +1121,8 @@ function CaseCard({
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-gray-800 leading-relaxed"
   }, c.vig[l] || c.vig.en), /*#__PURE__*/React.createElement(DicomViewerEmbed, {
-    caseId: c.id
+    caseId: c.id,
+    r2folder: c.r2folder
   })), /*#__PURE__*/React.createElement("div", {
     className: "px-5 sm:px-6 py-5 space-y-6 bg-white"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
