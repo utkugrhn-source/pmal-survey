@@ -194,33 +194,35 @@ function IntroScreen({
     }
     const audio = window._loginAudio;
     let proceeded = false;
+    const startTime = Date.now();
     const proceed = () => {
       if (proceeded) return;
       proceeded = true;
-      audio.play().catch(() => {});
-      setTimeout(onStart, 500);
+      // Minimum 800ms spinner display for UX
+      const elapsed = Date.now() - startTime;
+      const delay = Math.max(800 - elapsed, 0);
+      setTimeout(() => {
+        audio.play().catch(() => {});
+        setTimeout(onStart, 300);
+      }, delay);
     };
-    // Track buffer progress
-    const updateProgress = () => {
+    const checkFullyLoaded = () => {
       if (audio.buffered.length > 0 && audio.duration) {
         const loaded = audio.buffered.end(audio.buffered.length - 1);
         const pct = Math.round(loaded / audio.duration * 100);
         setLoadPct(pct);
+        // Only proceed when fully buffered (99% or more)
+        if (pct >= 99) proceed();
       }
     };
-    audio.addEventListener('progress', updateProgress);
-    audio.addEventListener('canplaythrough', proceed, {
-      once: true
-    });
-    // If already fully loaded
-    if (audio.readyState >= 4) {
-      setLoadPct(100);
-      proceed();
-    } else {
-      audio.load();
-      // Fallback timeout — don't hang forever (30s max)
-      setTimeout(proceed, 30000);
-    }
+    audio.addEventListener('progress', checkFullyLoaded);
+    audio.addEventListener('loadeddata', checkFullyLoaded);
+    audio.addEventListener('canplaythrough', checkFullyLoaded);
+    audio.load();
+    // Check immediately in case already cached
+    setTimeout(checkFullyLoaded, 50);
+    // Fallback timeout — 60s max wait
+    setTimeout(proceed, 60000);
   };
   return /*#__PURE__*/React.createElement("div", {
     style: {
@@ -270,10 +272,7 @@ function IntroScreen({
   }), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
-      zIndex: 2,
-      transition: "all 0.8s ease",
-      opacity: pressed ? 0 : 1,
-      transform: pressed ? "scale(1.1)" : "scale(1)"
+      zIndex: 2
     }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -818,8 +817,26 @@ function MusicBar({
       a.src = '/' + p.mp3;
       a.load();
       setProgress(0);
-      // Autoplay on page change if user has already interacted
-      a.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+      // Force autoplay — try immediately, fallback to canplay event, fallback to loadeddata
+      const forcePlay = () => {
+        a.play().then(() => setPlaying(true)).catch(() => {
+          // If play fails, wait for next ready state and try again
+          const retry = () => {
+            a.play().then(() => setPlaying(true)).catch(() => {});
+          };
+          a.addEventListener('canplay', retry, {
+            once: true
+          });
+          a.addEventListener('loadeddata', retry, {
+            once: true
+          });
+        });
+      };
+      // Try immediately
+      forcePlay();
+      // Backup retry after short delay (in case audio object wasn't ready)
+      setTimeout(forcePlay, 100);
+      setTimeout(forcePlay, 500);
     }
   }, [page, p.mp3]);
   React.useEffect(() => {
