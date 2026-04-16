@@ -904,7 +904,16 @@ const WL_PRESETS = [
 // Determine anatomical plane from DICOM ImageOrientationPatient tag
 // Falls back to SeriesDescription regex
 function detectPlane(iop, desc) {
-  // Try IOP first
+  // Description keyword wins if explicit — modality PACS labels MPR reformats
+  // as "MPR sag" / "MPR cor" / "MPR ax" consistently. IOP can be oblique
+  // and misclassified for off-axis reformats.
+  if (desc) {
+    const d = desc.toLowerCase();
+    if (/(^|\W)(sag|sagittal)(\W|$)/.test(d)) return 'sagittal';
+    if (/(^|\W)(cor|coronal)(\W|$)/.test(d)) return 'coronal';
+    if (/(^|\W)(ax|axial|tra|transverse)(\W|$)/.test(d)) return 'axial';
+  }
+  // Fall back to IOP cross-product for anything unlabeled
   if (iop) {
     const v = iop.split('\\').map(Number);
     if (v.length >= 6 && v.every(x => !isNaN(x))) {
@@ -915,19 +924,11 @@ function detectPlane(iop, desc) {
       ];
       const abs = ax.map(Math.abs);
       const maxA = Math.max(...abs);
-      // Only trust IOP if it's reasonably aligned to a cardinal axis
-      if (maxA > 0.7) {
+      if (maxA > 0.5) {
         const i = abs.indexOf(maxA);
         return ['sagittal', 'coronal', 'axial'][i];
       }
     }
-  }
-  // Fall back to description regex
-  if (desc) {
-    const d = desc.toLowerCase();
-    if (/\b(sag|sagittal)\b/.test(d)) return 'sagittal';
-    if (/\b(cor|coronal)\b/.test(d)) return 'coronal';
-    if (/\b(ax|axial|tra|transverse)\b/.test(d)) return 'axial';
   }
   return 'axial';
 }
@@ -961,6 +962,7 @@ function DicomSeriesViewer({
   const [error, setError] = useState(null);
   const [info, setInfo] = useState({ cur: 0, tot: 0, ww: 0, wc: 0, zoom: 1 });
   const [measurement, setMeasurement] = useState(null);
+  const [measurePointCount, setMeasurePointCount] = useState(0);
 
   // Load series
   useEffect(() => {
@@ -972,6 +974,7 @@ function DicomSeriesViewer({
     st.cache = {};
     st.measurePoints = [];
     setMeasurement(null);
+    setMeasurePointCount(0);
     setLoading(true);
     setError(null);
 
@@ -1001,16 +1004,37 @@ function DicomSeriesViewer({
         });
         setLoading(false);
 
-        // Preload first 20 slices
-        let loaded = 1;
-        for (let i = 1; i < Math.min(20, st.ids.length); i++) {
-          cornerstone.loadImage(st.ids[i]).then(im => {
-            if (!st.mounted) return;
-            st.cache[i] = im;
-            loaded++;
-            setLoadProgress(Math.round(loaded / Math.min(20, st.ids.length) * 100));
-          }).catch(() => {});
+        // Aggressive preload with concurrency limit: loads ALL slices in background
+        // Priority: nearest to current index first (outward spiral)
+        st.preloadActive = true;
+        const CONCURRENCY = 4;
+        const queue = [];
+        const total = st.ids.length;
+        // Build an "outward from center" queue starting from idx 0
+        for (let d = 1; d < total; d++) {
+          if (st.idx + d < total) queue.push(st.idx + d);
+          if (st.idx - d >= 0) queue.push(st.idx - d);
         }
+        let loaded = 1;
+        let running = 0;
+        const tick = () => {
+          if (!st.mounted || !st.preloadActive) return;
+          while (running < CONCURRENCY && queue.length > 0) {
+            const i = queue.shift();
+            if (st.cache[i]) { continue; }
+            running++;
+            cornerstone.loadImage(st.ids[i]).then(im => {
+              if (!st.mounted) return;
+              st.cache[i] = im;
+              loaded++;
+              setLoadProgress(Math.round(loaded / total * 100));
+            }).catch(() => {}).finally(() => {
+              running--;
+              tick();
+            });
+          }
+        };
+        tick();
       } catch (e) {
         if (st.mounted) setError(e.message || 'Load failed');
       }
@@ -1018,9 +1042,26 @@ function DicomSeriesViewer({
 
     return () => {
       st.mounted = false;
+      st.preloadActive = false;
       try { cornerstone.disable(el); } catch (ex) {}
     };
   }, [files]);
+
+  // Clear measurements when entering/leaving measure mode
+  useEffect(() => {
+    if (!containerRef.current) return;
+    stateRef.current.measurePoints = [];
+    setMeasurement(null);
+    setMeasurePointCount(0);
+    // Redraw canvas overlay to wipe old lines
+    requestAnimationFrame(() => {
+      const overlay = canvasOverlayRef.current;
+      if (overlay) {
+        const ctx = overlay.getContext('2d');
+        ctx && ctx.clearRect(0, 0, overlay.width, overlay.height);
+      }
+    });
+  }, [measureActive]);
 
   // Apply W/L preset
   useEffect(() => {
@@ -1098,6 +1139,7 @@ function DicomSeriesViewer({
         cornerstone.setViewport(el, vp);
         stateRef.current.measurePoints = [];
         setMeasurement(null);
+        setMeasurePointCount(0);
         drawMeasurementOverlay();
         setInfo(p => ({
           ...p,
@@ -1231,9 +1273,10 @@ function DicomSeriesViewer({
     const getViewport = () => { try { return cornerstone.getViewport(el); } catch (e) { return null; } };
     const setViewport = (vp) => { try { cornerstone.setViewport(el, vp); } catch (e) {} };
 
-    // Mouse wheel = scroll slices
+    // Mouse wheel = scroll slices (disabled during measurement to preserve points)
     const onWheel = async (e) => {
       e.preventDefault();
+      if (measureActive) return;
       const dir = e.deltaY > 0 ? 1 : -1;
       const ni = Math.max(0, Math.min(st.ids.length - 1, st.idx + dir));
       if (ni === st.idx) return;
@@ -1246,6 +1289,8 @@ function DicomSeriesViewer({
         if (!p) return;
         if (st.measurePoints.length >= 3) st.measurePoints = [];
         st.measurePoints.push(p);
+        setMeasurePointCount(st.measurePoints.length);
+        if (st.measurePoints.length < 2) setMeasurement(null);
         drawMeasurementOverlay();
         e.preventDefault();
         return;
@@ -1299,6 +1344,8 @@ function DicomSeriesViewer({
         if (!p) return;
         if (st.measurePoints.length >= 3) st.measurePoints = [];
         st.measurePoints.push(p);
+        setMeasurePointCount(st.measurePoints.length);
+        if (st.measurePoints.length < 2) setMeasurement(null);
         drawMeasurementOverlay();
         e.preventDefault();
         return;
@@ -1334,7 +1381,8 @@ function DicomSeriesViewer({
         const cx = e.touches[0].clientX;
         const cy = e.touches[0].clientY;
         if (activeTool === 'scroll') {
-          // Swipe vertical = scroll slices
+          // Swipe vertical = scroll slices (disabled during measurement)
+          if (measureActive) { e.preventDefault(); return; }
           const dy = cy - touchLastY;
           if (Math.abs(dy) > 6) {
             const dir = dy > 0 ? 1 : -1;
@@ -1407,6 +1455,7 @@ function DicomSeriesViewer({
 
   // Slice slider
   const onSliderChange = (e) => {
+    if (measureActive) return;
     const ni = parseInt(e.target.value);
     showSlice(ni);
   };
@@ -1427,9 +1476,11 @@ function DicomSeriesViewer({
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        if (measureActive) { e.preventDefault(); return; }
         showSlice(Math.max(0, stateRef.current.idx - 1));
         e.preventDefault();
       } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        if (measureActive) { e.preventDefault(); return; }
         showSlice(Math.min(stateRef.current.ids.length - 1, stateRef.current.idx + 1));
         e.preventDefault();
       } else if (e.key === '+' || e.key === '=') {
@@ -1461,7 +1512,7 @@ function DicomSeriesViewer({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [loading, invert, fullscreen, showSlice, setInvert, setFullscreen, setWlPreset, onReset]);
+  }, [loading, invert, fullscreen, measureActive, showSlice, setInvert, setFullscreen, setWlPreset, onReset]);
 
   // Viewer JSX (all createElement form)
   const h = React.createElement;
@@ -1484,6 +1535,39 @@ function DicomSeriesViewer({
       h('div', null, `${info.cur}/${info.tot}`),
       h('div', null, `W:${info.ww} L:${info.wc}`),
       h('div', null, `Zoom: ${(info.zoom * 100).toFixed(0)}%`)
+    ),
+    // Background preload progress (shows during cache warming)
+    !loading && loadProgress < 100 && loadProgress > 0 && h('div', {
+      className: 'absolute bottom-8 left-2 z-20 text-xs font-mono text-gray-400',
+      style: { background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: 4 }
+    },
+      lang === 'tr' ? `Ön-yükleme %${loadProgress}` : `Preloading ${loadProgress}%`
+    ),
+    // Measurement mode banner (top-center)
+    measureActive && h('div', {
+      className: 'absolute top-2 left-1/2 z-30 text-xs font-bold px-3 py-1 rounded',
+      style: {
+        transform: 'translateX(-50%)',
+        background: '#FFB547',
+        color: '#000',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+        whiteSpace: 'nowrap'
+      }
+    },
+      (() => {
+        const n = measurePointCount;
+        if (lang === 'tr') {
+          if (n === 0) return '📏 Ölçüm — 1. noktayı tıklayın';
+          if (n === 1) return '📏 Mesafe için 2. noktayı tıklayın';
+          if (n === 2) return '📏 Açı için 3. nokta (opsiyonel) · yeni ölçüm → tıkla';
+          return '📏 Yeni ölçüm için tıklayın';
+        } else {
+          if (n === 0) return '📏 Measure — click 1st point';
+          if (n === 1) return '📏 Click 2nd point for distance';
+          if (n === 2) return '📏 Click 3rd point for angle · or start new';
+          return '📏 Click to start new measurement';
+        }
+      })()
     ),
     // Measurement display
     measurement && h('div', {
@@ -1547,7 +1631,13 @@ function DicomSeriesViewer({
         max: Math.max(0, (stateRef.current.ids.length || 1) - 1),
         value: Math.max(0, info.cur - 1),
         onChange: onSliderChange,
-        style: { width: '100%', accentColor: '#FFB547', cursor: 'pointer' }
+        disabled: measureActive,
+        style: {
+          width: '100%',
+          accentColor: '#FFB547',
+          cursor: measureActive ? 'not-allowed' : 'pointer',
+          opacity: measureActive ? 0.4 : 1
+        }
       })
     )
   );
