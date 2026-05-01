@@ -2630,8 +2630,8 @@ function CaseCard({
 // MAIN APP
 // ══════════════════════════════════════════════════
 function App() {
-  const [lang, setLang] = useState(null);
-  const [step, setStep] = useState(0);
+  const [lang, setLang] = useState('en');
+  const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState({});
   const [consented, setConsented] = useState(false);
   const [email, setEmail] = useState("");
@@ -2884,7 +2884,7 @@ function App() {
     setStep: setStep,
     lang: lang,
     completion: completion
-  })), lang && /*#__PURE__*/React.createElement("button", {
+  })), false && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStep(0);
       setLang(null);
@@ -2892,7 +2892,7 @@ function App() {
     className: "px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center gap-1.5"
   }, LANGS.find(l => l.code === lang)?.flag, " ", LANGS.find(l => l.code === lang)?.native, " \u25BE"))), /*#__PURE__*/React.createElement("main", {
     className: "max-w-3xl mx-auto px-4 py-6 sm:py-8"
-  }, step === 0 && /*#__PURE__*/React.createElement("div", {
+  }, false && /*#__PURE__*/React.createElement("div", {
     className: "animate-fadeIn text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-8"
