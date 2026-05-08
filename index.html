@@ -757,26 +757,74 @@ const SECTIONS = {
       }]
     }, {
       id: "d4",
-      type: "single",
+      type: "multi",
       text: {
-        tr: "Posterior malleol kırıklarındaki interkalar (intermediate, serbest artiküler) fragmanları nasıl yönetirsiniz?",
-        en: "How do you manage intercalary (intermediate, free articular) fragments in posterior malleolus fractures?"
+        tr: "Posterior malleol kırığında BT'de interkalar (intermediate, serbest artiküler) fragman bulunduğunda, bu fragmanı ayrıca ele almanıza yol açan faktörler hangileridir?",
+        en: "When a posterior malleolus fracture contains an intercalary/free intra-articular fragment on CT, which factors make you address the fragment separately?"
       },
       opts: [{
-        tr: "Erişilebilir olduğu sürece direkt fiksasyon denerim",
-        en: "I attempt direct fixation whenever the fragment is accessible"
+        tr: "Fragmana bağlı artiküler step-off veya boşluk",
+        en: "Articular step-off or gap caused by the fragment"
       }, {
-        tr: "Sadece tutmaya yetecek büyüklükteyse direkt fiksasyon (genellikle > 5 mm)",
-        en: "Direct fixation only if the fragment is large enough to hold (typically > 5 mm)"
+        tr: "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi",
+        en: "Fragment blocks reduction of the main PM fragment"
       }, {
-        tr: "Sadece indirekt redüksiyon (ana fragman üzerinden manipülasyon)",
-        en: "Indirect reduction only (manipulation through the main fragment)"
+        tr: "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması",
+        en: "Fragment ≥ 5 mm — large enough for independent fixation"
       }, {
-        tr: "İnterkalar fragmanları ayrıca ele almam",
-        en: "I do not address intercalary fragments separately"
+        tr: "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması",
+        en: "Fragment is accessible through my planned approach (PL or PM)"
       }, {
-        tr: "Karar intraoperatif artiküler redüksiyon değerlendirmesine göre verilir",
-        en: "Decision based on intraoperative assessment of articular reduction"
+        tr: "Elevasyon/greftleme gerektiren impakte osteokondral fragman",
+        en: "Impacted osteochondral fragment requiring elevation/grafting"
+      }, {
+        tr: "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)",
+        en: "Patient is young/active (high functional demand)"
+      }, {
+        tr: "İnterkalar fragmanları genellikle ayrıca ele almam",
+        en: "I do not usually address intercalary fragments separately",
+        exclusive: true
+      }]
+    }, {
+      id: "d5",
+      type: "single",
+      text: {
+        tr: "Bir interkalar/serbest artiküler fragmanı ele aldığınızda en sık tercih ettiğiniz teknik nedir?",
+        en: "If you address an intercalary/free intra-articular fragment, what is your most common technique?"
+      },
+      // Shown only when D4 does not include "I do not usually address..."
+      showIf: (answers) => {
+        const d4 = answers.d4 || [];
+        if (!Array.isArray(d4) || d4.length === 0) return false;
+        const skipTR = "İnterkalar fragmanları genellikle ayrıca ele almam";
+        const skipEN = "I do not usually address intercalary fragments separately";
+        return !d4.includes(skipTR) && !d4.includes(skipEN);
+      },
+      requiredIf: (answers) => {
+        const d4 = answers.d4 || [];
+        if (!Array.isArray(d4) || d4.length === 0) return false;
+        const skipTR = "İnterkalar fragmanları genellikle ayrıca ele almam";
+        const skipEN = "I do not usually address intercalary fragments separately";
+        return !d4.includes(skipTR) && !d4.includes(skipEN);
+      },
+      opts: [{
+        tr: "Ana PM fragmenti fiksasyonu altında yakalanır",
+        en: "Captured under main PM fragment fixation"
+      }, {
+        tr: "Bağımsız mini-fragman vidası (1.5–2.4 mm)",
+        en: "Independent mini-fragment screw (1.5–2.4 mm)"
+      }, {
+        tr: "K-tel ile manipülasyon, son stabilite ana fragman fiksasyonu ile sağlanır",
+        en: "K-wire manipulation, final stability via main fragment fixation"
+      }, {
+        tr: "Spongioz greft / subkondral destek ile elevasyon",
+        en: "Elevation with cancellous graft / subchondral support"
+      }, {
+        tr: "Rekonstrükte edilemiyorsa eksizyon",
+        en: "Excision if non-reconstructable"
+      }, {
+        tr: "Yalnızca indirekt redüksiyon — ayrı implant yok",
+        en: "Indirect reduction only — no separate implant"
       }]
     }]
   },
@@ -1299,12 +1347,16 @@ function LikertScale({
 // ═══════════════════════════════════════════════════════════
 function computeSectionCompletion(answers) {
   // Collect required question IDs per section.
-  const reqA = SECTIONS.A.questions.map(q => q.id);
-  const reqB = SECTIONS.B.questions.map(q => q.id);
-  const reqC = SECTIONS.C.questions.map(q => q.id);
-  const reqD = SECTIONS.D.questions.map(q => q.id);
-  const reqE = SECTIONS.E.questions.map(q => q.id);
-  const reqF = SECTIONS.F.questions.map(q => q.id);
+  // For each SECTION question, honor `requiredIf(answers)` if defined; otherwise required.
+  const reqIds = (sectionKey) => SECTIONS[sectionKey].questions
+    .filter(q => !q.requiredIf || q.requiredIf(answers))
+    .map(q => q.id);
+  const reqA = reqIds('A');
+  const reqB = reqIds('B');
+  const reqC = reqIds('C');
+  const reqD = reqIds('D');
+  const reqE = reqIds('E');
+  const reqF = reqIds('F');
   // H section: 4 Likert + h5 always required; h6 conditionally required (depends on h5)
   let reqH = LIKERT_QS.map(q => q.id);
   PRACTICE_EVOLUTION_QS.forEach(q => {
@@ -1527,7 +1579,7 @@ function SectionPage({
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black text-gray-900"
-  }, sec.title[l] || sec.title.en), sec.questions.map(q => /*#__PURE__*/React.createElement(QuestionBlock, {
+  }, sec.title[l] || sec.title.en), sec.questions.filter(q => !q.showIf || q.showIf(answers)).map(q => /*#__PURE__*/React.createElement(QuestionBlock, {
     key: q.id,
     q: q,
     lang: lang,
