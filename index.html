@@ -667,7 +667,8 @@ const SECTIONS = {
         en: "Fragment size (% articular surface)"
       }, {
         tr: "Spesifik bir sınıflama kullanmıyorum",
-        en: "I do not use a specific classification"
+        en: "I do not use a specific classification",
+        exclusive: true
       }]
     }, {
       id: "c2",
@@ -1183,23 +1184,61 @@ function CheckboxGroup({
   onChange,
   lang
 }) {
-  const toggle = label => {
-    if (values.includes(label)) onChange(values.filter(v => v !== label));else onChange([...values, label]);
+  // Determine which option, if any, is the "exclusive" one (e.g. "I do not use any").
+  // When the exclusive option is selected, all other options are cleared and disabled.
+  // Conversely, when any non-exclusive option is selected, the exclusive option is disabled.
+  const labelOf = (opt) => typeof opt === 'object' ? opt[lang] || opt.en : opt;
+  const exclusiveLabels = options
+    .filter(o => typeof o === 'object' && o.exclusive)
+    .map(labelOf);
+  const exclusiveActive = values.some(v => exclusiveLabels.includes(v));
+  const otherActive = values.some(v => !exclusiveLabels.includes(v));
+
+  const toggle = (label, isExclusive) => {
+    if (values.includes(label)) {
+      // Unchecking — just remove
+      onChange(values.filter(v => v !== label));
+      return;
+    }
+    if (isExclusive) {
+      // Selecting exclusive → clear everything else
+      onChange([label]);
+    } else {
+      // Selecting non-exclusive → drop any exclusive selections
+      const cleared = values.filter(v => !exclusiveLabels.includes(v));
+      onChange([...cleared, label]);
+    }
   };
+
   return /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 mt-2"
   }, options.map((opt, i) => {
-    const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    const label = labelOf(opt);
+    const isExclusive = typeof opt === 'object' && opt.exclusive === true;
+    const checked = values.includes(label);
+    // Disabled if: this is exclusive and a non-exclusive is active, OR
+    //              this is non-exclusive and the exclusive one is active.
+    const disabled = !checked && (
+      (isExclusive && otherActive) ||
+      (!isExclusive && exclusiveActive)
+    );
     return /*#__PURE__*/React.createElement("label", {
       key: i,
-      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${values.includes(label) ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-200 ${
+        disabled
+          ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50'
+          : checked
+            ? 'border-amber-500 bg-amber-50 shadow-sm cursor-pointer'
+            : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer'
+      }`
     }, /*#__PURE__*/React.createElement("input", {
       type: "checkbox",
-      checked: values.includes(label),
-      onChange: () => toggle(label),
+      checked: checked,
+      disabled: disabled,
+      onChange: () => { if (!disabled) toggle(label, isExclusive); },
       className: "accent-amber-600 w-4 h-4 flex-shrink-0 rounded"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm text-gray-800"
+      className: `text-sm ${disabled ? 'text-gray-400' : 'text-gray-800'}`
     }, label));
   }));
 }
