@@ -1542,6 +1542,11 @@ const FB_SECTIONS = [{
     text: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
     type: "multi",
     opts: ["Artiküler step-off miktarı", "Fibular notch tutulumu", "Sindesmoz instabilitesi", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)", "Hasta yaşı ve aktivite düzeyi", "Kemik kalitesi (osteoporoz)", "Yumuşak doku durumu", "İmpakte artiküler fragment varlığı", "Komorbidite (DM, sigara vb.)"]
+  }, {
+    id: "d4",
+    text: "PM kırıklarındaki interkalar (intermediate, serbest artiküler) fragmanları nasıl yönetirsiniz?",
+    type: "single",
+    opts: ["Erişilebilir olduğu sürece direkt fiksasyon denerim", "Sadece tutmaya yetecek büyüklükteyse direkt fiksasyon (genellikle > 5 mm)", "Sadece indirekt redüksiyon (ana fragman üzerinden manipülasyon)", "İnterkalar fragmanları ayrıca ele almam", "Karar intraoperatif artiküler redüksiyon değerlendirmesine göre verilir"]
   }]
 }, {
   id: "E",
@@ -1555,7 +1560,7 @@ const FB_SECTIONS = [{
     id: "e2",
     text: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
     type: "single",
-    opts: ["Posterolateral", "Posteromedial", "Kombine posterolateral + posteromedial", "Anterior (perkütan)", "Artroskopik", "Vakaya göre değişir"]
+    opts: ["Posterolateral", "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)", "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)", "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)", "Kombine posterolateral + posteromedyal", "Anterior (perkütan)", "Artroskopi yardımlı", "Vakaya göre değişir"]
   }, {
     id: "e3",
     text: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
@@ -1564,7 +1569,7 @@ const FB_SECTIONS = [{
   }]
 }, {
   id: "F",
-  title: "F — Fiksasyon Sırası ve Sindesmoz",
+  title: "F — Fiksasyon Sırası ve Sindesmotik Değerlendirme",
   questions: [{
     id: "f1",
     text: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
@@ -1580,6 +1585,16 @@ const FB_SECTIONS = [{
     text: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
     type: "single",
     opts: ["Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar", "Evet — bazı vakalarda", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder", "Pratiğimde bunu spesifik olarak değerlendirmedim"]
+  }, {
+    id: "f4",
+    text: "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?",
+    type: "single",
+    opts: ["Evet — rutin olarak BT'de", "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)", "Bazen — kırık paternine göre", "Nadiren veya spesifik olarak değil"]
+  }, {
+    id: "f5",
+    text: "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?",
+    type: "single",
+    opts: ["Direkt fiksasyon (vida, sütur ankoru veya hook plak)", "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)", "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon", "Sindesmoz aksi takdirde stabil ise non-operatif", "Karar fragman boyutu ve erişilebilirliğine göre"]
   }]
 }];
 const FB_CASES = [{
@@ -1630,12 +1645,15 @@ const FB_LIKERT = [{
 }, {
   id: "h4",
   text: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir."
-}, {
+}];
+
+// Practice Evolution feedback prompts (mirror survey h5+h6 from Rammelt revision)
+const FB_PRACTICE_EVOLUTION = [{
   id: "h5",
-  text: "ARIF PM kırıklarında geleceğin tekniğidir."
+  text: "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?"
 }, {
   id: "h6",
-  text: "Biyomekanik çalışma sonuçları cerrahi kararlarımı etkiler."
+  text: "Son on yılda pratiğinizdeki en önemli tek değişikliği bir/iki cümleyle tarif edin."
 }];
 function CommentBox({
   qid,

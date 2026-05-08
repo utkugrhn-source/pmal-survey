@@ -754,6 +754,29 @@ const SECTIONS = {
         tr: "Komorbidite (DM, sigara vb.)",
         en: "Comorbidities (DM, smoking, etc.)"
       }]
+    }, {
+      id: "d4",
+      type: "single",
+      text: {
+        tr: "Posterior malleol kırıklarındaki interkalar (intermediate, serbest artiküler) fragmanları nasıl yönetirsiniz?",
+        en: "How do you manage intercalary (intermediate, free articular) fragments in posterior malleolus fractures?"
+      },
+      opts: [{
+        tr: "Erişilebilir olduğu sürece direkt fiksasyon denerim",
+        en: "I attempt direct fixation whenever the fragment is accessible"
+      }, {
+        tr: "Sadece tutmaya yetecek büyüklükteyse direkt fiksasyon (genellikle > 5 mm)",
+        en: "Direct fixation only if the fragment is large enough to hold (typically > 5 mm)"
+      }, {
+        tr: "Sadece indirekt redüksiyon (ana fragman üzerinden manipülasyon)",
+        en: "Indirect reduction only (manipulation through the main fragment)"
+      }, {
+        tr: "İnterkalar fragmanları ayrıca ele almam",
+        en: "I do not address intercalary fragments separately"
+      }, {
+        tr: "Karar intraoperatif artiküler redüksiyon değerlendirmesine göre verilir",
+        en: "Decision based on intraoperative assessment of articular reduction"
+      }]
     }]
   },
   E: {
@@ -795,17 +818,23 @@ const SECTIONS = {
         tr: "Posterolateral",
         en: "Posterolateral"
       }, {
-        tr: "Posteromedial",
-        en: "Posteromedial"
+        tr: "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)",
+        en: "Posteromedial — standard (between FDL and posterior tibial tendon)"
       }, {
-        tr: "Kombine posterolateral + posteromedial",
+        tr: "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)",
+        en: "Posteromedial — modified (medial window, lateral to FHL)"
+      }, {
+        tr: "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)",
+        en: "Posteromedial — extended (FHL retraction / FHL window approach)"
+      }, {
+        tr: "Kombine posterolateral + posteromedyal",
         en: "Combined posterolateral + posteromedial"
       }, {
         tr: "Anterior (perkütan)",
         en: "Anterior (percutaneous)"
       }, {
-        tr: "Artroskopik",
-        en: "Arthroscopic"
+        tr: "Artroskopi yardımlı",
+        en: "Arthroscopic-assisted"
       }, {
         tr: "Vakaya göre değişir",
         en: "Varies by case"
@@ -831,8 +860,8 @@ const SECTIONS = {
   },
   F: {
     title: {
-      tr: "F — Fiksasyon Sırası ve Sindesmoz",
-      en: "F — Fixation Sequence and Syndesmosis"
+      tr: "F — Fiksasyon Sırası ve Sindesmotik Değerlendirme",
+      en: "F — Sequence and Syndesmotic Considerations"
     },
     questions: [{
       id: "f1",
@@ -893,6 +922,49 @@ const SECTIONS = {
       }, {
         tr: "Pratiğimde bunu spesifik olarak değerlendirmedim",
         en: "I have not specifically assessed this in my practice"
+      }]
+    }, {
+      id: "f4",
+      type: "single",
+      text: {
+        tr: "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?",
+        en: "When evaluating an ankle fracture with PM involvement, do you specifically assess for anterior syndesmotic avulsions (Chaput tubercle / Wagstaffe fragment)?"
+      },
+      opts: [{
+        tr: "Evet — rutin olarak BT'de",
+        en: "Yes — routinely, on CT"
+      }, {
+        tr: "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)",
+        en: "Yes — only when syndesmotic instability is clinically suspected (positive hook test, persistent diastasis on stress imaging, etc.)"
+      }, {
+        tr: "Bazen — kırık paternine göre",
+        en: "Sometimes — depending on fracture pattern"
+      }, {
+        tr: "Nadiren veya spesifik olarak değil",
+        en: "Rarely or not specifically"
+      }]
+    }, {
+      id: "f5",
+      type: "single",
+      text: {
+        tr: "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?",
+        en: "If a Chaput or Wagstaffe fragment is identified, what is your preferred management?"
+      },
+      opts: [{
+        tr: "Direkt fiksasyon (vida, sütur ankoru veya hook plak)",
+        en: "Direct fixation (screw, suture anchor, or hook plate)"
+      }, {
+        tr: "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)",
+        en: "Trans-syndesmotic fixation only (without addressing the fragment directly)"
+      }, {
+        tr: "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon",
+        en: "Both — direct fragment fixation and trans-syndesmotic stabilisation"
+      }, {
+        tr: "Sindesmoz aksi takdirde stabil ise non-operatif",
+        en: "Non-operative if syndesmosis is otherwise stable"
+      }, {
+        tr: "Karar fragman boyutu ve erişilebilirliğine göre",
+        en: "Decision based on fragment size and accessibility"
       }]
     }]
   }
@@ -1032,6 +1104,45 @@ const LIKERT_QS = [{
   tr: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir.",
   en: "The complication rate of direct PM fixation (17-20%) is acceptable given the functional benefit."
 }];
+
+// Practice Evolution sub-section (Rammelt rev. — Change of practice over last 10 years)
+// h5 = single-choice (always required), h6 = conditional free-text (only if h5 indicates change)
+const PRACTICE_EVOLUTION_QS = [{
+  id: "h5",
+  type: "single",
+  required: true,
+  text: {
+    tr: "Sizin (veya kliniğinizin) posterior malleol kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?",
+    en: "Has your (or your institution's) approach to posterior malleolus fracture management changed significantly in the last 10 years?"
+  },
+  opts: [{
+    tr: "Evet — köklü değişiklik",
+    en: "Yes — substantially"
+  }, {
+    tr: "Evet — orta düzeyde değişiklik",
+    en: "Yes — moderate change"
+  }, {
+    tr: "Sadece küçük iyileştirmeler",
+    en: "Minor refinements only"
+  }, {
+    tr: "Anlamlı değişiklik yok",
+    en: "No significant change"
+  }]
+}, {
+  id: "h6",
+  type: "freetext",
+  // Only required if h5 answer indicates substantial or moderate change
+  requiredIf: (answers) => {
+    const v = answers.h5;
+    return v === "Yes — substantially" || v === "Yes — moderate change"
+        || v === "Evet — köklü değişiklik" || v === "Evet — orta düzeyde değişiklik";
+  },
+  text: {
+    tr: "Bir veya iki cümleyle, son on yılda pratiğinizdeki en önemli tek değişikliği lütfen tarif edin.",
+    en: "In one or two sentences, please describe the single most important change in your practice over the last decade."
+  }
+}];
+
 const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "case1", "case2", "case3", "case4", "H", "thanks"];
 
 // ══════════════════════════════════════════════════
@@ -1155,7 +1266,12 @@ function computeSectionCompletion(answers) {
   const reqD = SECTIONS.D.questions.map(q => q.id);
   const reqE = SECTIONS.E.questions.map(q => q.id);
   const reqF = SECTIONS.F.questions.map(q => q.id);
-  const reqH = LIKERT_QS.map(q => q.id);
+  // H section: 4 Likert + h5 always required; h6 conditionally required (depends on h5)
+  let reqH = LIKERT_QS.map(q => q.id);
+  PRACTICE_EVOLUTION_QS.forEach(q => {
+    if (q.required) reqH.push(q.id);
+    else if (q.requiredIf && q.requiredIf(answers)) reqH.push(q.id);
+  });
 
   // Case sections: each case requires <prefix>_fix at minimum. If fix === 'yes',
   // also requires position, approach, technique, and (if hasSequence) sequence.
@@ -2983,7 +3099,56 @@ function App() {
     value: answers[q.id],
     onChange: v => setAnswer(q.id, v),
     labels: tt.likert
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))),
+  /*#__PURE__*/React.createElement("div", {
+    className: "pt-4 mt-2 border-t-2 border-amber-100"
+  },
+    /*#__PURE__*/React.createElement("h3", {
+      className: "text-base font-bold text-gray-900 mb-1"
+    }, ll === 'tr' ? 'Pratikteki Evrim' : 'Practice Evolution'),
+    /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-gray-500 mb-4"
+    }, ll === 'tr' ? 'Son on yıldaki değişim' : 'Change over the last decade'),
+    // H5 — single choice
+    (() => {
+      const q5 = PRACTICE_EVOLUTION_QS[0];
+      return /*#__PURE__*/React.createElement("div", {
+        className: "pb-4"
+      },
+        /*#__PURE__*/React.createElement("p", {
+          className: "font-semibold text-gray-900 text-sm mb-1"
+        }, q5.text[ll] || q5.text.en),
+        /*#__PURE__*/React.createElement(RadioGroup, {
+          name: q5.id,
+          options: q5.opts,
+          value: answers[q5.id],
+          onChange: v => setAnswer(q5.id, v),
+          lang: ll
+        })
+      );
+    })(),
+    // H6 — conditional free-text
+    (() => {
+      const q6 = PRACTICE_EVOLUTION_QS[1];
+      const show = q6.requiredIf(answers);
+      if (!show) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "pt-4 border-t border-gray-100 animate-fadeIn"
+      },
+        /*#__PURE__*/React.createElement("p", {
+          className: "font-semibold text-gray-900 text-sm mb-2"
+        }, q6.text[ll] || q6.text.en),
+        /*#__PURE__*/React.createElement("textarea", {
+          value: answers[q6.id] || '',
+          onChange: e => setAnswer(q6.id, e.target.value),
+          rows: 4,
+          placeholder: ll === 'tr' ? 'Yanıtınızı buraya yazın...' : 'Type your answer here...',
+          className: "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none resize-y"
+        })
+      );
+    })()
+  ),
+  /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setStep(step - 1),
