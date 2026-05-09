@@ -1500,6 +1500,16 @@ const FB_SECTIONS = [{
     text: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
     type: "single",
     opts: ["< 20", "20–50", "51–100", "> 100"]
+  }, {
+    id: "a6",
+    text: "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?",
+    type: "single",
+    opts: ["Genel ortopedik travma", "Ayak ve ayak bileği cerrahisi", "Alt ekstremite travması", "Spor / artroskopi (ayak bileği travma deneyimi ile)", "Genel ortopedi", "Asistan / fellow (süpervizyon altında)", "Diğer"]
+  }, {
+    id: "a7",
+    text: "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?",
+    type: "single",
+    opts: ["Rutin olarak", "Sıklıkla", "Seçici olarak", "Nadiren", "Pratiğimde BT erişimi sınırlı"]
   }]
 }, {
   id: "B",
@@ -1534,9 +1544,9 @@ const FB_SECTIONS = [{
   title: "D — Fiksasyon Endikasyonları",
   questions: [{
     id: "d1",
-    text: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
+    text: "Fragment boyutu tek başına değerlendirildiğinde, PM fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?",
     type: "single",
-    opts: ["< %10", "%10–25", "%25–33", "> %33", "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim", "Boyut tek başına karar verdirici değildir"]
+    opts: ["< %10", "%10–25", "%25–33", "> %33", "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim", "Boyutu tek başına bir endikasyon olarak kullanmam", "PM fragmentini nadiren / hiç fikse etmem"]
   }, {
     id: "d3",
     text: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
@@ -1648,8 +1658,11 @@ const FB_LIKERT = [{
   id: "h3",
   text: "Direkt posterior yaklaşım perkütan tekniklerden üstündür."
 }, {
-  id: "h4",
-  text: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir."
+  id: "h7",
+  text: "Direkt posterior PM fiksasyonunun olası morbiditesi açık posterior yaklaşımları kullanmamı sınırlıyor."
+}, {
+  id: "h8",
+  text: "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, eklenen cerrahi morbiditeyi geride bırakır."
 }];
 
 // Practice Evolution feedback prompts (mirror survey h5+h6 from Rammelt revision)
@@ -1657,8 +1670,11 @@ const FB_PRACTICE_EVOLUTION = [{
   id: "h5",
   text: "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?"
 }, {
+  id: "h6_driver",
+  text: "Son on yıldaki değişikliğin tek 'birincil etkenini' seçiniz."
+}, {
   id: "h6",
-  text: "Son on yılda pratiğinizdeki en önemli tek değişikliği bir/iki cümleyle tarif edin."
+  text: "(İsteğe bağlı) tek cümlelik açıklama — maks 300 karakter."
 }];
 function CommentBox({
   qid,

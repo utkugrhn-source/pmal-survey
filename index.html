@@ -586,6 +586,58 @@ const SECTIONS = {
         tr: "> 100",
         en: "> 100"
       }]
+    }, {
+      id: "a6",
+      type: "single",
+      text: {
+        tr: "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?",
+        en: "What best describes your primary clinical focus?"
+      },
+      opts: [{
+        tr: "Genel ortopedik travma",
+        en: "General orthopaedic trauma"
+      }, {
+        tr: "Ayak ve ayak bileği cerrahisi",
+        en: "Foot and ankle surgery"
+      }, {
+        tr: "Alt ekstremite travması",
+        en: "Lower-limb trauma"
+      }, {
+        tr: "Spor / artroskopi (ayak bileği travma deneyimi ile)",
+        en: "Sports / arthroscopy with ankle trauma exposure"
+      }, {
+        tr: "Genel ortopedi",
+        en: "General orthopaedics"
+      }, {
+        tr: "Asistan / fellow (süpervizyon altında)",
+        en: "Resident / fellow under supervision"
+      }, {
+        tr: "Diğer",
+        en: "Other"
+      }]
+    }, {
+      id: "a7",
+      type: "single",
+      text: {
+        tr: "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?",
+        en: "How often do you obtain preoperative CT for ankle fractures with suspected PM involvement?"
+      },
+      opts: [{
+        tr: "Rutin olarak",
+        en: "Routinely"
+      }, {
+        tr: "Sıklıkla",
+        en: "Often"
+      }, {
+        tr: "Seçici olarak",
+        en: "Selectively"
+      }, {
+        tr: "Nadiren",
+        en: "Rarely"
+      }, {
+        tr: "Pratiğimde BT erişimi sınırlı",
+        en: "CT access is limited in my setting"
+      }]
     }]
   },
   B: {
@@ -698,8 +750,8 @@ const SECTIONS = {
       id: "d1",
       type: "single",
       text: {
-        tr: "PM fragmentini fikse etmek için minimum eklem yüzeyi tutulum eşiğiniz nedir?",
-        en: "What is your minimum articular surface involvement threshold for fixing the PM fragment?"
+        tr: "Fragment boyutu tek başına değerlendirildiğinde, posterior malleol fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?",
+        en: "When fragment size is considered in isolation, what articular surface involvement would usually prompt you to fix the posterior malleolar fragment?"
       },
       opts: [{
         tr: "< %10",
@@ -714,11 +766,14 @@ const SECTIONS = {
         tr: "> %33",
         en: "> 33%"
       }, {
-        tr: "Fragment boyutundan bağımsız olarak tüm PM kırıklarını fikse ederim",
-        en: "I fix all PM fractures regardless of fragment size"
+        tr: "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim",
+        en: "I fix all PM fragments if technically feasible"
       }, {
-        tr: "Boyut tek başına karar verdirici değildir",
-        en: "Size alone is not decisive"
+        tr: "Boyutu tek başına bir endikasyon olarak kullanmam",
+        en: "I do not use size alone as an indication"
+      }, {
+        tr: "PM fragmentini nadiren / hiç fikse etmem",
+        en: "I rarely/never fix the PM fragment"
       }]
     }, {
       id: "d3",
@@ -1094,17 +1149,23 @@ const CASE_OPTS = {
     tr: "Posterolateral",
     en: "Posterolateral"
   }, {
-    tr: "Posteromedial",
-    en: "Posteromedial"
+    tr: "Posteromedyal — standart",
+    en: "Posteromedial — standard"
   }, {
-    tr: "Kombine posterolateral + posteromedial",
+    tr: "Posteromedyal — modifiye",
+    en: "Posteromedial — modified"
+  }, {
+    tr: "Posteromedyal — geniş (FHL)",
+    en: "Posteromedial — extended (FHL)"
+  }, {
+    tr: "Kombine posterolateral + posteromedyal",
     en: "Combined posterolateral + posteromedial"
   }, {
     tr: "Anterior (perkütan)",
     en: "Anterior (percutaneous)"
   }, {
-    tr: "Artroskopik",
-    en: "Arthroscopic"
+    tr: "Artroskopi yardımlı",
+    en: "Arthroscopic-assisted"
   }],
   seq: [{
     tr: "PM önce → Fibula → Medial malleol",
@@ -1120,20 +1181,26 @@ const CASE_OPTS = {
     en: "Individualised — no standard sequence"
   }],
   tech: [{
-    tr: "Perkütan AP lag vida",
-    en: "Percutaneous AP lag screw"
+    tr: "Perkütan AP vida fiksasyonu",
+    en: "Percutaneous AP screw fixation"
   }, {
-    tr: "Perkütan PA lag vida",
-    en: "Percutaneous PA lag screw"
+    tr: "Perkütan PA vida fiksasyonu",
+    en: "Percutaneous PA screw fixation"
   }, {
-    tr: "Trans-Achilles perkütan PA vida",
-    en: "Trans-Achilles percutaneous PA screw"
+    tr: "Açık posterior lag vida fiksasyonu (plaksız)",
+    en: "Open posterior lag screw fixation (no plate)"
   }, {
-    tr: "Açık posterolateral — buttress/locking plak",
-    en: "Open posterolateral — buttress/locking plate"
+    tr: "Açık posterior buttress / kilitli plak fiksasyonu",
+    en: "Open posterior buttress / locking plate fixation"
   }, {
-    tr: "Açık posterolateral — lag vida",
-    en: "Open posterolateral — lag screw"
+    tr: "Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu",
+    en: "Mini-fragment / intercalary fragment fixation in addition to main PM fixation"
+  }, {
+    tr: "Artroskopi yardımlı redüksiyon / fiksasyon",
+    en: "Arthroscopic-assisted reduction / fixation"
+  }, {
+    tr: "Diğer",
+    en: "Other"
   }]
 };
 const LIKERT_QS = [{
@@ -1149,13 +1216,24 @@ const LIKERT_QS = [{
   tr: "Direkt posterior yaklaşım perkütan tekniklerden üstündür.",
   en: "Direct posterior approach is superior to percutaneous techniques."
 }, {
-  id: "h4",
-  tr: "Direkt PM fiksasyonuna bağlı komplikasyon oranı (%17-20) fonksiyonel yarar göz önüne alındığında kabul edilebilirdir.",
-  en: "The complication rate of direct PM fixation (17-20%) is acceptable given the functional benefit."
+  id: "h7",
+  tr: "Direkt posterior PM fiksasyonunun olası morbiditesi açık posterior yaklaşımları kullanmamı sınırlıyor.",
+  en: "The potential morbidity of direct posterior PM fixation limits my use of open posterior approaches."
+}, {
+  id: "h8",
+  tr: "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, eklenen cerrahi morbiditeyi geride bırakır.",
+  en: "In selected PM fracture morphologies, the expected benefit of direct reduction outweighs the added surgical morbidity."
 }];
 
 // Practice Evolution sub-section (Rammelt rev. — Change of practice over last 10 years)
 // h5 = single-choice (always required), h6 = conditional free-text (only if h5 indicates change)
+// Helper used by both h6_driver (required) and h6 (optional) — true when h5 indicates a change
+const _h5IndicatesChange = (answers) => {
+  const v = answers.h5;
+  return v === "Yes — substantially" || v === "Yes — moderate change"
+      || v === "Evet — köklü değişiklik" || v === "Evet — orta düzeyde değişiklik";
+};
+
 const PRACTICE_EVOLUTION_QS = [{
   id: "h5",
   type: "single",
@@ -1178,17 +1256,49 @@ const PRACTICE_EVOLUTION_QS = [{
     en: "No significant change"
   }]
 }, {
+  id: "h6_driver",
+  type: "single",
+  // Required only when h5 indicates substantial or moderate change
+  requiredIf: _h5IndicatesChange,
+  showIf: _h5IndicatesChange,
+  text: {
+    tr: "Tek bir 'birincil etken' seçiniz — pratiğinizdeki en önemli değişikliğin nedeni:",
+    en: "Select the single primary driver of the most important change in your practice:"
+  },
+  opts: [{
+    tr: "Daha rutin preoperatif BT kullanımı",
+    en: "More routine preoperative CT"
+  }, {
+    tr: "Direkt posterior yaklaşımların daha fazla kullanılması",
+    en: "Greater use of direct posterior approaches"
+  }, {
+    tr: "Boyut bazlı endikasyondan morfoloji bazlıya geçiş",
+    en: "Shift from size-based to morphology-based fixation indications"
+  }, {
+    tr: "Daha küçük PM fragmanlarının da daha sık fikse edilmesi",
+    en: "More frequent fixation of smaller PM fragments"
+  }, {
+    tr: "PM fiksasyonu sonrası sindesmoz vidası kullanımının azaltılması",
+    en: "Reduced use of syndesmotic screw fixation after PM fixation"
+  }, {
+    tr: "İncisura / fibular notch redüksiyonuna daha fazla dikkat",
+    en: "Greater attention to incisura / fibular notch reduction"
+  }, {
+    tr: "Chaput / Wagstaffe fragmanlarına daha fazla dikkat",
+    en: "Greater attention to Chaput / Wagstaffe fragments"
+  }, {
+    tr: "Diğer",
+    en: "Other"
+  }]
+}, {
   id: "h6",
   type: "freetext",
-  // Only required if h5 answer indicates substantial or moderate change
-  requiredIf: (answers) => {
-    const v = answers.h5;
-    return v === "Yes — substantially" || v === "Yes — moderate change"
-        || v === "Evet — köklü değişiklik" || v === "Evet — orta düzeyde değişiklik";
-  },
+  // OPTIONAL elaboration — never required, but shown alongside h6_driver
+  showIf: _h5IndicatesChange,
+  maxLength: 300,
   text: {
-    tr: "Bir veya iki cümleyle, son on yılda pratiğinizdeki en önemli tek değişikliği lütfen tarif edin.",
-    en: "In one or two sentences, please describe the single most important change in your practice over the last decade."
+    tr: "İsteğe bağlı tek cümlelik açıklama (maks 300 karakter):",
+    en: "Optional one-sentence elaboration (max 300 characters):"
   }
 }];
 
@@ -1204,24 +1314,33 @@ function RadioGroup({
   options,
   value,
   onChange,
-  lang
+  lang,
+  disabledFn
 }) {
   return /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-2 mt-2"
   }, options.map((opt, i) => {
     const label = typeof opt === 'object' ? opt[lang] || opt.en : opt;
+    const disabled = typeof disabledFn === 'function' ? disabledFn(opt, label) : false;
+    const checked = value === label;
+    const cls = disabled
+      ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-50'
+      : checked
+        ? 'border-amber-500 bg-amber-50 shadow-sm cursor-pointer'
+        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer';
     return /*#__PURE__*/React.createElement("label", {
       key: i,
-      className: `flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-all duration-200 ${value === label ? 'border-amber-500 bg-amber-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'}`
+      className: `flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-200 ${cls}`
     }, /*#__PURE__*/React.createElement("input", {
       type: "radio",
       name: name,
       value: label,
-      checked: value === label,
-      onChange: e => onChange(e.target.value),
+      checked: checked,
+      disabled: disabled,
+      onChange: e => { if (!disabled) onChange(e.target.value); },
       className: "accent-amber-600 w-4 h-4 flex-shrink-0"
     }), /*#__PURE__*/React.createElement("span", {
-      className: "text-sm text-gray-800"
+      className: `text-sm ${disabled ? 'text-gray-400' : 'text-gray-800'}`
     }, label));
   }));
 }
@@ -2757,6 +2876,20 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     )
   );
 }
+// Position × Approach compatibility — only hard-disable truly impossible
+// combinations per ChatGPT's review (avoid investigator-imposed bias).
+// Returns true when the approach is incompatible with the chosen position.
+function _approachIncompatibleWithPosition(approachOpt, positionLabel, lang) {
+  if (!positionLabel) return false; // no position chosen yet → no filter
+  const aTR = approachOpt && approachOpt.tr;
+  const aEN = approachOpt && approachOpt.en;
+  const isAnteriorPercutaneous =
+    aEN === "Anterior (percutaneous)" || aTR === "Anterior (perkütan)";
+  const isProne =
+    positionLabel === "Prone" || positionLabel === "Prone";
+  return isProne && isAnteriorPercutaneous;
+}
+
 function CaseCard({
   c,
   lang,
@@ -2767,6 +2900,19 @@ function CaseCard({
   const l = lang === 'tr' || lang === 'en' ? lang : 'en';
   const fixVal = answers[`${c.prefix}_fix`];
   const showSub = fixVal === tt.fix_yes;
+  const positionLabel = answers[`${c.prefix}_position`];
+  const approachLabel = answers[`${c.prefix}_approach`];
+
+  // If the currently-selected approach becomes incompatible with the chosen
+  // position, clear it. This prevents stale invalid combinations.
+  React.useEffect(() => {
+    if (!approachLabel || !positionLabel) return;
+    const matched = CASE_OPTS.app.find(opt => (opt.en === approachLabel || opt.tr === approachLabel));
+    if (matched && _approachIncompatibleWithPosition(matched, positionLabel, l)) {
+      setAnswer(`${c.prefix}_approach`, undefined);
+    }
+  }, [positionLabel]);
+
   return /*#__PURE__*/React.createElement("div", {
     className: "rounded-2xl overflow-hidden border-2 shadow-lg",
     style: {
@@ -2819,7 +2965,8 @@ function CaseCard({
     options: CASE_OPTS.app,
     value: answers[`${c.prefix}_approach`],
     onChange: v => setAnswer(`${c.prefix}_approach`, v),
-    lang: l
+    lang: l,
+    disabledFn: (opt) => _approachIncompatibleWithPosition(opt, positionLabel, l)
   })), c.hasSequence && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "font-semibold text-gray-900 text-sm"
   }, tt.seq_q), /*#__PURE__*/React.createElement(RadioGroup, {
@@ -3187,7 +3334,7 @@ function App() {
   }, ll === 'tr' ? 'G — Pratikteki Evrim' : 'G — Practice Evolution'), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-gray-500 mt-1"
   }, ll === 'tr' ? 'Son on yıldaki değişim' : 'Change over the last decade')),
-    // H5 — single choice (kept ID to preserve data structure)
+    // H5 — single choice (always shown)
     (() => {
       const q5 = PRACTICE_EVOLUTION_QS[0];
       return /*#__PURE__*/React.createElement("div", {
@@ -3205,11 +3352,31 @@ function App() {
         })
       );
     })(),
-    // H6 — conditional free-text
+    // H6_driver — primary driver coded single-choice (conditional on h5)
     (() => {
-      const q6 = PRACTICE_EVOLUTION_QS[1];
-      const show = q6.requiredIf(answers);
-      if (!show) return null;
+      const qd = PRACTICE_EVOLUTION_QS[1];
+      if (qd.showIf && !qd.showIf(answers)) return null;
+      return /*#__PURE__*/React.createElement("div", {
+        className: "pt-4 border-t border-gray-100 animate-fadeIn"
+      },
+        /*#__PURE__*/React.createElement("p", {
+          className: "font-semibold text-gray-900 text-sm mb-1"
+        }, qd.text[ll] || qd.text.en),
+        /*#__PURE__*/React.createElement(RadioGroup, {
+          name: qd.id,
+          options: qd.opts,
+          value: answers[qd.id],
+          onChange: v => setAnswer(qd.id, v),
+          lang: ll
+        })
+      );
+    })(),
+    // H6 — optional 300-char elaboration (conditional on h5; never required)
+    (() => {
+      const q6 = PRACTICE_EVOLUTION_QS[2];
+      if (q6.showIf && !q6.showIf(answers)) return null;
+      const cur = answers[q6.id] || '';
+      const remaining = (q6.maxLength || 300) - cur.length;
       return /*#__PURE__*/React.createElement("div", {
         className: "pt-4 border-t border-gray-100 animate-fadeIn"
       },
@@ -3217,12 +3384,19 @@ function App() {
           className: "font-semibold text-gray-900 text-sm mb-2"
         }, q6.text[ll] || q6.text.en),
         /*#__PURE__*/React.createElement("textarea", {
-          value: answers[q6.id] || '',
-          onChange: e => setAnswer(q6.id, e.target.value),
-          rows: 4,
-          placeholder: ll === 'tr' ? 'Yanıtınızı buraya yazın...' : 'Type your answer here...',
+          value: cur,
+          onChange: e => {
+            const v = e.target.value;
+            const max = q6.maxLength || 300;
+            setAnswer(q6.id, v.length > max ? v.slice(0, max) : v);
+          },
+          rows: 3,
+          placeholder: ll === 'tr' ? 'İsteğe bağlı...' : 'Optional...',
           className: "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none resize-y"
-        })
+        }),
+        /*#__PURE__*/React.createElement("p", {
+          className: `text-xs mt-1 ${remaining < 30 ? 'text-amber-600' : 'text-gray-400'}`
+        }, cur.length + ' / ' + (q6.maxLength || 300))
       );
     })(),
     /*#__PURE__*/React.createElement(NavBtns, null)
