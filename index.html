@@ -540,24 +540,24 @@ const SECTIONS = {
       id: "a3",
       type: "single",
       text: {
-        tr: "Çalıştığınız kurum tipi nedir?",
-        en: "What type of institution do you work in?"
+        tr: "Hangi tür kurumda çalışıyorsunuz?",
+        en: "In what type of institution do you primarily practice?"
       },
       opts: [{
-        tr: "Devlet hastanesi — 3. basamak",
-        en: "Public hospital — tertiary"
+        tr: "Üniversite hastanesi / akademik eğitim hastanesi",
+        en: "University hospital / Academic teaching hospital"
       }, {
-        tr: "Özel hastane — 3. basamak",
-        en: "Private hospital — tertiary"
+        tr: "3. basamak travma merkezi (akademik olmayan)",
+        en: "Tertiary-level trauma center (non-academic)"
       }, {
-        tr: "Devlet hastanesi — 2. basamak",
-        en: "Public hospital — secondary"
+        tr: "2. basamak / toplum / devlet hastanesi",
+        en: "Secondary / community / district hospital"
       }, {
-        tr: "Özel hastane — 2. basamak",
-        en: "Private hospital — secondary"
+        tr: "Özel klinik (solo veya grup)",
+        en: "Private practice (solo or group)"
       }, {
-        tr: "Serbest hekim",
-        en: "Independent practitioner"
+        tr: "Diğer",
+        en: "Other"
       }]
     }, {
       id: "a4",
@@ -594,26 +594,20 @@ const SECTIONS = {
         en: "What best describes your primary clinical focus?"
       },
       opts: [{
-        tr: "Genel ortopedik travma",
-        en: "General orthopaedic trauma"
-      }, {
         tr: "Ayak ve ayak bileği cerrahisi",
         en: "Foot and ankle surgery"
       }, {
-        tr: "Alt ekstremite travması",
-        en: "Lower-limb trauma"
-      }, {
-        tr: "Spor / artroskopi (ayak bileği travma deneyimi ile)",
-        en: "Sports / arthroscopy with ankle trauma exposure"
+        tr: "Ortopedik travma",
+        en: "Orthopaedic trauma"
       }, {
         tr: "Genel ortopedi",
         en: "General orthopaedics"
       }, {
-        tr: "Asistan / fellow (süpervizyon altında)",
-        en: "Resident / fellow under supervision"
+        tr: "Asistan / fellow eğitim aşamasında",
+        en: "Resident / fellow in training"
       }, {
-        tr: "Diğer",
-        en: "Other"
+        tr: "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)",
+        en: "Other orthopaedic subspecialty (spine, sports, arthroplasty, etc.)"
       }]
     }, {
       id: "a7",
@@ -664,26 +658,6 @@ const SECTIONS = {
       }, {
         tr: "> 10",
         en: "> 10"
-      }]
-    }, {
-      id: "b2",
-      type: "single",
-      text: {
-        tr: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
-        en: "Do you routinely order CT scans for ankle fractures?"
-      },
-      opts: [{
-        tr: "Evet — tüm ayak bileği kırıklarında",
-        en: "Yes — for all ankle fractures"
-      }, {
-        tr: "Evet — sadece PM şüphesi varsa",
-        en: "Yes — only if PM fracture is suspected"
-      }, {
-        tr: "Evet — sadece trimalleolar kırıklarda",
-        en: "Yes — only for trimalleolar fractures"
-      }, {
-        tr: "Hayır — sadece grafiye dayanarak karar veririm",
-        en: "No — I decide based on plain radiographs only"
       }]
     }]
   },
@@ -844,10 +818,9 @@ const SECTIONS = {
       id: "d5",
       type: "single",
       text: {
-        tr: "Bir interkalar/serbest artiküler fragmanı ele aldığınızda en sık tercih ettiğiniz teknik nedir?",
-        en: "If you address an intercalary/free intra-articular fragment, what is your most common technique?"
+        tr: "Son literatür, interkalar fragmanların direkt fiksasyonunun sonuçları iyileştirip iyileştirmediği konusunda çelişen kanıtlar üretmiştir (Mueller 2023, Rammelt 2021 fiksasyon lehinde; Myers 2022 direkt fiksasyonla radyografik sonuçların kötüleştiğini bildiriyor). Mevcut pratiğinizi en iyi hangisi tanımlar?",
+        en: "Recent literature has produced conflicting evidence on whether direct fixation of intercalary fragments improves outcomes (Mueller 2023, Rammelt 2021 favor fixation; Myers 2022 reports worsening radiographic outcomes with direct fixation). Which best describes your current practice?"
       },
-      // Shown only when D4 does not include "I do not usually address..."
       showIf: (answers) => {
         const d4 = answers.d4 || [];
         if (!Array.isArray(d4) || d4.length === 0) return false;
@@ -863,23 +836,23 @@ const SECTIONS = {
         return !d4.includes(skipTR) && !d4.includes(skipEN);
       },
       opts: [{
-        tr: "Ana PM fragmenti fiksasyonu altında yakalanır",
-        en: "Captured under main PM fragment fixation"
+        tr: "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim",
+        en: "I routinely attempt direct fixation of intercalary fragments when accessible"
       }, {
-        tr: "Bağımsız mini-fragman vidası (1.5–2.4 mm)",
-        en: "Independent mini-fragment screw (1.5–2.4 mm)"
+        tr: "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim",
+        en: "I selectively fix intercalary fragments based on size, location, or comminution"
       }, {
-        tr: "K-tel ile manipülasyon, son stabilite ana fragman fiksasyonu ile sağlanır",
-        en: "K-wire manipulation, final stability via main fragment fixation"
+        tr: "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli",
+        en: "I generally do not fix intercalary fragments directly — main PM fragment fixation usually suffices"
       }, {
-        tr: "Spongioz greft / subkondral destek ile elevasyon",
-        en: "Elevation with cancellous graft / subchondral support"
+        tr: "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti",
+        en: "I have changed my practice toward more frequent fixation in the last 5 years"
       }, {
-        tr: "Rekonstrükte edilemiyorsa eksizyon",
-        en: "Excision if non-reconstructable"
+        tr: "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti",
+        en: "I have changed my practice toward less frequent fixation in the last 5 years"
       }, {
-        tr: "Yalnızca indirekt redüksiyon — ayrı implant yok",
-        en: "Indirect reduction only — no separate implant"
+        tr: "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili",
+        en: "I do not have a settled practice yet — evidence is conflicting"
       }]
     }]
   },
@@ -1257,38 +1230,64 @@ const PRACTICE_EVOLUTION_QS = [{
   }]
 }, {
   id: "h6_driver",
-  type: "single",
-  // Required only when h5 indicates substantial or moderate change
+  type: "multi",
   requiredIf: _h5IndicatesChange,
   showIf: _h5IndicatesChange,
   text: {
-    tr: "Tek bir 'birincil etken' seçiniz — pratiğinizdeki en önemli değişikliğin nedeni:",
-    en: "Select the single primary driver of the most important change in your practice:"
+    tr: "Son on yıldaki aşağıdaki gelişmelerden hangileri mevcut PM kırığı yönetiminizi etkiledi? (Hepsi geçerli olanları işaretleyin)",
+    en: "Which of the following developments in the last decade have influenced your current PM fracture management? (Select all that apply)"
   },
   opts: [{
-    tr: "Daha rutin preoperatif BT kullanımı",
-    en: "More routine preoperative CT"
+    category: "A",
+    categoryLabel: { tr: "Görüntüleme ve değerlendirme", en: "Imaging & assessment" },
+    tr: "Daha rutin preoperatif BT / morfoloji bazlı değerlendirme",
+    en: "More routine preoperative CT / morphology-based assessment"
   }, {
-    tr: "Direkt posterior yaklaşımların daha fazla kullanılması",
-    en: "Greater use of direct posterior approaches"
+    category: "B",
+    categoryLabel: { tr: "Sınıflama kullanımı", en: "Classification adoption" },
+    tr: "Bartoníček/Rammelt veya Mason & Molloy sınıflamasının karar verme sürecinde benimsenmesi",
+    en: "Adoption of Bartoníček/Rammelt or Mason & Molloy classifications in decision-making"
   }, {
-    tr: "Boyut bazlı endikasyondan morfoloji bazlıya geçiş",
-    en: "Shift from size-based to morphology-based fixation indications"
+    category: "C",
+    categoryLabel: { tr: "Cerrahi yaklaşım", en: "Surgical approach" },
+    tr: "Direkt posterior yaklaşımların (PL veya PM) daha fazla kullanılması",
+    en: "Greater use of direct posterior approaches (PL or PM)"
   }, {
-    tr: "Daha küçük PM fragmanlarının da daha sık fikse edilmesi",
-    en: "More frequent fixation of smaller PM fragments"
+    category: "C",
+    tr: "Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)",
+    en: "Posteromedial approach variations (modified / extended FHL)"
   }, {
-    tr: "PM fiksasyonu sonrası sindesmoz vidası kullanımının azaltılması",
-    en: "Reduced use of syndesmotic screw fixation after PM fixation"
+    category: "D",
+    categoryLabel: { tr: "Endikasyon felsefesi", en: "Indication philosophy" },
+    tr: "Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş",
+    en: "Shift from size-based threshold to morphology-based indications"
   }, {
+    category: "D",
+    tr: "Daha küçük fragmanları fikse etme eşiğinin düşmesi",
+    en: "Lower threshold for fixing smaller fragments"
+  }, {
+    category: "D",
+    tr: "PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi",
+    en: "Recognition that PM fixation reduces need for syndesmotic screw"
+  }, {
+    category: "E",
+    categoryLabel: { tr: "Sindesmotik anlayış", en: "Syndesmotic understanding" },
     tr: "İncisura / fibular notch redüksiyonuna daha fazla dikkat",
     en: "Greater attention to incisura / fibular notch reduction"
   }, {
-    tr: "Chaput / Wagstaffe fragmanlarına daha fazla dikkat",
-    en: "Greater attention to Chaput / Wagstaffe fragments"
+    category: "E",
+    tr: "Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi",
+    en: "Recognition of Chaput / Wagstaffe fragment relevance"
   }, {
-    tr: "Diğer",
-    en: "Other"
+    category: "F",
+    categoryLabel: { tr: "Hiçbiri / Diğer", en: "None / Other" },
+    tr: "Hiçbiri — pratiğim büyük ölçüde değişmedi",
+    en: "None of these — my practice has remained largely unchanged",
+    exclusive: true
+  }, {
+    category: "F",
+    tr: "Diğer (belirtiniz)",
+    en: "Other (specify)"
   }]
 }, {
   id: "h6",
@@ -2885,9 +2884,18 @@ function _approachIncompatibleWithPosition(approachOpt, positionLabel, lang) {
   const aEN = approachOpt && approachOpt.en;
   const isAnteriorPercutaneous =
     aEN === "Anterior (percutaneous)" || aTR === "Anterior (perkütan)";
+  const isPosteromedial =
+    (aEN || "").startsWith("Posteromedial") || (aTR || "").startsWith("Posteromedyal");
   const isProne =
-    positionLabel === "Prone" || positionLabel === "Prone";
-  return isProne && isAnteriorPercutaneous;
+    positionLabel === "Prone";
+  const isLateral =
+    positionLabel === "Lateral decubitus" || positionLabel === "Lateral dekübitus";
+  // Hard-disable rules (lead author judgement):
+  //  - Prone + Anterior (percutaneous) — anatomically impossible
+  //  - Lateral decubitus + any Posteromedial sub-type — corridor inaccessible
+  if (isProne && isAnteriorPercutaneous) return true;
+  if (isLateral && isPosteromedial) return true;
+  return false;
 }
 
 function CaseCard({
@@ -3050,24 +3058,37 @@ function App() {
     setSubmitting(true);
     try {
       const duration = Math.round((Date.now() - startTime) / 1000);
+      // Hybrid payload: full answers as jsonb + key fields as classic columns.
+      // The `data` jsonb preserves EVERY field (including any future questions)
+      // without schema migration. Classic columns are populated for backward
+      // compatibility and SQL-queryable analytics.
       const row = {
         language: lang,
+        // Full-fidelity storage — every answer (including future questions)
+        data: answers,
+        // Classic columns (preserved for backward compatibility + SQL convenience)
         a2_experience: answers.a2,
         a3_institution: answers.a3,
         a4_country: answers.a4,
         a5_annual_volume: answers.a5,
+        a6_subspecialty: answers.a6,
+        a7_ct_routine: answers.a7,
         b1_monthly_pm: answers.b1,
-        b2_routine_ct: answers.b2,
+        // b2 removed (duplicate of a7) — column kept for backward compat but always null
         c1_classification: answers.c1 || [],
         c2_classification_guides: answers.c2,
         d1_size_threshold: answers.d1,
         d3_influencing_factors: answers.d3 || [],
+        d4_intercalary_criteria: answers.d4 || [],
+        d5_intercalary_practice: answers.d5,
         e1_technique: answers.e1,
         e2_approach: answers.e2,
         e3_position: answers.e3,
         f1_fixation_sequence: answers.f1,
         f2_syndesmosis_assessment: answers.f2,
         f3_pm_reduces_syndesmosis: answers.f3,
+        f4_chaput_assessment: answers.f4,
+        f5_chaput_management: answers.f5,
         g1_case1_fix: answers.g1_case1_fix,
         g1_case1_position: answers.g1_case1_position,
         g1_case1_approach: answers.g1_case1_approach,
@@ -3090,14 +3111,24 @@ function App() {
         h1_size_importance: answers.h1,
         h2_morphology_over_size: answers.h2,
         h3_direct_over_percutaneous: answers.h3,
-        h4_complication_acceptable: answers.h4,
+        // h4 removed (replaced by h7+h8) — column kept for backward compat but always null
+        h5_practice_change: answers.h5,
+        h6_driver: answers.h6_driver || [],
+        h6_text: answers.h6,
+        h7_morbidity_limit: answers.h7,
+        h8_benefit_outweighs: answers.h8,
         completed: true,
         duration_seconds: duration,
         user_agent: navigator.userAgent
       };
-      await sbFetch("responses", "POST", row);
+      const resp = await sbFetch("responses", "POST", row);
+      if (resp && !resp.ok) {
+        console.error("Submit non-OK response:", resp.status, await resp.text());
+        throw new Error("Submission failed: " + resp.status);
+      }
     } catch (e) {
       console.error("Submit error:", e);
+      // Re-throw so the UI can show error state. For now, log only.
     }
     setSubmitting(false);
     setStep(step + 1);
@@ -3352,23 +3383,93 @@ function App() {
         })
       );
     })(),
-    // H6_driver — primary driver coded single-choice (conditional on h5)
+    // H6_driver — multi-select categorized (conditional on h5)
     (() => {
       const qd = PRACTICE_EVOLUTION_QS[1];
       if (qd.showIf && !qd.showIf(answers)) return null;
+      const selected = answers[qd.id] || [];
+      const exclusiveOpts = qd.opts.filter(o => o.exclusive);
+      const isExclusiveSelected = selected.some(s =>
+        exclusiveOpts.some(eo => eo.en === s || eo.tr === s)
+      );
+      const toggle = (optLabel, optIsExclusive) => {
+        const cur = answers[qd.id] || [];
+        if (optIsExclusive) {
+          // Selecting exclusive: clear others, set only this
+          if (cur.includes(optLabel)) {
+            setAnswer(qd.id, []);
+          } else {
+            setAnswer(qd.id, [optLabel]);
+          }
+        } else {
+          // Selecting non-exclusive: remove any exclusive first
+          let next = cur.filter(s =>
+            !exclusiveOpts.some(eo => eo.en === s || eo.tr === s)
+          );
+          if (next.includes(optLabel)) {
+            next = next.filter(s => s !== optLabel);
+          } else {
+            next = [...next, optLabel];
+          }
+          setAnswer(qd.id, next);
+        }
+      };
+      // Group options by category
+      const groups = {};
+      const groupOrder = [];
+      qd.opts.forEach(o => {
+        const cat = o.category || "_";
+        if (!groups[cat]) {
+          groups[cat] = { label: o.categoryLabel, opts: [] };
+          groupOrder.push(cat);
+        } else if (o.categoryLabel) {
+          groups[cat].label = o.categoryLabel;
+        }
+        groups[cat].opts.push(o);
+      });
       return /*#__PURE__*/React.createElement("div", {
         className: "pt-4 border-t border-gray-100 animate-fadeIn"
       },
         /*#__PURE__*/React.createElement("p", {
           className: "font-semibold text-gray-900 text-sm mb-1"
         }, qd.text[ll] || qd.text.en),
-        /*#__PURE__*/React.createElement(RadioGroup, {
-          name: qd.id,
-          options: qd.opts,
-          value: answers[qd.id],
-          onChange: v => setAnswer(qd.id, v),
-          lang: ll
-        })
+        /*#__PURE__*/React.createElement("p", {
+          className: "text-xs text-amber-600 font-medium mb-3"
+        }, ll === "tr" ? "Hepsi geçerli olanları işaretleyin" : "Select all that apply"),
+        groupOrder.map((cat, gi) =>
+          /*#__PURE__*/React.createElement("div", { key: cat, className: gi > 0 ? "mt-4" : "" },
+            groups[cat].label && /*#__PURE__*/React.createElement("p", {
+              className: "text-xs font-bold uppercase text-gray-500 mb-2 tracking-wide"
+            }, (groups[cat].label[ll] || groups[cat].label.en)),
+            /*#__PURE__*/React.createElement("div", { className: "flex flex-col gap-2" },
+              groups[cat].opts.map((opt, oi) => {
+                const label = opt[ll] || opt.en;
+                const checked = selected.includes(label);
+                const disabled = isExclusiveSelected && !opt.exclusive;
+                const cls = disabled
+                  ? "border-gray-200 bg-gray-50 cursor-not-allowed opacity-50"
+                  : checked
+                    ? "border-amber-500 bg-amber-50 shadow-sm cursor-pointer"
+                    : "border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer";
+                return /*#__PURE__*/React.createElement("label", {
+                  key: oi,
+                  className: `flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-200 ${cls}`
+                },
+                  /*#__PURE__*/React.createElement("input", {
+                    type: "checkbox",
+                    checked,
+                    disabled,
+                    onChange: () => { if (!disabled) toggle(label, opt.exclusive); },
+                    className: "accent-amber-600 w-4 h-4 flex-shrink-0"
+                  }),
+                  /*#__PURE__*/React.createElement("span", {
+                    className: `text-sm ${disabled ? "text-gray-400" : "text-gray-800"}`
+                  }, label)
+                );
+              })
+            )
+          )
+        )
       );
     })(),
     // H6 — optional 300-char elaboration (conditional on h5; never required)

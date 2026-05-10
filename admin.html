@@ -1494,7 +1494,7 @@ const FB_SECTIONS = [{
     id: "a3",
     text: "Çalıştığınız kurum tipi nedir?",
     type: "single",
-    opts: ["Devlet hastanesi — 3. basamak", "Özel hastane — 3. basamak", "Devlet hastanesi — 2. basamak", "Özel hastane — 2. basamak", "Serbest hekim"]
+    opts: ["Üniversite hastanesi / akademik eğitim hastanesi", "3. basamak travma merkezi (akademik olmayan)", "2. basamak / toplum / devlet hastanesi", "Özel klinik (solo veya grup)", "Diğer"]
   }, {
     id: "a5",
     text: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
@@ -1504,7 +1504,7 @@ const FB_SECTIONS = [{
     id: "a6",
     text: "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?",
     type: "single",
-    opts: ["Genel ortopedik travma", "Ayak ve ayak bileği cerrahisi", "Alt ekstremite travması", "Spor / artroskopi (ayak bileği travma deneyimi ile)", "Genel ortopedi", "Asistan / fellow (süpervizyon altında)", "Diğer"]
+    opts: ["Ayak ve ayak bileği cerrahisi", "Ortopedik travma", "Genel ortopedi", "Asistan / fellow eğitim aşamasında", "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)"]
   }, {
     id: "a7",
     text: "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?",
@@ -1519,11 +1519,6 @@ const FB_SECTIONS = [{
     text: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
     type: "single",
     opts: ["< 2", "2–5", "6–10", "> 10"]
-  }, {
-    id: "b2",
-    text: "Ayak bileği kırıklarında rutin olarak BT çektirir misiniz?",
-    type: "single",
-    opts: ["Evet — tüm ayak bileği kırıklarında", "Evet — sadece PM şüphesi varsa", "Evet — sadece trimalleolar kırıklarda", "Hayır — sadece grafiye dayanarak karar veririm"]
   }]
 }, {
   id: "C",
@@ -1559,9 +1554,9 @@ const FB_SECTIONS = [{
     opts: ["Fragmana bağlı artiküler step-off veya boşluk", "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi", "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması", "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması", "Elevasyon/greftleme gerektiren impakte osteokondral fragman", "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)", "İnterkalar fragmanları genellikle ayrıca ele almam"]
   }, {
     id: "d5",
-    text: "Bir interkalar fragmanı ele aldığınızda en sık tercih ettiğiniz teknik nedir?",
+    text: "Son literatür interkalar fragmanların direkt fiksasyonu hakkında çelişen kanıtlar üretti. Pratiğinizi en iyi hangisi tanımlar?",
     type: "single",
-    opts: ["Ana PM fragmenti fiksasyonu altında yakalanır", "Bağımsız mini-fragman vidası (1.5–2.4 mm)", "K-tel ile manipülasyon, son stabilite ana fragman fiksasyonu ile sağlanır", "Spongioz greft / subkondral destek ile elevasyon", "Rekonstrükte edilemiyorsa eksizyon", "Yalnızca indirekt redüksiyon — ayrı implant yok"]
+    opts: ["Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim", "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim", "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli", "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti", "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti", "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili"]
   }]
 }, {
   id: "E",
@@ -1671,7 +1666,7 @@ const FB_PRACTICE_EVOLUTION = [{
   text: "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?"
 }, {
   id: "h6_driver",
-  text: "Son on yıldaki değişikliğin tek 'birincil etkenini' seçiniz."
+  text: "Son on yıldaki gelişmelerden hangileri pratiğinizi etkiledi? (Çoklu seçim)"
 }, {
   id: "h6",
   text: "(İsteğe bağlı) tek cümlelik açıklama — maks 300 karakter."
