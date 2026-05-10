@@ -7,6 +7,8 @@
 <meta name="robots" content="noindex, nofollow">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
 <style>
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 *{box-sizing:border-box}
@@ -1683,6 +1685,7 @@ function StatPage() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("demo");
+  const [rechartsReady, setRechartsReady] = useState(typeof window.Recharts !== "undefined");
   useEffect(() => {
     (async () => {
       try {
@@ -1694,6 +1697,19 @@ function StatPage() {
       setLoading(false);
     })();
   }, []);
+  // Poll for Recharts CDN — re-renders charts when library finishes loading
+  useEffect(() => {
+    if (rechartsReady) return;
+    const t = setInterval(() => {
+      if (typeof window.Recharts !== "undefined") {
+        setRechartsReady(true);
+        clearInterval(t);
+      }
+    }, 100);
+    // Timeout after 8s to stop polling even if library never loads
+    const timeout = setTimeout(() => clearInterval(t), 8000);
+    return () => { clearInterval(t); clearTimeout(timeout); };
+  }, [rechartsReady]);
 
   const totalCount = rows.length;
 
