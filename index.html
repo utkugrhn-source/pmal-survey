@@ -818,8 +818,8 @@ const SECTIONS = {
       id: "d5",
       type: "single",
       text: {
-        tr: "Son literatür, interkalar fragmanların direkt fiksasyonunun sonuçları iyileştirip iyileştirmediği konusunda çelişen kanıtlar üretmiştir (Mueller 2023, Rammelt 2021 fiksasyon lehinde; Myers 2022 direkt fiksasyonla radyografik sonuçların kötüleştiğini bildiriyor). Mevcut pratiğinizi en iyi hangisi tanımlar?",
-        en: "Recent literature has produced conflicting evidence on whether direct fixation of intercalary fragments improves outcomes (Mueller 2023, Rammelt 2021 favor fixation; Myers 2022 reports worsening radiographic outcomes with direct fixation). Which best describes your current practice?"
+        tr: "İnterkalar (serbest intra-artiküler) fragmanlarla ilgili mevcut pratiğinizi en iyi hangisi tanımlar?",
+        en: "Which best describes your current practice regarding intercalary (free intra-articular) fragments?"
       },
       showIf: (answers) => {
         const d4 = answers.d4 || [];
@@ -844,12 +844,6 @@ const SECTIONS = {
       }, {
         tr: "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli",
         en: "I generally do not fix intercalary fragments directly — main PM fragment fixation usually suffices"
-      }, {
-        tr: "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti",
-        en: "I have changed my practice toward more frequent fixation in the last 5 years"
-      }, {
-        tr: "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti",
-        en: "I have changed my practice toward less frequent fixation in the last 5 years"
       }, {
         tr: "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili",
         en: "I do not have a settled practice yet — evidence is conflicting"
@@ -1117,6 +1111,9 @@ const CASE_OPTS = {
   }, {
     tr: "Lateral dekübitus",
     en: "Lateral decubitus"
+  }, {
+    tr: "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)",
+    en: "Multiple positions required (e.g., repositioning intra-op)"
   }],
   app: [{
     tr: "Posterolateral",
@@ -2880,21 +2877,35 @@ function DicomViewerEmbed({ caseId, r2folder }) {
 // Returns true when the approach is incompatible with the chosen position.
 function _approachIncompatibleWithPosition(approachOpt, positionLabel, lang) {
   if (!positionLabel) return false; // no position chosen yet → no filter
+
+  // "Multiple positions required" - cerrah konum değiştiriyorsa, hiçbir
+  // yaklaşım inaktif değildir (Anterior + Posterior aynı vakada mümkün).
+  const isMultiplePositions =
+    positionLabel === "Multiple positions required (e.g., repositioning intra-op)" ||
+    positionLabel === "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)";
+  if (isMultiplePositions) return false;
+
   const aTR = approachOpt && approachOpt.tr;
   const aEN = approachOpt && approachOpt.en;
   const isAnteriorPercutaneous =
     aEN === "Anterior (percutaneous)" || aTR === "Anterior (perkütan)";
   const isPosteromedial =
     (aEN || "").startsWith("Posteromedial") || (aTR || "").startsWith("Posteromedyal");
+  const isCombinedPLPM =
+    aEN === "Combined posterolateral + posteromedial" ||
+    aTR === "Kombine posterolateral + posteromedyal";
   const isProne =
     positionLabel === "Prone";
   const isLateral =
     positionLabel === "Lateral decubitus" || positionLabel === "Lateral dekübitus";
-  // Hard-disable rules (lead author judgement):
-  //  - Prone + Anterior (percutaneous) — anatomically impossible
-  //  - Lateral decubitus + any Posteromedial sub-type — corridor inaccessible
+
+  // Hard-disable rules (lead author clinical judgement):
+  //  - Prone + Anterior (percutaneous): anatomically impossible
+  //  - Lateral decubitus + any Posteromedial sub-type: medial corridor inaccessible
+  //  - Lateral decubitus + Combined PL+PM: PM half not feasible
   if (isProne && isAnteriorPercutaneous) return true;
   if (isLateral && isPosteromedial) return true;
+  if (isLateral && isCombinedPLPM) return true;
   return false;
 }
 
@@ -3438,9 +3449,9 @@ function App() {
         }, ll === "tr" ? "Hepsi geçerli olanları işaretleyin" : "Select all that apply"),
         groupOrder.map((cat, gi) =>
           /*#__PURE__*/React.createElement("div", { key: cat, className: gi > 0 ? "mt-4" : "" },
-            groups[cat].label && /*#__PURE__*/React.createElement("p", {
-              className: "text-xs font-bold uppercase text-gray-500 mb-2 tracking-wide"
-            }, (groups[cat].label[ll] || groups[cat].label.en)),
+            // Category labels intentionally hidden per lead-author preference;
+            // options render as a single flat checkbox list.
+            null,
             /*#__PURE__*/React.createElement("div", { className: "flex flex-col gap-2" },
               groups[cat].opts.map((opt, oi) => {
                 const label = opt[ll] || opt.en;

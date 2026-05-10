@@ -1436,49 +1436,495 @@ function RespPage() {
 }
 
 // ── STATISTICS ──
-function StatPage() {
-  const charts = ["Deneyim Yılı Dağılımı", "Kurum Tipi", "Boyut Eşiği Tercihi", "Teknik Tercih", "Pozisyon Tercihi", "Sınıflama Kullanımı"];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
-    style: {
-      color: TH.tx,
-      fontSize: 15,
-      fontWeight: 600,
-      margin: "0 0 18px"
-    }
-  }, "\u0130statistikler"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: 14
-    }
-  }, charts.map((t, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
+// ── STAT PAGE — 4-tab analytics dashboard ──
+const STAT_COLORS = ["#D97706", "#EAB308", "#F59E0B", "#FBBF24", "#FCD34D", "#FDE68A", "#FEF3C7", "#92400E", "#78350F"];
+
+function _hist(rows, accessor) {
+  const counts = {};
+  rows.forEach(r => {
+    const v = typeof accessor === "function" ? accessor(r) : (r.data?.[accessor] ?? r[accessor]);
+    if (v == null || v === "") return;
+    counts[v] = (counts[v] || 0) + 1;
+  });
+  return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+}
+
+function _histMulti(rows, accessor) {
+  const counts = {};
+  rows.forEach(r => {
+    const arr = typeof accessor === "function" ? accessor(r) : (r.data?.[accessor] ?? r[accessor]);
+    if (!Array.isArray(arr)) return;
+    arr.forEach(v => {
+      if (v == null || v === "") return;
+      counts[v] = (counts[v] || 0) + 1;
+    });
+  });
+  return Object.entries(counts).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+}
+
+function _trunc(s, n = 24) {
+  if (!s) return "";
+  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+function StatCard({ title, subtitle, children, height = 240, fullWidth = false }) {
+  return /*#__PURE__*/React.createElement("div", {
     style: {
       background: TH.cd,
       border: `1px solid ${TH.br}`,
       borderRadius: 12,
-      padding: 18
+      padding: 18,
+      gridColumn: fullWidth ? "1 / -1" : undefined
     }
-  }, /*#__PURE__*/React.createElement("h4", {
+  },
+    /*#__PURE__*/React.createElement("h4", {
+      style: { color: TH.tx, fontSize: 13, fontWeight: 600, margin: "0 0 4px" }
+    }, title),
+    subtitle && /*#__PURE__*/React.createElement("p", {
+      style: { color: TH.tm, fontSize: 11, margin: "0 0 12px" }
+    }, subtitle),
+    /*#__PURE__*/React.createElement("div", { style: { height } }, children)
+  );
+}
+
+function HBarChart({ data, height = 240 }) {
+  if (!data || data.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: { height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: TH.td, fontSize: 11 }
+    }, "Veri yok");
+  }
+  const R = window.Recharts;
+  if (!R) return /*#__PURE__*/React.createElement("p", { style: { color: TH.td } }, "Loading…");
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } = R;
+  const trimmedData = data.map(d => ({ ...d, name: _trunc(d.name, 32) }));
+  return /*#__PURE__*/React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+    /*#__PURE__*/React.createElement(BarChart, { data: trimmedData, layout: "vertical", margin: { top: 5, right: 16, left: 8, bottom: 5 } },
+      /*#__PURE__*/React.createElement(CartesianGrid, { strokeDasharray: "3 3", stroke: TH.br, horizontal: false }),
+      /*#__PURE__*/React.createElement(XAxis, { type: "number", stroke: TH.tm, fontSize: 11, allowDecimals: false }),
+      /*#__PURE__*/React.createElement(YAxis, { type: "category", dataKey: "name", stroke: TH.tm, fontSize: 11, width: 200 }),
+      /*#__PURE__*/React.createElement(Tooltip, {
+        contentStyle: { background: TH.sf, border: `1px solid ${TH.br}`, borderRadius: 8, fontSize: 12, color: TH.tx },
+        cursor: { fill: "rgba(217, 119, 6, 0.1)" }
+      }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "value", fill: TH.ac, radius: [0, 4, 4, 0] },
+        trimmedData.map((entry, i) => /*#__PURE__*/React.createElement(Cell, { key: i, fill: STAT_COLORS[i % STAT_COLORS.length] }))
+      )
+    )
+  );
+}
+
+function DonutChart({ data }) {
+  if (!data || data.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: { height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: TH.td, fontSize: 11 }
+    }, "Veri yok");
+  }
+  const R = window.Recharts;
+  if (!R) return /*#__PURE__*/React.createElement("p", { style: { color: TH.td } }, "Loading…");
+  const { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } = R;
+  return /*#__PURE__*/React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+    /*#__PURE__*/React.createElement(PieChart, null,
+      /*#__PURE__*/React.createElement(Pie, {
+        data, dataKey: "value", nameKey: "name", cx: "40%", cy: "50%", innerRadius: 45, outerRadius: 75, paddingAngle: 2
+      }, data.map((entry, i) => /*#__PURE__*/React.createElement(Cell, { key: i, fill: STAT_COLORS[i % STAT_COLORS.length] }))),
+      /*#__PURE__*/React.createElement(Tooltip, {
+        contentStyle: { background: TH.sf, border: `1px solid ${TH.br}`, borderRadius: 8, fontSize: 12, color: TH.tx }
+      }),
+      /*#__PURE__*/React.createElement(Legend, {
+        verticalAlign: "middle", align: "right", layout: "vertical",
+        wrapperStyle: { fontSize: 11, color: TH.tm },
+        formatter: (val) => _trunc(val, 22)
+      })
+    )
+  );
+}
+
+function LikertChart({ items, rows }) {
+  const data = items.map(it => {
+    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let total = 0;
+    rows.forEach(r => {
+      const v = r.data?.[it.id];
+      const n = typeof v === "number" ? v : parseInt(v);
+      if (n >= 1 && n <= 5) {
+        counts[n]++;
+        total++;
+      }
+    });
+    const pct = (k) => total > 0 ? Math.round((counts[k] / total) * 100) : 0;
+    return {
+      label: _trunc(it.label, 60),
+      strongly_disagree: -pct(1),
+      disagree: -pct(2),
+      neutral: pct(3),
+      agree: pct(4),
+      strongly_agree: pct(5),
+      total
+    };
+  });
+  const R = window.Recharts;
+  if (!R) return /*#__PURE__*/React.createElement("p", { style: { color: TH.td } }, "Loading…");
+  const { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine, Legend } = R;
+  return /*#__PURE__*/React.createElement(ResponsiveContainer, { width: "100%", height: "100%" },
+    /*#__PURE__*/React.createElement(BarChart, { data, layout: "vertical", stackOffset: "sign", margin: { top: 5, right: 20, left: 8, bottom: 5 } },
+      /*#__PURE__*/React.createElement(CartesianGrid, { strokeDasharray: "3 3", stroke: TH.br }),
+      /*#__PURE__*/React.createElement(XAxis, { type: "number", stroke: TH.tm, fontSize: 11, domain: [-100, 100], tickFormatter: v => Math.abs(v) + "%" }),
+      /*#__PURE__*/React.createElement(YAxis, { type: "category", dataKey: "label", stroke: TH.tm, fontSize: 11, width: 300 }),
+      /*#__PURE__*/React.createElement(Tooltip, {
+        contentStyle: { background: TH.sf, border: `1px solid ${TH.br}`, borderRadius: 8, fontSize: 12, color: TH.tx },
+        formatter: (v) => Math.abs(v) + "%"
+      }),
+      /*#__PURE__*/React.createElement(ReferenceLine, { x: 0, stroke: TH.tm }),
+      /*#__PURE__*/React.createElement(Legend, { wrapperStyle: { fontSize: 11, color: TH.tm } }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "strongly_disagree", stackId: "s", fill: "#991B1B", name: "Strongly disagree" }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "disagree", stackId: "s", fill: "#DC2626", name: "Disagree" }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "neutral", stackId: "s", fill: "#6B7280", name: "Neutral" }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "agree", stackId: "s", fill: "#65A30D", name: "Agree" }),
+      /*#__PURE__*/React.createElement(Bar, { dataKey: "strongly_agree", stackId: "s", fill: "#16A34A", name: "Strongly agree" })
+    )
+  );
+}
+
+function HeatmapTable({ rows, rowAccessor, colAccessor }) {
+  const matrix = {};
+  rows.forEach(r => {
+    const rv = typeof rowAccessor === "function" ? rowAccessor(r) : r.data?.[rowAccessor];
+    const cv = typeof colAccessor === "function" ? colAccessor(r) : r.data?.[colAccessor];
+    if (rv == null || cv == null) return;
+    matrix[rv] = matrix[rv] || {};
+    matrix[rv][cv] = (matrix[rv][cv] || 0) + 1;
+  });
+  const rKeys = Array.from(new Set(rows.map(r => typeof rowAccessor === "function" ? rowAccessor(r) : r.data?.[rowAccessor]).filter(v => v != null)));
+  const cKeys = Array.from(new Set(rows.map(r => typeof colAccessor === "function" ? colAccessor(r) : r.data?.[colAccessor]).filter(v => v != null)));
+  let maxCount = 0;
+  rKeys.forEach(rk => cKeys.forEach(ck => {
+    const v = matrix[rk]?.[ck] || 0;
+    if (v > maxCount) maxCount = v;
+  }));
+  const cellBg = (v) => {
+    if (!v) return TH.cd;
+    const intensity = maxCount > 0 ? v / maxCount : 0;
+    const r = Math.round(217 * intensity + 26 * (1 - intensity));
+    const g = Math.round(119 * intensity + 26 * (1 - intensity));
+    const b = Math.round(6 * intensity + 26 * (1 - intensity));
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+  if (rKeys.length === 0 || cKeys.length === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: { color: TH.td, fontSize: 11, textAlign: "center", padding: 20 }
+    }, "Yeterli veri yok");
+  }
+  return /*#__PURE__*/React.createElement("div", { style: { overflowX: "auto", height: "100%" } },
+    /*#__PURE__*/React.createElement("table", {
+      style: { width: "100%", borderCollapse: "collapse", fontSize: 11, color: TH.tx }
+    },
+      /*#__PURE__*/React.createElement("thead", null,
+        /*#__PURE__*/React.createElement("tr", null,
+          /*#__PURE__*/React.createElement("th", { style: { padding: 6, textAlign: "left", color: TH.tm, fontWeight: 500 } }, ""),
+          cKeys.map(ck => /*#__PURE__*/React.createElement("th", {
+            key: ck,
+            style: { padding: 6, textAlign: "center", color: TH.tm, fontWeight: 500, fontSize: 10 }
+          }, _trunc(ck, 18)))
+        )
+      ),
+      /*#__PURE__*/React.createElement("tbody", null,
+        rKeys.map(rk => /*#__PURE__*/React.createElement("tr", { key: rk },
+          /*#__PURE__*/React.createElement("td", {
+            style: { padding: 6, color: TH.tm, fontSize: 10, fontWeight: 500 }
+          }, _trunc(rk, 24)),
+          cKeys.map(ck => {
+            const v = matrix[rk]?.[ck] || 0;
+            return /*#__PURE__*/React.createElement("td", {
+              key: ck,
+              style: {
+                padding: "8px 6px",
+                textAlign: "center",
+                background: cellBg(v),
+                color: v > maxCount * 0.5 ? "#fff" : TH.tm,
+                fontWeight: 600,
+                border: `1px solid ${TH.bg}`,
+                fontSize: 11
+              }
+            }, v || "");
+          })
+        ))
+      )
+    )
+  );
+}
+
+function StatTabs({ tab, setTab }) {
+  const tabs = [
+    { id: "demo", label: "Demografi" },
+    { id: "practice", label: "Pratik" },
+    { id: "attitude", label: "Tutum + Vakalar" },
+    { id: "cross", label: "Çapraz analiz" }
+  ];
+  return /*#__PURE__*/React.createElement("div", {
+    style: { display: "flex", gap: 4, marginBottom: 18, borderBottom: `1px solid ${TH.br}` }
+  }, tabs.map(t => /*#__PURE__*/React.createElement("button", {
+    key: t.id,
+    onClick: () => setTab(t.id),
     style: {
-      color: TH.tm,
-      fontSize: 12,
-      fontWeight: 500,
-      margin: "0 0 10px"
+      padding: "10px 16px",
+      background: tab === t.id ? TH.cd : "transparent",
+      border: "none",
+      borderBottom: tab === t.id ? `2px solid ${TH.ac}` : "2px solid transparent",
+      color: tab === t.id ? TH.ac : TH.tm,
+      fontSize: 13,
+      fontWeight: tab === t.id ? 600 : 400,
+      cursor: "pointer",
+      transition: "all 0.15s"
     }
-  }, t), /*#__PURE__*/React.createElement("div", {
-    style: {
-      height: 110,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: TH.td,
-      fontSize: 11
-    }
-  }, "Veri bekleniyor"))))));
+  }, t.label)));
+}
+
+function StatPage() {
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("demo");
+  useEffect(() => {
+    (async () => {
+      try {
+        const d = await sbGet("responses", "select=*&completed=eq.true&order=created_at.desc");
+        setRows(Array.isArray(d) ? d : []);
+      } catch (e) {
+        console.error("Stat load error:", e);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const totalCount = rows.length;
+
+  if (loading) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: { color: TH.tm, fontSize: 13, padding: 20 }
+    }, "Yükleniyor…");
+  }
+  if (totalCount === 0) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: { color: TH.tm, fontSize: 13, padding: 20, textAlign: "center" }
+    }, "Henüz tamamlanmış yanıt yok.");
+  }
+
+  const exportCSV = () => {
+    if (!rows.length) return;
+    const keys = Object.keys(rows[0]);
+    const csv = [keys.join(","), ...rows.map(r => keys.map(k => {
+      const v = r[k];
+      return typeof v === "object" ? `"${JSON.stringify(v).replace(/"/g, "'")}"` : v == null ? "" : `"${String(v).replace(/"/g, "'")}"`;
+    }).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `pmal_stats_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  };
+
+  return /*#__PURE__*/React.createElement("div", null,
+    /*#__PURE__*/React.createElement("div", {
+      style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }
+    },
+      /*#__PURE__*/React.createElement("div", null,
+        /*#__PURE__*/React.createElement("h3", {
+          style: { color: TH.tx, fontSize: 15, fontWeight: 600, margin: 0 }
+        }, "İstatistikler"),
+        /*#__PURE__*/React.createElement("p", {
+          style: { color: TH.tm, fontSize: 12, margin: "4px 0 0" }
+        }, `${totalCount} tamamlanmış yanıt`)
+      ),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: exportCSV,
+        style: {
+          padding: "8px 14px", background: TH.ac, border: "none", borderRadius: 8,
+          color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer"
+        }
+      }, "CSV indir")
+    ),
+
+    /*#__PURE__*/React.createElement(StatTabs, { tab, setTab }),
+
+    tab === "demo" && /*#__PURE__*/React.createElement("div", {
+      style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }
+    },
+      /*#__PURE__*/React.createElement(StatCard, { title: "A2 — Deneyim yılı" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "a2") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "A3 — Kurum tipi" },
+        /*#__PURE__*/React.createElement(DonutChart, { data: _hist(rows, "a3") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "A4 — Ülke dağılımı (top 15)", fullWidth: true, height: 320 },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "a4").slice(0, 15) })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "A5 — Yıllık ankle fx volume" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "a5") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "A6 — Subspecialty" },
+        /*#__PURE__*/React.createElement(DonutChart, { data: _hist(rows, "a6") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "A7 — Preoperatif CT rutin" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "a7") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "B1 — Aylık PM kırığı hacmi" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "b1") })
+      )
+    ),
+
+    tab === "practice" && /*#__PURE__*/React.createElement("div", {
+      style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }
+    },
+      /*#__PURE__*/React.createElement(StatCard, { title: "D1 — Boyut eşiği (headline)", subtitle: "Bu makalenin baş bulgularından biri", fullWidth: true, height: 280 },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "d1") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "C1 — Kullanılan sınıflamalar (multi)" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _histMulti(rows, "c1") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "D3 — Karar faktörleri (multi)" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _histMulti(rows, "d3") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "D4 — İnterkalar kriterler (multi)" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _histMulti(rows, "d4") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "D5 — İnterkalar pratiği" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "d5") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "E1 — Teknik tercihi" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "e1") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "E2 — Cerrahi yaklaşım" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "e2") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "E3 — Pozisyon" },
+        /*#__PURE__*/React.createElement(DonutChart, { data: _hist(rows, "e3") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "F1 — Fiksasyon sırası" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "f1") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "F2 — Sindesmoz değerlendirme" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "f2") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "F3 — PM sindesmoz ihtiyacını azaltır mı?" },
+        /*#__PURE__*/React.createElement(DonutChart, { data: _hist(rows, "f3") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "F4 — Chaput değerlendirme" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "f4") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "F5 — Chaput yönetimi" },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _hist(rows, "f5") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "H5 — Pratiğiniz 10 yılda değişti mi?" },
+        /*#__PURE__*/React.createElement(DonutChart, { data: _hist(rows, "h5") })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, { title: "H6_driver — Etkileyen gelişmeler (multi, headline)", fullWidth: true, height: 360 },
+        /*#__PURE__*/React.createElement(HBarChart, { data: _histMulti(rows, "h6_driver") })
+      )
+    ),
+
+    tab === "attitude" && /*#__PURE__*/React.createElement("div", null,
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "Likert tutumlar (H1–H8)",
+        subtitle: "Diverging stacked bar — kırmızı (sol) = disagree, yeşil (sağ) = agree",
+        fullWidth: true,
+        height: 320
+      },
+        /*#__PURE__*/React.createElement(LikertChart, {
+          rows,
+          items: [
+            { id: "h1", label: "Fragment boyutu PM fiksasyon kararında en önemli faktördür" },
+            { id: "h2", label: "Fragment morfolojisi boyuttan daha önemlidir" },
+            { id: "h3", label: "Direkt posterior yaklaşım perkütan tekniklerden üstündür" },
+            { id: "h7", label: "Direkt PM fiksasyonu morbiditesi açık yaklaşım kullanımımı sınırlar" },
+            { id: "h8", label: "Seçilmiş morfolojilerde direkt redüksiyon morbiditeyi geride bırakır" }
+          ]
+        })
+      ),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14, marginTop: 14 }
+      },
+        [1, 2, 3, 4].map(i =>
+          /*#__PURE__*/React.createElement(StatCard, {
+            key: i,
+            title: `Vaka ${i} — Fix?`,
+            height: 180
+          },
+            /*#__PURE__*/React.createElement(DonutChart, {
+              data: _hist(rows, `g${i}_case${i}_fix`)
+            })
+          )
+        )
+      ),
+      /*#__PURE__*/React.createElement("div", {
+        style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginTop: 14 }
+      },
+        [1, 2, 3, 4].map(i =>
+          /*#__PURE__*/React.createElement(StatCard, {
+            key: `app-${i}`,
+            title: `Vaka ${i} — Yaklaşım`,
+            height: 220
+          },
+            /*#__PURE__*/React.createElement(HBarChart, {
+              data: _hist(rows, `g${i}_case${i}_approach`)
+            })
+          )
+        )
+      )
+    ),
+
+    tab === "cross" && /*#__PURE__*/React.createElement("div", {
+      style: { display: "grid", gridTemplateColumns: "1fr", gap: 14 }
+    },
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "A6 (Subspecialty) × D1 (Boyut eşiği)",
+        subtitle: "F&A cerrahları daha düşük eşik kullanıyor mu?",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, { rows, rowAccessor: "a6", colAccessor: "d1" })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "A7 (CT rutin) × C1 (ilk sınıflama)",
+        subtitle: "Rutin CT yapanlar daha çok Bartoníček/Rammelt kullanıyor mu?",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, {
+          rows,
+          rowAccessor: "a7",
+          colAccessor: (r) => {
+            const c1 = r.data?.c1 || r.c1_classification;
+            return Array.isArray(c1) && c1.length > 0 ? c1[0] : null;
+          }
+        })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "A2 (Deneyim) × H5 (Pratik değişim)",
+        subtitle: "Genç vs deneyimli cerrahlar arasında pratik değişim farkı",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, { rows, rowAccessor: "a2", colAccessor: "h5" })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "B1 (Aylık hacim) × E2 (Yaklaşım)",
+        subtitle: "Yüksek hacimli cerrahlar hangi yaklaşımı kullanıyor?",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, { rows, rowAccessor: "b1", colAccessor: "e2" })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "A6 (Subspecialty) × E2 (Yaklaşım)",
+        subtitle: "Subspecialty cerrahi yaklaşımı belirler mi?",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, { rows, rowAccessor: "a6", colAccessor: "e2" })
+      ),
+      /*#__PURE__*/React.createElement(StatCard, {
+        title: "D1 (Boyut eşiği) × E1 (Teknik)",
+        subtitle: "Düşük eşik = açık teknik mi?",
+        fullWidth: true, height: 320
+      },
+        /*#__PURE__*/React.createElement(HeatmapTable, { rows, rowAccessor: "d1", colAccessor: "e1" })
+      )
+    )
+  );
 }
 
 // ── FEEDBACK — Full embedded survey with comment toggles ──
