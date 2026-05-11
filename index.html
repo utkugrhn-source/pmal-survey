@@ -1709,7 +1709,12 @@ function SectionPage({
     tt: tt
   })));
 }
-const R2_BASE = "https://pub-6af9dc948c2247c4b18c171bdc5bfb98.r2.dev/";
+// DICOM file delivery. Originally we used the R2 public domain
+// (pub-XXX.r2.dev) but some ISPs (notably several in Turkey) block
+// that subdomain. We now route DICOM file requests through the
+// worker's own /file/<key> endpoint, which uses the R2 binding
+// internally and thus avoids any DNS-level block on r2.dev.
+const R2_BASE = "https://pmal-r2-api.utkugrhn.workers.dev/file/";
 const WORKER_API = "https://pmal-r2-api.utkugrhn.workers.dev/";
 
 // Window presets (WW / WC)
