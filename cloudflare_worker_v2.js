@@ -44,15 +44,19 @@ export default {
       }
 
       try {
-        // Support HTTP Range requests for partial downloads (some viewers use this)
+        // Only honor Range if client explicitly sent the header.
+        // Some viewers (Cornerstone WADO loader) choke on 206 responses
+        // when they never asked for a partial body.
         const rangeHeader = request.headers.get("Range");
         const r2Options = {};
+        let isRangeRequest = false;
         if (rangeHeader) {
           const m = rangeHeader.match(/bytes=(\d+)-(\d*)/);
           if (m) {
             const offset = parseInt(m[1], 10);
             const length = m[2] ? parseInt(m[2], 10) - offset + 1 : undefined;
             r2Options.range = length !== undefined ? { offset, length } : { offset };
+            isRangeRequest = true;
           }
         }
 
@@ -68,7 +72,7 @@ export default {
         headers.set("Accept-Ranges", "bytes");
         headers.set("Cache-Control", "public, max-age=3600");
 
-        if (obj.range) {
+        if (isRangeRequest && obj.range) {
           headers.set(
             "Content-Range",
             `bytes ${obj.range.offset}-${obj.range.offset + obj.range.length - 1}/${obj.size}`
@@ -76,7 +80,7 @@ export default {
           return new Response(obj.body, { status: 206, headers });
         }
 
-        return new Response(obj.body, { headers });
+        return new Response(obj.body, { status: 200, headers });
       } catch (e) {
         return new Response("Server error: " + e.message, {
           status: 500,
