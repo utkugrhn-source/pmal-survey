@@ -46,7 +46,7 @@ const sbGet = async (table, query = "") => {
   return r.json();
 };
 const sbPost = async (table, body) => {
-  await fetch(`${SB_URL}/rest/v1/${table}`, {
+  return await fetch(`${SB_URL}/rest/v1/${table}`, {
     method: "POST",
     headers: {
       ...sbHeaders,
@@ -55,6 +55,12 @@ const sbPost = async (table, body) => {
     body: JSON.stringify(body)
   });
 };
+// Alias used by FeedPage submit handler — returns Response so caller can inspect .ok / .status
+const sbFetch = (table, method, body) => fetch(`${SB_URL}/rest/v1/${table}`, {
+  method,
+  headers: { ...sbHeaders, "Prefer": "return=minimal" },
+  body: body ? JSON.stringify(body) : undefined
+});
 const TH = {
   bg: "#0a0a0a",
   sf: "#141414",
@@ -2136,9 +2142,28 @@ const FB_PRACTICE_EVOLUTION = [{
 function CommentBox({
   qid,
   openId,
-  setOpenId
+  setOpenId,
+  comments,
+  setComments
 }) {
   const isOpen = openId === qid;
+  const existing = comments[qid] || "";
+  const hasComment = existing.trim().length > 0;
+  const update = (v) => {
+    const next = { ...comments };
+    if (v.trim().length === 0) {
+      delete next[qid];
+    } else {
+      next[qid] = v;
+    }
+    setComments(next);
+  };
+  const remove = () => {
+    const next = { ...comments };
+    delete next[qid];
+    setComments(next);
+    setOpenId(null);
+  };
   return /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6
@@ -2148,44 +2173,50 @@ function CommentBox({
     style: {
       padding: "3px 10px",
       borderRadius: 5,
-      border: `1px solid ${TH.br}`,
-      background: isOpen ? `${TH.ac}22` : "transparent",
-      color: isOpen ? TH.ac : TH.td,
+      border: `1px solid ${hasComment ? TH.ac : TH.br}`,
+      background: isOpen ? `${TH.ac}22` : hasComment ? `${TH.ac}11` : "transparent",
+      color: isOpen || hasComment ? TH.ac : TH.td,
       fontSize: 10,
       cursor: "pointer"
     }
-  }, "\uD83D\uDCAC ", isOpen ? "Kapat" : "Yorum ekle"), isOpen && /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCAC ", isOpen ? "Kapat" : hasComment ? `Yorum (${existing.length} karakter)` : "Yorum ekle"), isOpen && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: 6,
       display: "flex",
-      gap: 6
+      gap: 6,
+      flexDirection: "column"
     }
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    placeholder: "Yorumunuzu yaz\u0131n...",
+  }, /*#__PURE__*/React.createElement("textarea", {
+    value: existing,
+    onChange: (e) => update(e.target.value),
+    placeholder: "Yorumunuzu yazın...",
+    rows: 3,
     style: {
-      flex: 1,
-      padding: "7px 10px",
+      width: "100%",
+      padding: "8px 10px",
       borderRadius: 5,
       border: `1px solid ${TH.br}`,
       background: TH.bg,
       color: TH.tx,
-      fontSize: 10,
-      outline: "none"
+      fontSize: 11,
+      outline: "none",
+      resize: "vertical",
+      fontFamily: "inherit",
+      boxSizing: "border-box"
     }
-  }), /*#__PURE__*/React.createElement("button", {
+  }), hasComment && /*#__PURE__*/React.createElement("button", {
+    onClick: remove,
     style: {
-      padding: "7px 12px",
+      alignSelf: "flex-end",
+      padding: "4px 10px",
       borderRadius: 5,
-      border: "none",
-      background: TH.ac,
-      color: "#fff",
+      border: `1px solid ${TH.br}`,
+      background: "transparent",
+      color: TH.td,
       fontSize: 10,
-      fontWeight: 600,
-      cursor: "pointer",
-      whiteSpace: "nowrap"
+      cursor: "pointer"
     }
-  }, "Kaydet")));
+  }, "Yorumu sil")));
 }
 function ReadOnlyRadio({
   opts
@@ -2286,8 +2317,82 @@ function ReadOnlyLikert() {
     }
   }, l))));
 }
-function FeedPage() {
+function FeedPage({ user }) {
   const [openId, setOpenId] = useState(null);
+  // comments: { qid: "yorum metni", ... }
+  const [comments, setComments] = useState({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // null | 'ok' | 'err'
+
+  const commentCount = Object.keys(comments).length;
+
+  // Build qid → { qtext, section } lookup once
+  const qInfo = {};
+  FB_SECTIONS.forEach(sec => {
+    sec.questions.forEach(q => {
+      qInfo[q.id] = { qtext: q.text, section: sec.title };
+    });
+  });
+
+  const handleSubmit = async () => {
+    if (commentCount === 0) return;
+    setSubmitting(true);
+    setSubmitStatus(null);
+
+    // Build the comment payload — array of { qid, qtext, section, comment }
+    const payload = Object.entries(comments).map(([qid, comment]) => ({
+      qid,
+      qtext: qInfo[qid]?.qtext || qid,
+      section: qInfo[qid]?.section || "",
+      comment
+    }));
+
+    let supabaseOk = false;
+    try {
+      const res = await sbFetch("feedback", "POST", {
+        researcher_id: user?.id || null,
+        researcher_name: user?.name || null,
+        comments: payload,
+        comment_count: commentCount,
+        user_agent: navigator.userAgent
+      });
+      supabaseOk = res && res.ok;
+      if (!supabaseOk) {
+        console.error("Supabase feedback insert failed:", res?.status, await res?.text?.());
+      }
+    } catch (e) {
+      console.error("Supabase feedback error:", e);
+    }
+
+    // Build mailto body — formatted comments
+    const lines = [
+      `PMAL Anket Geri Bildirimi`,
+      `Gönderen: ${user?.name || "Bilinmiyor"} (${user?.id || "?"})`,
+      `Tarih: ${new Date().toLocaleString("tr-TR")}`,
+      `Toplam yorum: ${commentCount}`,
+      `Supabase kayıt: ${supabaseOk ? "Başarılı" : "BAŞARISIZ — bu mail yoksa veri kaybolur"}`,
+      ``,
+      `${"=".repeat(50)}`,
+      ``,
+    ];
+    payload.forEach((c, i) => {
+      lines.push(`[${i + 1}] ${c.section}`);
+      lines.push(`Soru (${c.qid}): ${c.qtext}`);
+      lines.push(`Yorum: ${c.comment}`);
+      lines.push("");
+    });
+
+    const subject = encodeURIComponent(`PMAL Geri Bildirim — ${user?.name || "?"} — ${commentCount} yorum`);
+    const body = encodeURIComponent(lines.join("\n"));
+    const mailto = `mailto:utkugrhn@gmail.com?subject=${subject}&body=${body}`;
+
+    // Trigger the mailto link
+    window.location.href = mailto;
+
+    setSubmitting(false);
+    setSubmitStatus(supabaseOk ? "ok" : "partial");
+  };
+
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
     style: {
       color: TH.tx,
@@ -2301,7 +2406,7 @@ function FeedPage() {
       fontSize: 12,
       margin: "0 0 18px"
     }
-  }, "Anketin tam kopyas\u0131. Her sorunun alt\u0131ndaki yorum butonuyla geri bildirim b\u0131rakabilirsiniz."), FB_SECTIONS.map(sec => /*#__PURE__*/React.createElement("div", {
+  }, "Anketin tam kopyası. Her sorunun altındaki yorum butonuyla geri bildirim bırakabilirsiniz. Hepsini bitirince en alttaki butona basarak hepsini gönderin."), FB_SECTIONS.map(sec => /*#__PURE__*/React.createElement("div", {
     key: sec.id,
     style: {
       background: TH.cd,
@@ -2346,8 +2451,53 @@ function FeedPage() {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: q.id,
     openId: openId,
-    setOpenId: setOpenId
-  }))))), /*#__PURE__*/React.createElement("div", {
+    setOpenId: setOpenId, comments: comments, setComments: setComments
+  }))))),
+    // Submit footer
+    /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginTop: 20,
+        padding: 18,
+        background: TH.cd,
+        border: `1px solid ${TH.br}`,
+        borderRadius: 12,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 12
+      }
+    },
+      /*#__PURE__*/React.createElement("p", {
+        style: { color: TH.tm, fontSize: 12, margin: 0, textAlign: "center" }
+      }, commentCount === 0
+        ? "Henüz yorum eklemediniz."
+        : `${commentCount} yorum hazır. Göndere basınca tüm yorumlar Utku'nun e-postasına iletilecek ve veritabanına kaydedilecek.`),
+      /*#__PURE__*/React.createElement("button", {
+        onClick: handleSubmit,
+        disabled: commentCount === 0 || submitting,
+        style: {
+          padding: "12px 28px",
+          borderRadius: 8,
+          border: "none",
+          background: commentCount === 0 || submitting ? "#444" : TH.ac,
+          color: "#fff",
+          fontSize: 13,
+          fontWeight: 600,
+          cursor: commentCount === 0 || submitting ? "not-allowed" : "pointer",
+          minWidth: 240
+        }
+      }, submitting
+        ? "Gönderiliyor..."
+        : commentCount === 0
+        ? "Yorum yok"
+        : `Tüm yorumları gönder (${commentCount})`),
+      submitStatus === "ok" && /*#__PURE__*/React.createElement("p", {
+        style: { color: "#22c55e", fontSize: 11, margin: 0 }
+      }, "✓ Kaydedildi ve e-posta açıldı. E-posta uygulamanızdan 'Gönder' butonuna basmayı unutmayın."),
+      submitStatus === "partial" && /*#__PURE__*/React.createElement("p", {
+        style: { color: "#f59e0b", fontSize: 11, margin: 0, textAlign: "center" }
+      }, "⚠ Veritabanına kaydedilemedi. E-posta açıldı — lütfen mutlaka gönderin.")
+    ), /*#__PURE__*/React.createElement("div", {
     style: {
       background: TH.cd,
       border: `1px solid ${TH.br}`,
@@ -2525,7 +2675,7 @@ function FeedPage() {
   }, q.text), /*#__PURE__*/React.createElement(ReadOnlyLikert, null), /*#__PURE__*/React.createElement(CommentBox, {
     qid: q.id,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })))));
 }
 
@@ -2768,7 +2918,7 @@ function App() {
     dashboard: /*#__PURE__*/React.createElement(DashPage, null),
     responses: /*#__PURE__*/React.createElement(RespPage, null),
     statistics: /*#__PURE__*/React.createElement(StatPage, null),
-    feedback: /*#__PURE__*/React.createElement(FeedPage, null),
+    feedback: /*#__PURE__*/React.createElement(FeedPage, { user }),
     backup: /*#__PURE__*/React.createElement(BackPage, null),
     settings: /*#__PURE__*/React.createElement(SetPage, null)
   };
