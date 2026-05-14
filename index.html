@@ -3099,6 +3099,59 @@ function App() {
   const tt = T[ll] || T.en;
   const totalSteps = STEP_KEYS.length - 1;
 
+  // ── Background DICOM prefetch ──────────────────────────────────────────
+  // Warm the browser HTTP cache for each case's primary axial series so the
+  // viewer is instant when the user reaches the case step. Runs once on
+  // App mount. Skips if user is on a metered/saveData connection.
+  useEffect(() => {
+    if (typeof navigator === "undefined") return;
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn && conn.saveData === true) return; // respect data-saver
+    let cancelled = false;
+    const aborts = [];
+    (async () => {
+      for (let i = 0; i < CASES.length; i++) {
+        if (cancelled) return;
+        const c = CASES[i];
+        try {
+          const ac = new AbortController();
+          aborts.push(ac);
+          const r = await fetch(`${WORKER_API}?prefix=${c.r2folder}`, { signal: ac.signal });
+          const data = await r.json();
+          if (!data.files || data.files.length === 0) continue;
+          // Prefer primary axial samples by filename pattern; fall back to first N.
+          const axialPicks = data.files.filter(f =>
+            /\/Seri[45]_\d+\.dcm$/.test(f.key) ||  // new naming (cases 5-7)
+            /_0002_\d{6}_/.test(f.key)               // old naming (cases 1-4)
+          );
+          const sample = (axialPicks.length ? axialPicks : data.files).slice(0, 6);
+          for (const f of sample) {
+            if (cancelled) return;
+            try {
+              const ac2 = new AbortController();
+              aborts.push(ac2);
+              // Low-priority background fetch; populates HTTP cache for viewer.
+              fetch(`${R2_BASE}${f.key}`, {
+                signal: ac2.signal,
+                priority: "low",
+                cache: "force-cache",
+                credentials: "omit"
+              }).catch(() => {});
+            } catch (e) {}
+          }
+        } catch (e) {
+          // ignore per-case prefetch failures
+        }
+        // pace between cases so we don't saturate the connection
+        await new Promise(r => setTimeout(r, 500));
+      }
+    })();
+    return () => {
+      cancelled = true;
+      aborts.forEach(a => { try { a.abort(); } catch (e) {} });
+    };
+  }, []);
+
   // Completion per section (recalculated each render when answers change)
   const completion = React.useMemo(() => computeSectionCompletion(answers), [answers]);
 
@@ -3128,7 +3181,7 @@ function App() {
       let targetStep = sectionToStep[incomplete];
       if (incomplete === 'H') {
         // H now means Cases (was G before restructure)
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < CASES.length; i++) {
           if (completion.cases[`case${i + 1}`].state !== 'complete') {
             targetStep = 9 + i;
             break;
