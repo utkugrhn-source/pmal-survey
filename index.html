@@ -2745,13 +2745,15 @@ function DicomViewerEmbed({ caseId, r2folder }) {
             const plane = detectPlane({ iop, desc, ippDelta });
             const thickNum = parseFloat(thick) || 0;
 
-            // Skip very-thin-slice reconstruction series (<0.5mm) — they
-            // produce thousands of slices that are tedious to scroll and
-            // duplicate anatomical info. Threshold relaxed from 1.5 → 0.5
-            // to keep coronal/sagittal reformats from cases 5-7 (e.g. bk
-            // Seri6 coronal reformat at 0.79mm is the ONLY non-axial series
-            // for that case; filtering it would lose plane coverage).
             if (thickNum > 0 && thickNum < 0.5) continue;
+
+            // Parse mid-slice PixelSpacing + Rows + Cols for cross-ref seeding
+            const psStr = dsMid.string('x00280030') || '1\\1';
+            const psParts = psStr.split('\\').map(parseFloat);
+            const rowsM = parseInt(dsMid.string('x00280010')) || 512;
+            const colsM = parseInt(dsMid.string('x00280011')) || 512;
+            const iopArr = (iop || '').split('\\').map(Number);
+            const ippMid = (dsMid.string('x00200032') || '').split('\\').map(Number);
 
             classified.push({
               sn: s.sn,
@@ -2759,7 +2761,13 @@ function DicomViewerEmbed({ caseId, r2folder }) {
               plane,
               desc,
               thick: thickNum,
-              count: s.files.length
+              count: s.files.length,
+              // Seed metadata for cross-ref before cornerstone mounts
+              seedMeta: (iopArr.length === 6 && ippMid.length === 3) ? {
+                plane, iop: iopArr, ipp: ippMid,
+                pixelSpacing: psParts.length === 2 ? psParts : [1, 1],
+                rows: rowsM, cols: colsM
+              } : null
             });
           } catch (e) {
             // skip this series
@@ -2801,6 +2809,14 @@ function DicomViewerEmbed({ caseId, r2folder }) {
         list.forEach(s => { s.key = s.planeIndex > 0 ? `${s.plane}-${s.planeIndex}` : s.plane; });
 
         setSeriesList(list);
+        // Seed initial planeMeta for ALL planes so cross-ref lines appear
+        // immediately on the first tab the user visits (without having to
+        // tap each tab to populate the data).
+        const seed = {};
+        list.forEach(item => {
+          if (item.seedMeta && !seed[item.plane]) seed[item.plane] = item.seedMeta;
+        });
+        if (Object.keys(seed).length) setPlaneMeta(seed);
         // Default to axial if available, else first
         const axialFirst = list.find(s => s.plane === 'axial');
         if (axialFirst) setActivePlane(axialFirst.key);
