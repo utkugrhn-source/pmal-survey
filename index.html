@@ -2515,13 +2515,8 @@ function DicomSeriesViewer({
       h('div', null, `W:${info.ww} L:${info.wc}`),
       h('div', null, `Zoom: ${(info.zoom * 100).toFixed(0)}%`)
     ),
-    // Background preload progress (shows during cache warming)
-    !loading && loadProgress < 100 && loadProgress > 0 && h('div', {
-      className: 'absolute bottom-8 left-2 z-20 text-xs font-mono text-gray-400',
-      style: { background: 'rgba(0,0,0,0.6)', padding: '3px 8px', borderRadius: 4 }
-    },
-      lang === 'tr' ? `Ön-yükleme %${loadProgress}` : `Preloading ${loadProgress}%`
-    ),
+    // (Legacy per-series 'Preloading' overlay removed — case-level preload modal
+    // already ensures all DICOM slices are cached before the viewer renders.)
     // Measurement mode banner (top-center)
     measureActive && h('div', {
       className: 'absolute top-2 left-1/2 z-30 text-xs font-bold px-3 py-1 rounded',
