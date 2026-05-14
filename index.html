@@ -1844,7 +1844,9 @@ function DicomSeriesViewer({
   fullscreen,
   setFullscreen,
   isMobile,
-  lang
+  lang,
+  crossRefs,
+  onSliceMeta
 }) {
   const containerRef = useRef(null);
   const canvasOverlayRef = useRef(null);
@@ -2147,16 +2149,91 @@ function DicomSeriesViewer({
       ctx.fillText(text, c.x + 17, c.y - 7);
       setMeasurement(text);
     }
+    // Cross-reference lines from other planes
+    const refs = crossRefsRef.current;
+    if (refs && refs.length) {
+      const enabled = cornerstone.getEnabledElement(el);
+      const img = enabled && enabled.image;
+      if (img) {
+        const rows = img.rows || img.height || 512;
+        const cols = img.columns || img.width || 512;
+        ctx.save();
+        ctx.setLineDash([6, 4]);
+        ctx.lineWidth = 1.5;
+        refs.forEach(ref => {
+          ctx.strokeStyle = ref.color || '#5BC0EB';
+          ctx.beginPath();
+          if (ref.type === 'horizontal') {
+            const a = toCanvas(0, ref.pos);
+            const b = toCanvas(cols - 1, ref.pos);
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          } else {
+            const a = toCanvas(ref.pos, 0);
+            const b = toCanvas(ref.pos, rows - 1);
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+          }
+          ctx.stroke();
+          if (ref.label) {
+            const labelPos = ref.type === 'horizontal' ? toCanvas(8, ref.pos) : toCanvas(ref.pos, 8);
+            ctx.setLineDash([]);
+            ctx.fillStyle = 'rgba(0,0,0,0.7)';
+            ctx.font = 'bold 10px sans-serif';
+            const tw = ctx.measureText(ref.label).width;
+            ctx.fillRect(labelPos.x + 4, labelPos.y - 11, tw + 6, 14);
+            ctx.fillStyle = ref.color || '#5BC0EB';
+            ctx.fillText(ref.label, labelPos.x + 7, labelPos.y);
+            ctx.setLineDash([6, 4]);
+          }
+        });
+        ctx.restore();
+      }
+    }
   }, []);
 
-  // Cornerstone image rendered -> redraw overlay
+  // Ref for cross-refs (so the useCallback above always reads the latest without re-creating)
+  const crossRefsRef = useRef([]);
+  useEffect(() => {
+    crossRefsRef.current = crossRefs || [];
+    drawMeasurementOverlay();
+  }, [crossRefs, drawMeasurementOverlay]);
+
+  // Cornerstone image rendered -> redraw overlay + notify parent of slice metadata
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    const handler = () => drawMeasurementOverlay();
+    const handler = () => {
+      drawMeasurementOverlay();
+      try {
+        const enabled = cornerstone.getEnabledElement(el);
+        const img = enabled && enabled.image;
+        if (img && onSliceMeta) {
+          let iop = img.imageOrientationPatient;
+          let ipp = img.imagePositionPatient;
+          if ((!iop || !ipp) && img.data && img.data.string) {
+            const iopStr = img.data.string('x00200037');
+            const ippStr = img.data.string('x00200032');
+            if (iopStr) iop = iopStr.split('\\').map(Number);
+            if (ippStr) ipp = ippStr.split('\\').map(Number);
+          }
+          const ps = [img.rowPixelSpacing || 1, img.columnPixelSpacing || 1];
+          if (iop && ipp && iop.length === 6 && ipp.length === 3) {
+            onSliceMeta({
+              plane,
+              ipp,
+              iop,
+              pixelSpacing: ps,
+              rows: img.rows || img.height,
+              cols: img.columns || img.width
+            });
+          }
+        }
+      } catch (e) {}
+    };
     el.addEventListener('cornerstoneimagerendered', handler);
     return () => el.removeEventListener('cornerstoneimagerendered', handler);
-  }, [drawMeasurementOverlay]);
+  }, [drawMeasurementOverlay, plane, onSliceMeta]);
 
   // Mouse and touch handlers
   useEffect(() => {
@@ -2553,6 +2630,18 @@ function DicomViewerEmbed({ caseId, r2folder }) {
   // Case-level preload tracking: ALL slices of ALL selected series must be
   // cached before the viewer is rendered. progress = { loaded, total }
   const [preload, setPreload] = useState({ loaded: 0, total: 0, done: false });
+  // Cross-reference state: each plane reports its current slice IPP/IOP/PixelSpacing
+  // via handleSliceMeta. The active plane gets crossRefs computed from the OTHER planes.
+  const [planeMeta, setPlaneMeta] = useState({});
+  const handleSliceMeta = useCallback((meta) => {
+    setPlaneMeta(prev => {
+      const cur = prev[meta.plane];
+      if (cur && cur.ipp && Math.abs((cur.ipp[0]||0) - (meta.ipp[0]||0)) < 0.01
+              && Math.abs((cur.ipp[1]||0) - (meta.ipp[1]||0)) < 0.01
+              && Math.abs((cur.ipp[2]||0) - (meta.ipp[2]||0)) < 0.01) return prev;
+      return { ...prev, [meta.plane]: meta };
+    });
+  }, []);
   const [tool, setTool] = useState('wl'); // wl | zoom | pan
   const [wlPreset, setWlPreset] = useState(WL_PRESETS[0]); // Bone default
   const [invert, setInvert] = useState(false);
@@ -2791,6 +2880,43 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     wl: { tr: 'W/L', en: 'W/L' },
     zoom: { tr: 'Zoom', en: 'Zoom' },
     pan: { tr: 'Pan', en: 'Pan' }
+  };
+
+  // Compute cross-reference lines for the active plane based on OTHER planes' positions.
+  // Math: ipp[axis] + r*pixelSpacing[0]*iop[3+axis] + c*pixelSpacing[1]*iop[axis] = target_value
+  // Solve for r (horizontal line) or c (vertical line) when axis aligns with one direction.
+  const computeCrossRefs = (activePlane) => {
+    const meta = planeMeta[activePlane];
+    if (!meta) return [];
+    const { iop, ipp, pixelSpacing, rows, cols } = meta;
+    if (!iop || !ipp || !pixelSpacing) return [];
+    const targets = [];
+    if (activePlane !== 'axial' && planeMeta.axial) {
+      targets.push({ axis: 2, value: planeMeta.axial.ipp[2], color: '#5BC0EB', label: 'Ax' });
+    }
+    if (activePlane !== 'sagittal' && planeMeta.sagittal) {
+      targets.push({ axis: 0, value: planeMeta.sagittal.ipp[0], color: '#FF6B9D', label: 'Sag' });
+    }
+    if (activePlane !== 'coronal' && planeMeta.coronal) {
+      targets.push({ axis: 1, value: planeMeta.coronal.ipp[1], color: '#88E060', label: 'Cor' });
+    }
+    return targets.map(t => {
+      const rowFac = pixelSpacing[0] * iop[3 + t.axis];
+      const colFac = pixelSpacing[1] * iop[t.axis];
+      const delta = t.value - ipp[t.axis];
+      if (Math.abs(rowFac) < 1e-6 && Math.abs(colFac) < 1e-6) return null;
+      if (Math.abs(rowFac) < 1e-6) {
+        const c = delta / colFac;
+        if (c < 0 || c > cols - 1) return null;
+        return { type: 'vertical', pos: c, color: t.color, label: t.label };
+      }
+      if (Math.abs(colFac) < 1e-6) {
+        const r = delta / rowFac;
+        if (r < 0 || r > rows - 1) return null;
+        return { type: 'horizontal', pos: r, color: t.color, label: t.label };
+      }
+      return null;
+    }).filter(x => x);
   };
 
   // Inline SVG icons (lucide-style, 16x16, currentColor)
