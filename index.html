@@ -1100,6 +1100,46 @@ const CASES = [{
   prefix: "g4_case4",
   hasSequence: false,
   r2folder: "case1/em/"
+}, {
+  id: "case5",
+  title: { tr: "VAKA 5", en: "CASE 5" },
+  color: "#1F77B4",
+  bg: "#EAF2F8",
+  vig: {
+    tr: "26 yaşında erkek hasta, basit düşme sonucu sağ ayak bileğinde kapalı bimalleolar kırık (lateral malleol + posterior malleol; medial malleol intakt) ile başvurmuştur. Ek hastalığı, nörovasküler defisiti veya yumuşak doku problemi yoktur. Görüntülemede lateral malleol kırığı ve posterior malleol fragmanı mevcuttur. (Klasifikasyon ve BT ölçümleri entegrasyonda doldurulacaktır.)",
+    en: "A 26-year-old male presented with a closed bimalleolar fracture of the right ankle (lateral malleolus + posterior malleolus; medial malleolus intact) following a simple ground-level fall. He has no comorbidities, no neurovascular deficit, and no soft-tissue compromise. Imaging shows a lateral malleolar fracture and a posterior malleolar fragment. (Classifications and CT measurements to be filled at integration.)"
+  },
+  prefix: "g5_case5",
+  hasSequence: true,
+  pattern: "bimal",
+  r2folder: "case1/bk/"
+}, {
+  id: "case6",
+  title: { tr: "VAKA 6", en: "CASE 6" },
+  color: "#8C564B",
+  bg: "#F4ECEB",
+  vig: {
+    tr: "55 yaşında kadın hasta, burkulma sonrası sol ayak bileğinde kapalı trimalleolar kırıklı çıkık gelişmiştir. Redüksiyon sonrası eksternal fiksatör uygulanmıştır; yumuşak doku stabilize olduğunda definitif cerrahi planlama aşamasındadır. Özgeçmiş: von Willebrand hastalığı ve kronik miyeloid lösemi (imatinib altında). (Klasifikasyon ve BT ölçümleri entegrasyonda doldurulacaktır.)",
+    en: "A 55-year-old female sustained a closed trimalleolar fracture-dislocation of the left ankle following a twisting injury. Initial management was external fixation; she now presents for definitive surgical planning once soft tissues are stable. Past medical history: von Willebrand disease and chronic myeloid leukaemia, currently on imatinib. (Classifications and CT measurements to be filled at integration.)"
+  },
+  prefix: "g6_case6",
+  hasSequence: true,
+  pattern: "trimal",
+  hasComorbidQ: true,
+  r2folder: "case1/ni/"
+}, {
+  id: "case7",
+  title: { tr: "VAKA 7", en: "CASE 7" },
+  color: "#2CA02C",
+  bg: "#EAF7EA",
+  vig: {
+    tr: "39 yaşında kadın hasta, burkulma sonrası sol ayak bileğinde kapalı bimalleolar kırık (lateral malleol + posterior malleol; medial malleol intakt) ile başvurmuştur. Ek hastalığı, nörovasküler defisiti veya yumuşak doku problemi yoktur. (Klasifikasyon ve BT ölçümleri entegrasyonda doldurulacaktır.)",
+    en: "A 39-year-old female presented with a closed bimalleolar fracture of the left ankle (lateral malleolus + posterior malleolus; medial malleolus intact) following a twisting injury. No comorbidities, no neurovascular deficit, soft tissues uncompromised. (Classifications and CT measurements to be filled at integration.)"
+  },
+  prefix: "g7_case7",
+  hasSequence: true,
+  pattern: "bimal",
+  r2folder: "case1/yk/"
 }];
 const CASE_OPTS = {
   pos: [{
@@ -1146,6 +1186,19 @@ const CASE_OPTS = {
   }, {
     tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
     en: "Fibula → Assess syndesmosis → PM → Medial malleolus"
+  }, {
+    tr: "Bireyselleştirilmiş — standart sıram yok",
+    en: "Individualised — no standard sequence"
+  }],
+  seqBimal: [{
+    tr: "PM önce → Lateral malleol",
+    en: "PM first → Lateral malleolus"
+  }, {
+    tr: "Lateral malleol önce → PM",
+    en: "Lateral malleolus first → PM"
+  }, {
+    tr: "Eşzamanlı / tek yaklaşımdan fiksasyon",
+    en: "Simultaneous / single-approach fixation"
   }, {
     tr: "Bireyselleştirilmiş — standart sıram yok",
     en: "Individualised — no standard sequence"
@@ -1298,7 +1351,7 @@ const PRACTICE_EVOLUTION_QS = [{
   }
 }];
 
-const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "G_evo", "case1", "case2", "case3", "case4", "I", "thanks"];
+const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "G_evo", "case1", "case2", "case3", "case4", "case5", "case6", "case7", "I", "thanks"];
 
 // ══════════════════════════════════════════════════
 // COMPONENTS
@@ -1546,7 +1599,7 @@ function ProgressBar({
   const pct = Math.round(current / total * 100);
 
   // STEP_KEYS = [langSelect(0), consent(1), A(2), B(3), C(4), D(5), E(6), F(7),
-  //              G_evo(8), case1(9), case2(10), case3(11), case4(12), I(13), thanks(14)]
+  //              G_evo(8), case1(9), case2(10), case3(11), case4(12), case5(13), case6(14), case7(15), I(16), thanks(17)]
   const sections = [
     { key: 'A', step: 2 },
     { key: 'B', step: 3 },
@@ -1555,7 +1608,7 @@ function ProgressBar({
     { key: 'E', step: 6 },
     { key: 'F', step: 7 },
     { key: 'G', step: 8 },               // Practice Evolution
-    { key: 'H', step: 9, span: [9, 12] }, // case1..case4
+    { key: 'H', step: 9, span: [9, 15] }, // case1..case7
     { key: 'I', step: 13 }               // Attitudes
   ];
 
@@ -2995,7 +3048,7 @@ function CaseCard({
     className: "font-semibold text-gray-900 text-sm"
   }, tt.seq_q), /*#__PURE__*/React.createElement(RadioGroup, {
     name: `${c.prefix}_sequence`,
-    options: CASE_OPTS.seq,
+    options: c.pattern === "bimal" ? CASE_OPTS.seqBimal : CASE_OPTS.seq,
     value: answers[`${c.prefix}_sequence`],
     onChange: v => setAnswer(`${c.prefix}_sequence`, v),
     lang: l
@@ -3006,6 +3059,14 @@ function CaseCard({
     options: CASE_OPTS.tech,
     value: answers[`${c.prefix}_technique`],
     onChange: v => setAnswer(`${c.prefix}_technique`, v),
+    lang: l
+  })), c.hasComorbidQ && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm"
+  }, l === "tr" ? "Hastanın kanama diyatezi (vWD) ve immün modülasyon (KML/imatinib) durumu, planınızı (yaklaşım veya zamanlama) değiştirir mi?" : "Given the patient's bleeding diathesis (vWD) and immunomodulation (CML on imatinib), would you modify your plan (approach or timing)?"), /*#__PURE__*/React.createElement(RadioGroup, {
+    name: `${c.prefix}_comorbid_modify`,
+    options: CASE_OPTS.comorbidModify,
+    value: answers[`${c.prefix}_comorbid_modify`],
+    onChange: v => setAnswer(`${c.prefix}_comorbid_modify`, v),
     lang: l
   })))));
 }
@@ -3124,6 +3185,22 @@ function App() {
         g4_case4_position: answers.g4_case4_position,
         g4_case4_approach: answers.g4_case4_approach,
         g4_case4_technique: answers.g4_case4_technique,
+        g5_case5_fix: answers.g5_case5_fix,
+        g5_case5_position: answers.g5_case5_position,
+        g5_case5_approach: answers.g5_case5_approach,
+        g5_case5_sequence: answers.g5_case5_sequence,
+        g5_case5_technique: answers.g5_case5_technique,
+        g6_case6_fix: answers.g6_case6_fix,
+        g6_case6_position: answers.g6_case6_position,
+        g6_case6_approach: answers.g6_case6_approach,
+        g6_case6_sequence: answers.g6_case6_sequence,
+        g6_case6_technique: answers.g6_case6_technique,
+        g6_case6_comorbid_modify: answers.g6_case6_comorbid_modify,
+        g7_case7_fix: answers.g7_case7_fix,
+        g7_case7_position: answers.g7_case7_position,
+        g7_case7_approach: answers.g7_case7_approach,
+        g7_case7_sequence: answers.g7_case7_sequence,
+        g7_case7_technique: answers.g7_case7_technique,
         h1_size_importance: answers.h1,
         h2_morphology_over_size: answers.h2,
         h3_direct_over_percutaneous: answers.h3,
