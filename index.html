@@ -2828,12 +2828,18 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     })();
   }, [r2folder]);
 
-  // Case-level preload: once seriesList is set, fetch ALL files in cache.
-  // Modal stays up until preload.done = true.
+  // Case-level preload: block the modal ONLY on the active-plane series
+  // (typically axial — the first thing the user sees). Other planes load
+  // asynchronously in the background, so the modal closes ~3-4x faster.
   useEffect(() => {
     if (!seriesList || seriesList.length === 0) return;
-    const allFiles = seriesList.flatMap(s => s.files.map(f => f.key));
-    const total = allFiles.length;
+    // Pick blocking set: prefer axial, else first series
+    const blocking = seriesList.find(s => s.plane === 'axial') || seriesList[0];
+    const blockingKeys = blocking ? blocking.files.map(f => f.key) : [];
+    const bgKeys = seriesList
+      .filter(s => s !== blocking)
+      .flatMap(s => s.files.map(f => f.key));
+    const total = blockingKeys.length;
     if (total === 0) {
       setPreload({ loaded: 0, total: 0, done: true });
       return;
@@ -2843,26 +2849,49 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     let loaded = 0;
     const aborts = [];
     const CONCURRENCY = 12;
-    const queue = [...allFiles];
-    const worker = async () => {
-      while (queue.length && !cancelled) {
-        const key = queue.shift();
-        try {
-          const ac = new AbortController();
-          aborts.push(ac);
-          await fetch(`${R2_BASE}${key}`, {
-            signal: ac.signal,
-            cache: "force-cache",
-            credentials: "omit"
-          });
-        } catch (e) { /* count as done even if abort/error */ }
+
+    const fetchOne = async (key, isBlocking) => {
+      if (cancelled) return;
+      try {
+        const ac = new AbortController();
+        aborts.push(ac);
+        await fetch(`${R2_BASE}${key}`, {
+          signal: ac.signal,
+          cache: "force-cache",
+          credentials: "omit",
+          priority: isBlocking ? "high" : "low"
+        });
+      } catch (e) {}
+      if (isBlocking && !cancelled) {
         loaded++;
-        if (!cancelled) {
-          setPreload(p => ({ loaded, total, done: loaded >= total }));
-        }
+        setPreload(p => ({ loaded, total, done: loaded >= total }));
       }
     };
-    Promise.all(Array(CONCURRENCY).fill(0).map(() => worker()));
+
+    // First wave: blocking
+    const blockingQ = [...blockingKeys];
+    const blockingWorker = async () => {
+      while (blockingQ.length && !cancelled) {
+        const k = blockingQ.shift();
+        if (k) await fetchOne(k, true);
+      }
+    };
+    const blockingDone = Promise.all(Array(CONCURRENCY).fill(0).map(() => blockingWorker()));
+
+    // Second wave: background (start AFTER blocking finishes to keep network for axial)
+    blockingDone.then(() => {
+      if (cancelled) return;
+      const bgQ = [...bgKeys];
+      const bgWorker = async () => {
+        while (bgQ.length && !cancelled) {
+          const k = bgQ.shift();
+          if (k) await fetchOne(k, false);
+        }
+      };
+      // Lower concurrency for background (don't fight with cornerstone viewer's own fetches)
+      Promise.all(Array(6).fill(0).map(() => bgWorker()));
+    });
+
     return () => {
       cancelled = true;
       aborts.forEach(a => { try { a.abort(); } catch (e) {} });
@@ -3019,11 +3048,11 @@ function DicomViewerEmbed({ caseId, r2folder }) {
           h('path', { d: 'M 25 5 A 20 20 0 0 1 45 25', fill: 'none', stroke: '#FFB547', strokeWidth: 4, strokeLinecap: 'round' })
         ),
         h('p', { className: 'text-sm text-gray-200 font-semibold' },
-          lang === 'tr' ? 'CT görüntüleri yükleniyor' : 'Loading CT images'),
+          lang === 'tr' ? 'Aksiyel kesitler yükleniyor' : 'Loading axial slices'),
         h('p', { className: 'text-xs text-gray-400 mt-1' },
           lang === 'tr'
-            ? `${preload.loaded} / ${preload.total} kesit`
-            : `${preload.loaded} / ${preload.total} slices`),
+            ? `${preload.loaded} / ${preload.total} kesit · diğer düzlemler arka planda yüklenecek`
+            : `${preload.loaded} / ${preload.total} slices · other planes will load in background`),
         // Progress bar
         h('div', {
           style: {
