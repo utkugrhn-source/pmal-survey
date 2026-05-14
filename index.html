@@ -2658,12 +2658,13 @@ function DicomViewerEmbed({ caseId, r2folder }) {
             const plane = detectPlane({ iop, desc, ippDelta });
             const thickNum = parseFloat(thick) || 0;
 
-            // Skip very-thin-slice reconstruction series (<1.0mm) — they
-            // produce >1000 slices that are tedious to scroll and duplicate
-            // anatomical info available in standard 1-3mm series. Lowered from
-            // 1.5 to 1.0 to allow 1.25mm series in cases 5/6/7 (no 3mm reformat
-            // available from radiology for those new acquisitions).
-            if (thickNum > 0 && thickNum < 1.0) continue;
+            // Skip very-thin-slice reconstruction series (<0.5mm) — they
+            // produce thousands of slices that are tedious to scroll and
+            // duplicate anatomical info. Threshold relaxed from 1.5 → 0.5
+            // to keep coronal/sagittal reformats from cases 5-7 (e.g. bk
+            // Seri6 coronal reformat at 0.79mm is the ONLY non-axial series
+            // for that case; filtering it would lose plane coverage).
+            if (thickNum > 0 && thickNum < 0.5) continue;
 
             classified.push({
               sn: s.sn,
@@ -2681,7 +2682,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
         // Score & sort within each plane; take up to 2 best per plane
         // (e.g. two oblique sagittal reformats → "Sagittal 1" and "Sagittal 2")
         const scoreSeries = (a) =>
-          (a.thick >= 1 && a.thick <= 4 ? 100 : 0) +
+          (a.thick >= 0.5 && a.thick <= 4 ? 100 : 0) +
           (a.count >= 30 && a.count <= 300 ? 50 : 0) +
           (a.count < 30 ? -100 : 0) -
           Math.abs(a.thick - 3);
