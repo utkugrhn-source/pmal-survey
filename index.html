@@ -2697,20 +2697,8 @@ function DicomViewerEmbed({ caseId, r2folder }) {
         ['axial', 'sagittal', 'coronal'].forEach(plane => {
           const arr = byPlane[plane];
           if (arr.length === 0) return;
-          // First one: primary for this plane
+          // One tab per plane only (top-scored series).
           list.push({ plane, planeIndex: 0, ...arr[0] });
-          // Second one: include if meaningfully different (different thickness,
-          // count, or clearly different oblique angle). This handles cases
-          // where hospital produced 2 reformats of the same plane at different
-          // angles for different anatomic focus.
-          if (arr.length >= 2) {
-            const a = arr[0], b = arr[1];
-            const thickDiff = Math.abs(a.thick - b.thick) > 0.5;
-            const countDiff = Math.abs(a.count - b.count) >= 2;
-            if (thickDiff || countDiff) {
-              list.push({ plane, planeIndex: 1, ...b });
-            }
-          }
         });
 
         if (list.length === 0) {
