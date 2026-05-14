@@ -3013,7 +3013,9 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     fullscreen,
     setFullscreen,
     isMobile,
-    lang
+    lang,
+    crossRefs: computeCrossRefs(series.plane),
+    onSliceMeta: handleSliceMeta
   });
 
   // Determine viewport content
