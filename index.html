@@ -2702,7 +2702,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
             files: files.sort((a, b) => a.key.localeCompare(b.key)),
             avgSize: files.reduce((s, f) => s + f.size, 0) / files.length
           }))
-          .filter(s => s.avgSize > 80000); // Exclude tiny thumbnails
+          .filter(s => s.avgSize > 10000); // Exclude tiny thumbnails (lowered from 80000 to accept bbox-cropped MPRs ~40-80KB)
 
         const classified = [];
         for (const s of candidates) {
