@@ -2696,7 +2696,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
 
         // For each significant series (>20 slices, size filter), fetch metadata from first file
         const candidates = Object.entries(bySeries)
-          .filter(([, files]) => files.length > 20)
+          .filter(([, files]) => files.length > 8)
           .map(([sn, files]) => ({
             sn,
             files: files.sort((a, b) => a.key.localeCompare(b.key)),
@@ -2778,8 +2778,8 @@ function DicomViewerEmbed({ caseId, r2folder }) {
         // (e.g. two oblique sagittal reformats → "Sagittal 1" and "Sagittal 2")
         const scoreSeries = (a) =>
           (a.thick >= 0.5 && a.thick <= 4 ? 100 : 0) +
-          (a.count >= 30 && a.count <= 300 ? 50 : 0) +
-          (a.count < 30 ? -100 : 0) -
+          (a.count >= 10 && a.count <= 300 ? 50 : 0) +
+          (a.count < 10 ? -100 : 0) -
           Math.abs(a.thick - 3);
 
         const byPlane = { axial: [], sagittal: [], coronal: [] };
