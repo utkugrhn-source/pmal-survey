@@ -1846,7 +1846,8 @@ function DicomSeriesViewer({
   isMobile,
   lang,
   crossRefs,
-  onSliceMeta
+  onSliceMeta,
+  defaultZoom
 }) {
   const containerRef = useRef(null);
   const canvasOverlayRef = useRef(null);
@@ -1897,6 +1898,10 @@ function DicomSeriesViewer({
         }
         // Ensure translation is zeroed (fitToWindow may leave small offsets)
         vp.translation = { x: 0, y: 0 };
+        // Apply case-level default zoom (e.g. 1.4× for new cases bk/yk/ni)
+        if (defaultZoom && defaultZoom > 0 && defaultZoom !== 1) {
+          vp.scale = vp.scale * defaultZoom;
+        }
         cornerstone.setViewport(el, vp);
 
         setInfo({
@@ -3162,6 +3167,8 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     tbBtn('fs', fullscreen ? '✕' : '⛶', fullscreen, () => setFullscreen(!fullscreen), lang === 'tr' ? 'Tam ekran (F)' : 'Fullscreen (F)')
   );
 
+  // Look up case's defaultZoom (for case5/6/7 with biraz zoom)
+  const caseDefaultZoom = (CASES.find(c => c.id === caseId) || {}).defaultZoom || 1;
   // Renders a single panel
   const renderPanel = (series) => h(DicomSeriesViewer, {
     key: series.key,
@@ -3181,7 +3188,8 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     isMobile,
     lang,
     crossRefs: computeCrossRefs(series.plane),
-    onSliceMeta: handleSliceMeta
+    onSliceMeta: handleSliceMeta,
+    defaultZoom: caseDefaultZoom
   });
 
   // Determine viewport content
