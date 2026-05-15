@@ -2777,7 +2777,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
         // Score & sort within each plane; take up to 2 best per plane
         // (e.g. two oblique sagittal reformats → "Sagittal 1" and "Sagittal 2")
         const scoreSeries = (a) =>
-          (a.thick >= 0.5 && a.thick <= 4 ? 100 : 0) +
+          (a.thick >= 0.5 && a.thick <= 8 ? 100 : 0) +
           (a.count >= 10 && a.count <= 300 ? 50 : 0) +
           (a.count < 10 ? -100 : 0) -
           Math.abs(a.thick - 3);
