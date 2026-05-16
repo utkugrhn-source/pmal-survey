@@ -3818,7 +3818,29 @@ function App() {
     className: "text-xl font-black text-gray-900"
   }, ll === 'tr' ? 'G — Klinik Vaka Senaryoları' : 'G — Clinical Case Vignettes'), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-gray-500 mt-1"
-  }, ll === 'tr' ? 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.' : 'Please evaluate the following clinical scenario. You may review the CT images.')), /*#__PURE__*/React.createElement(CaseCard, {
+  }, ll === 'tr' ? 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.' : 'Please evaluate the following clinical scenario. You may review the CT images.')),
+  /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-1.5 flex-wrap",
+    style: { padding: "8px 0" }
+  },
+    ...CASES.map((c, idx) => {
+      const targetStep = 9 + idx;
+      const isCurrent = step === targetStep;
+      const completion_state = (completion && completion.cases && completion.cases[c.id] && completion.cases[c.id].state) || 'empty';
+      const bg = isCurrent ? '#FFB547' : (completion_state === 'complete' ? '#10b98122' : 'rgba(0,0,0,0.06)');
+      const color = isCurrent ? '#000' : (completion_state === 'complete' ? '#065f46' : '#374151');
+      const border = isCurrent ? '2px solid #FFB547' : '1px solid rgba(0,0,0,0.1)';
+      return /*#__PURE__*/React.createElement('button', {
+        key: c.id,
+        type: 'button',
+        onClick: (e) => { e.preventDefault(); setStep(targetStep); },
+        title: (ll === 'tr' ? 'VAKA ' : 'CASE ') + (idx+1),
+        className: 'px-3 py-1.5 text-xs font-bold rounded transition',
+        style: { background: bg, color: color, border: border, cursor: 'pointer', whiteSpace: 'nowrap' }
+      }, (ll === 'tr' ? 'Vaka ' : 'Case ') + (idx+1) + (completion_state === 'complete' ? ' ✓' : ''));
+    })
+  ),
+  /*#__PURE__*/React.createElement(CaseCard, {
     c: caseForStep(step),
     lang: lang,
     answers: answers,
