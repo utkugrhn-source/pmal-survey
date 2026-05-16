@@ -1901,8 +1901,9 @@ function DicomSeriesViewer({
         }
         // Ensure translation is zeroed (fitToWindow may leave small offsets)
         vp.translation = { x: 0, y: 0 };
-        // Apply case-level default zoom (e.g. 1.4× for new cases bk/yk/ni)
-        if (defaultZoom && defaultZoom > 0 && defaultZoom !== 1) {
+        // Apply case-level default zoom — ONLY to axial. MPR slices (sag/cor)
+        // are already bone-bbox cropped so applying same zoom over-zooms them.
+        if (defaultZoom && defaultZoom > 0 && defaultZoom !== 1 && plane === 'axial') {
           vp.scale = vp.scale * defaultZoom;
         }
         cornerstone.setViewport(el, vp);
