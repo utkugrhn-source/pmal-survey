@@ -3080,57 +3080,10 @@ function DicomViewerEmbed({ caseId, r2folder }) {
       )
     );
   }
-  // Phase 2: full preload of all DICOM slices — blocks viewer until 100%
-  if (!preload.done && preload.total > 0) {
-    const pct = Math.round(preload.loaded / preload.total * 100);
-    return h('div', {
-      className: 'bg-gray-900 rounded-xl mt-4 flex items-center justify-center',
-      style: { height: 280 }
-    },
-      h('div', { style: { textAlign: 'center', width: '80%', maxWidth: 420, padding: '0 20px' } },
-        // Spinning ring icon
-        h('svg', {
-          width: 44, height: 44, viewBox: '0 0 50 50',
-          style: { display: 'block', margin: '0 auto 12px', animation: 'spin 1.2s linear infinite' }
-        },
-          h('circle', { cx: 25, cy: 25, r: 20, fill: 'none', stroke: '#333', strokeWidth: 4 }),
-          h('path', { d: 'M 25 5 A 20 20 0 0 1 45 25', fill: 'none', stroke: '#FFB547', strokeWidth: 4, strokeLinecap: 'round' })
-        ),
-        h('p', { className: 'text-sm text-gray-200 font-semibold' },
-          lang === 'tr' ? 'Aksiyel kesitler yükleniyor' : 'Loading axial slices'),
-        h('p', { className: 'text-xs text-gray-400 mt-1' },
-          lang === 'tr'
-            ? `${preload.loaded} / ${preload.total} kesit · diğer düzlemler arka planda yüklenecek`
-            : `${preload.loaded} / ${preload.total} slices · other planes will load in background`),
-        // Progress bar
-        h('div', {
-          style: {
-            marginTop: 14,
-            background: 'rgba(255,255,255,0.08)',
-            height: 8,
-            borderRadius: 4,
-            overflow: 'hidden',
-            border: '1px solid rgba(255,255,255,0.12)'
-          }
-        },
-          h('div', {
-            style: {
-              width: `${pct}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, #FFB547, #FFC97A)',
-              transition: 'width 0.25s ease-out',
-              boxShadow: '0 0 10px rgba(255,181,71,0.5)'
-            }
-          })
-        ),
-        // Percentage
-        h('div', {
-          className: 'text-amber-400 mt-2',
-          style: { fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.02em' }
-        }, `%${pct}`)
-      )
-    );
-  }
+  // (Phase 2 blocking preload modal removed — non-blocking top-right badge below.)
+  // Compute total preload across blocking + bg so the badge shows progress for
+  // BOTH axial (initial blocking) and the sag/cor background phase. Each phase
+  // sets its own preload state; we display whichever is currently in progress.
 
   if (error) {
     return h('div', {
@@ -3269,7 +3222,47 @@ function DicomViewerEmbed({ caseId, r2folder }) {
     style: wrapperStyle
   },
     toolbar,
-    h('div', { style: { flex: fullscreen ? 1 : 'initial', minHeight: 0 } }, content),
+    h('div', {
+      style: {
+        flex: fullscreen ? 1 : 'initial',
+        minHeight: 0,
+        position: 'relative'  // anchor for inline preload badge overlay
+      }
+    },
+      content,
+      // Inline non-blocking preload indicator (top-right). Visible only while
+      // a preload pass is still in progress; auto-hides when preload.done.
+      !preload.done && preload.total > 0 && h('div', {
+        style: {
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 30,
+          background: 'rgba(0,0,0,0.72)',
+          color: '#FFB547',
+          padding: '4px 10px',
+          borderRadius: 12,
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.02em',
+          border: '1px solid rgba(255,181,71,0.4)',
+          fontVariantNumeric: 'tabular-nums',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          pointerEvents: 'none',
+          backdropFilter: 'blur(2px)'
+        }
+      },
+        h('span', {
+          style: { display: 'inline-block', animation: 'spin 1.2s linear infinite' }
+        }, '⏳'),
+        h('span', null,
+          (lang === 'tr' ? 'Yükleniyor ' : 'Loading ') +
+          preload.loaded + '/' + preload.total +
+          ' (' + Math.round(preload.loaded / preload.total * 100) + '%)')
+      )
+    ),
     // Help text (desktop only, non-fullscreen)
     !fullscreen && !isMobile && h('div', {
       className: 'px-3 py-1.5 text-xs text-gray-500 border-t',
