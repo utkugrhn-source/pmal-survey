@@ -2896,9 +2896,13 @@ function DicomViewerEmbed({ caseId, r2folder }) {
 
     const fetchOne = async (key, isBlocking) => {
       if (cancelled) return;
+      const ac = new AbortController();
+      aborts.push(ac);
+      // 15s per-fetch timeout: a stuck R2 read used to hang the entire blocking
+      // preload (loaded < total -> modal never closes -> viewer never interactive).
+      // On timeout we abort + count it as "done" so the queue can drain.
+      const t = setTimeout(() => ac.abort(), 15000);
       try {
-        const ac = new AbortController();
-        aborts.push(ac);
         await fetch(`${R2_BASE}${key}`, {
           signal: ac.signal,
           cache: "force-cache",
@@ -2906,6 +2910,7 @@ function DicomViewerEmbed({ caseId, r2folder }) {
           priority: isBlocking ? "high" : "low"
         });
       } catch (e) {}
+      clearTimeout(t);
       if (isBlocking && !cancelled) {
         loaded++;
         setPreload(p => ({ loaded, total, done: loaded >= total }));
