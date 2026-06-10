@@ -517,26 +517,6 @@ const SECTIONS = {
       en: "A — Demographics"
     },
     questions: [{
-      id: "a2",
-      type: "single",
-      text: {
-        tr: "Uzman olarak kaç yıldır çalışıyorsunuz?",
-        en: "How many years have you been practicing as a specialist?"
-      },
-      opts: [{
-        tr: "< 5 yıl",
-        en: "< 5 years"
-      }, {
-        tr: "5–10 yıl",
-        en: "5–10 years"
-      }, {
-        tr: "11–20 yıl",
-        en: "11–20 years"
-      }, {
-        tr: "> 20 yıl",
-        en: "> 20 years"
-      }]
-    }, {
       id: "a3",
       type: "single",
       text: {
@@ -631,33 +611,6 @@ const SECTIONS = {
       }, {
         tr: "Pratiğimde BT erişimi sınırlı",
         en: "CT access is limited in my setting"
-      }]
-    }]
-  },
-  B: {
-    title: {
-      tr: "B — PM Kırığı Deneyimi",
-      en: "B — PM Fracture Exposure"
-    },
-    questions: [{
-      id: "b1",
-      type: "single",
-      text: {
-        tr: "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?",
-        en: "Approximately how many posterior malleolus fractures do you encounter per month?"
-      },
-      opts: [{
-        tr: "< 2",
-        en: "< 2"
-      }, {
-        tr: "2–5",
-        en: "2–5"
-      }, {
-        tr: "6–10",
-        en: "6–10"
-      }, {
-        tr: "> 10",
-        en: "> 10"
       }]
     }]
   },
@@ -1311,7 +1264,7 @@ const PRACTICE_EVOLUTION_QS = [{
   }
 }];
 
-const STEP_KEYS = ["langSelect", "consent", "A", "B", "C", "D", "E", "F", "G_evo", "case1", "case2", "case3", "case4", "I", "thanks"];
+const STEP_KEYS = ["langSelect", "consent", "A", "C", "D", "E", "F", "G_evo", "case1", "case2", "case3", "case4", "I", "thanks"];
 
 // ══════════════════════════════════════════════════
 // COMPONENTS
@@ -1480,7 +1433,6 @@ function computeSectionCompletion(answers) {
     .filter(q => !q.requiredIf || q.requiredIf(answers))
     .map(q => q.id);
   const reqA = reqIds('A');
-  const reqB = reqIds('B');
   const reqC = reqIds('C');
   const reqD = reqIds('D');
   const reqE = reqIds('E');
@@ -1536,7 +1488,6 @@ function computeSectionCompletion(answers) {
 
   return {
     A: checkSection(reqA),
-    B: checkSection(reqB),
     C: checkSection(reqC),
     D: checkSection(reqD),
     E: checkSection(reqE),
@@ -1558,40 +1509,39 @@ function ProgressBar({
 }) {
   const pct = Math.round(current / total * 100);
 
-  // STEP_KEYS = [langSelect(0), consent(1), A(2), B(3), C(4), D(5), E(6), F(7),
-  //              G_evo(8), case1(9), case2(10), case3(11), case4(12), I(13), thanks(14)]
+  // STEP_KEYS = [langSelect(0), consent(1), A(2), C(3), D(4), E(5), F(6), G_evo(7),
+  //              case1(8), case2(9), case3(10), case4(11), I(12), thanks(13)]
   const sections = [
     { key: 'A', step: 2 },
-    { key: 'B', step: 3 },
-    { key: 'C', step: 4 },
-    { key: 'D', step: 5 },
-    { key: 'E', step: 6 },
-    { key: 'F', step: 7 },
-    { key: 'G', step: 8 },               // Practice Evolution
-    { key: 'H', step: 9, span: [9, 12] }, // case1..case4
-    { key: 'I', step: 13 }               // Attitudes
+    { key: 'C', step: 3 },
+    { key: 'D', step: 4 },
+    { key: 'E', step: 5 },
+    { key: 'F', step: 6 },
+    { key: 'G', step: 7 },               // Practice Evolution
+    { key: 'H', step: 8, span: [8, 11] }, // case1..case4
+    { key: 'I', step: 12 }               // Attitudes
   ];
 
   // Short section labels for the jump bar — fit on mobile
   const SHORT = {
     tr: {
-      A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon',
+      A: 'Demografi', C: 'Sınıflama', D: 'Endikasyon',
       E: 'Teknik', F: 'Sıra', G: 'Evrim', H: 'Vakalar', I: 'Görüş'
     },
     en: {
-      A: 'Demogr', B: 'Exp', C: 'Class', D: 'Indic',
+      A: 'Demogr', C: 'Class', D: 'Indic',
       E: 'Tech', F: 'Seq', G: 'Evol', H: 'Cases', I: 'Attitude'
     }
   };
   const TIPS = {
     tr: {
-      A: 'Demografi', B: 'PM Deneyimi', C: 'Sınıflama',
+      A: 'Demografi', C: 'Sınıflama',
       D: 'Fiksasyon Endikasyonları', E: 'Teknik Tercihler',
       F: 'Fiksasyon Sırası ve Sindesmoz', G: 'Pratikteki Evrim',
       H: 'Klinik Vaka Senaryoları', I: 'Tutum ve Görüşler'
     },
     en: {
-      A: 'Demographics', B: 'PM Experience', C: 'Classification',
+      A: 'Demographics', C: 'Classification',
       D: 'Fixation Indications', E: 'Technique Preferences',
       F: 'Sequence and Syndesmotic Considerations', G: 'Practice Evolution',
       H: 'Clinical Cases', I: 'Attitudes & Opinions'
@@ -3464,7 +3414,7 @@ function App() {
   };
 
   // Section → step map for jumping on submit-guard
-  const sectionToStep = { A: 2, B: 3, C: 4, D: 5, E: 6, F: 7, G: 8, H: 9, I: 13 };
+  const sectionToStep = { A: 2, C: 3, D: 4, E: 5, F: 6, G: 7, H: 8, I: 12 };
 
   const setAnswer = useCallback((key, val) => {
     setAnswers(prev => ({
@@ -3507,14 +3457,11 @@ function App() {
         // Full-fidelity storage — every answer (including future questions)
         data: answers,
         // Classic columns (preserved for backward compatibility + SQL convenience)
-        a2_experience: answers.a2,
         a3_institution: answers.a3,
         a4_country: answers.a4,
         a5_annual_volume: answers.a5,
         a6_subspecialty: answers.a6,
         a7_ct_routine: answers.a7,
-        b1_monthly_pm: answers.b1,
-        // b2 removed (duplicate of a7) — column kept for backward compat but always null
         c1_classification: answers.c1 || [],
         c2_classification_guides: answers.c2,
         d1_size_threshold: answers.d1,
@@ -3661,8 +3608,8 @@ function App() {
         className: "text-sm font-bold text-amber-900"
       },
         (() => {
-          const SHORT_TR = { A: 'Demografi', B: 'Deneyim', C: 'Sınıflama', D: 'Endikasyon', E: 'Teknik', F: 'Sıra/Sindesmoz', G: 'Pratikteki Evrim', H: 'Vakalar', I: 'Tutumlar' };
-          const SHORT_EN = { A: 'Demographics', B: 'Experience', C: 'Classification', D: 'Indications', E: 'Technique', F: 'Sequence/Syndesmosis', G: 'Practice Evolution', H: 'Cases', I: 'Attitudes' };
+          const SHORT_TR = { A: 'Demografi', C: 'Sınıflama', D: 'Endikasyon', E: 'Teknik', F: 'Sıra/Sindesmoz', G: 'Pratikteki Evrim', H: 'Vakalar', I: 'Tutumlar' };
+          const SHORT_EN = { A: 'Demographics', C: 'Classification', D: 'Indications', E: 'Technique', F: 'Sequence/Syndesmosis', G: 'Practice Evolution', H: 'Cases', I: 'Attitudes' };
           const s = submitBlock.section;
           return (ll === 'tr' ? SHORT_TR : SHORT_EN)[s] + ' (' + s + ')';
         })()
