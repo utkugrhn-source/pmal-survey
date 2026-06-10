@@ -741,8 +741,8 @@ const SECTIONS = {
       id: "d4",
       type: "multi",
       text: {
-        tr: "Posterior malleol kırığında BT'de interkalar (intermediate, serbest artiküler) fragman bulunduğunda, bu fragmanı ayrıca ele almanıza yol açan faktörler hangileridir?",
-        en: "When a posterior malleolus fracture contains an intercalary/free intra-articular fragment on CT, which factors make you address the fragment separately?"
+        tr: "Posterior malleol kırığında BT'de interkalar (intermediate, serbest artiküler) fragman bulunduğunda, bu fragmanı ayrıca ele almanıza (fiksasyon veya çıkarma) yol açan faktörler hangileridir?",
+        en: "When a posterior malleolus fracture contains an intercalary/free intra-articular fragment on CT, which factors make you address the fragment separately (by fixation or removal)?"
       },
       opts: [{
         tr: "Fragmana bağlı artiküler step-off veya boşluk",
@@ -762,6 +762,9 @@ const SECTIONS = {
       }, {
         tr: "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)",
         en: "Patient is young/active (high functional demand)"
+      }, {
+        tr: "Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)",
+        en: "Fragment behaves as a loose body or is not amenable to fixation (removal considered)"
       }, {
         tr: "İnterkalar fragmanları genellikle ayrıca ele almam",
         en: "I do not usually address intercalary fragments separately",
@@ -830,6 +833,12 @@ const SECTIONS = {
       }, {
         tr: "Açık posterolateral — lag vida",
         en: "Open posterolateral — lag screw"
+      }, {
+        tr: "Açık posteromedyal — buttress/kilitli plak",
+        en: "Open posteromedial — buttress/locking plate"
+      }, {
+        tr: "Açık posteromedyal — lag vida",
+        en: "Open posteromedial — lag screw"
       }]
     }, {
       id: "e2",
@@ -931,8 +940,8 @@ const SECTIONS = {
       id: "f3",
       type: "single",
       text: {
-        tr: "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?",
-        en: "In your experience, does PM fixation reduce the need for syndesmotic screw placement?"
+        tr: "Deneyiminize göre PM fiksasyonu sıklıkla sindesmotik stabiliteyi sağlar mı?",
+        en: "In your experience, does PM fixation frequently restore syndesmotic stability?"
       },
       opts: [{
         tr: "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar",
@@ -975,8 +984,8 @@ const SECTIONS = {
         en: "If a Chaput or Wagstaffe fragment is identified, what is your preferred management?"
       },
       opts: [{
-        tr: "Direkt fiksasyon (vida, sütur ankoru veya hook plak)",
-        en: "Direct fixation (screw, suture anchor, or hook plate)"
+        tr: "Direkt fiksasyon (vida, sütur ankoru veya plak)",
+        en: "Direct fixation (screw, suture anchor, or plate)"
       }, {
         tr: "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)",
         en: "Trans-syndesmotic fixation only (without addressing the fragment directly)"
@@ -1123,11 +1132,17 @@ const CASE_OPTS = {
     tr: "Perkütan PA vida fiksasyonu",
     en: "Percutaneous PA screw fixation"
   }, {
-    tr: "Açık posterior lag vida fiksasyonu (plaksız)",
-    en: "Open posterior lag screw fixation (no plate)"
+    tr: "Açık posterolateral — lag vida (plaksız)",
+    en: "Open posterolateral — lag screw (no plate)"
   }, {
-    tr: "Açık posterior buttress / kilitli plak fiksasyonu",
-    en: "Open posterior buttress / locking plate fixation"
+    tr: "Açık posterolateral — buttress/kilitli plak",
+    en: "Open posterolateral — buttress/locking plate"
+  }, {
+    tr: "Açık posteromedyal — buttress/kilitli plak",
+    en: "Open posteromedial — buttress/locking plate"
+  }, {
+    tr: "Açık posteromedyal — lag vida (plaksız)",
+    en: "Open posteromedial — lag screw (no plate)"
   }, {
     tr: "Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu",
     en: "Mini-fragment / intercalary fragment fixation in addition to main PM fixation"
