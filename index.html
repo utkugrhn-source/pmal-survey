@@ -3369,8 +3369,13 @@ function App() {
     } catch (e) { return null; }
   };
   const _saved = loadSaved();
-  const [lang, setLang] = useState(_saved && _saved.lang ? _saved.lang : 'en');
-  const [step, setStep] = useState(_saved && typeof _saved.step === 'number' ? _saved.step : 1);
+  // English-only for now (multi-language UI disabled; tr: strings kept in code for future re-enable).
+  // Always force 'en' regardless of saved preference, and ensure step >= 1 to skip langSelect.
+  const [lang, setLang] = useState('en');
+  const [step, setStep] = useState(() => {
+    const s = _saved && typeof _saved.step === 'number' ? _saved.step : 1;
+    return s < 1 ? 1 : s;
+  });
   const [answers, setAnswers] = useState(_saved && _saved.answers ? _saved.answers : {});
   const [consented, setConsented] = useState(_saved && _saved.consented ? true : false);
   const [email, setEmail] = useState(_saved && _saved.email ? _saved.email : "");
@@ -3440,7 +3445,8 @@ function App() {
     try {
       if (typeof window === 'undefined') return;
       window.localStorage.setItem(LS_KEY, JSON.stringify({
-        lang, step, answers, consented, email,
+        // lang intentionally omitted — English-only mode
+        step, answers, consented, email,
         savedAt: Date.now()
       }));
     } catch (e) { /* quota exceeded or private mode — silent */ }
