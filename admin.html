@@ -36,6 +36,22 @@ const sbHeaders = {
   "Authorization": `Bearer ${SB_KEY}`,
   "Content-Type": "application/json"
 };
+// ── ADMIN DATA VIA WORKER PROXY ──
+// The responses table's anon SELECT policy is revoked; the admin panel reads
+// survey data through the worker, which holds the service-role key as a
+// Cloudflare secret. The token below gates casual access only (the panel
+// itself is intentionally passwordless) — real protection is that the
+// standard Supabase REST path is closed.
+const WORKER_ADMIN = "https://pmal-r2-api.utkugrhn.workers.dev/admin";
+const ADMIN_TOKEN = "pmal-ctrl-2026";
+const wkGet = async (table, query = "") => {
+  const path = table === "responses" ? "responses" : table === "client_errors" ? "errors" : "feedback";
+  const r = await fetch(`${WORKER_ADMIN}/${path}?${query}`, {
+    headers: { "X-Admin-Token": ADMIN_TOKEN }
+  });
+  if (!r.ok) throw new Error("Admin proxy HTTP " + r.status);
+  return await r.json();
+};
 const sbGet = async (table, query = "") => {
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${query}`, {
     headers: {
@@ -61,6 +77,40 @@ const sbFetch = (table, method, body) => fetch(`${SB_URL}/rest/v1/${table}`, {
   headers: { ...sbHeaders, "Prefer": "return=minimal" },
   body: body ? JSON.stringify(body) : undefined
 });
+
+// ── CLIENT ERROR LOGGING (admin) ──
+(function () {
+  let sent = 0;
+  const seen = new Set();
+  window._pmalLogError = function (kind, message, extra) {
+    try {
+      if (sent >= 10) return;
+      const key = kind + "|" + String(message).slice(0, 120);
+      if (seen.has(key)) return;
+      seen.add(key);
+      sent++;
+      fetch(`${SB_URL}/rest/v1/client_errors`, {
+        method: "POST",
+        headers: { ...sbHeaders, "Prefer": "return=minimal" },
+        body: JSON.stringify({
+          app: "admin",
+          kind: kind,
+          message: String(message).slice(0, 1000),
+          extra: extra ? String(extra).slice(0, 1000) : null,
+          url: location.href.slice(0, 300),
+          user_agent: navigator.userAgent
+        })
+      }).catch(function () {});
+    } catch (e) {}
+  };
+  window.addEventListener("error", function (ev) {
+    window._pmalLogError("uncaught_error", ev.message || "unknown", (ev.filename || "") + ":" + (ev.lineno || ""));
+  });
+  window.addEventListener("unhandledrejection", function (ev) {
+    var r = ev.reason;
+    window._pmalLogError("unhandled_rejection", (r && (r.message || r.toString())) || "unknown", null);
+  });
+})();
 const TH = {
   bg: "#0a0a0a",
   sf: "#141414",
@@ -1016,10 +1066,21 @@ function DashPage() {
     fixes: {}
   });
   const [loading, setLoading] = useState(true);
+  const [health, setHealth] = useState(null); // { worker, r2, supabase } | { error }
   useEffect(() => {
     (async () => {
       try {
-        const rows = await sbGet("responses", "select=completed,duration_seconds,created_at,g1_case1_fix,g2_case2_fix,g3_case3_fix,g4_case4_fix");
+        const r = await fetch("https://pmal-r2-api.utkugrhn.workers.dev/health");
+        setHealth(await r.json());
+      } catch (e) {
+        setHealth({ error: String(e && e.message || e) });
+      }
+    })();
+  }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const rows = await wkGet("responses", "select=completed,duration_seconds,created_at,g1_case1_fix,g2_case2_fix,g3_case3_fix,g4_case4_fix");
         const total = rows.length;
         const complete = rows.filter(r => r.completed).length;
         const durations = rows.filter(r => r.duration_seconds).map(r => r.duration_seconds);
@@ -1082,7 +1143,30 @@ function DashPage() {
     l: "Vaka 4 — 47Y K, İzole PM, %26",
     pct: data.fixes.c4 || 0
   }];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/React.createElement("div", null, health && /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex", gap: 10, alignItems: "center", marginBottom: 16,
+      padding: "10px 14px", background: TH.cd, border: `1px solid ${TH.br}`, borderRadius: 10
+    }
+  },
+    /*#__PURE__*/React.createElement("span", { style: { color: TH.tm, fontSize: 11, fontWeight: 600 } }, "SISTEM:"),
+    ["worker", "r2", "supabase"].map(k => {
+      const v = health[k];
+      const ok = v === "ok";
+      const label = k === "worker" ? "Worker" : k === "r2" ? "R2/DICOM" : "Supabase";
+      return /*#__PURE__*/React.createElement("span", {
+        key: k,
+        title: String(v || health.error || "?"),
+        style: {
+          fontSize: 11, padding: "3px 10px", borderRadius: 20, fontWeight: 600,
+          background: ok ? "#12351f" : "#3a1414",
+          color: ok ? "#4ade80" : "#f87171",
+          border: `1px solid ${ok ? "#1f5c33" : "#7f1d1d"}`
+        }
+      }, (ok ? "● " : "○ ") + label);
+    }),
+    health.error && /*#__PURE__*/React.createElement("span", { style: { color: "#f87171", fontSize: 11 } }, "health check unreachable")
+  ), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
@@ -1308,7 +1392,7 @@ function RespPage() {
   useEffect(() => {
     (async () => {
       try {
-        const d = await sbGet("responses", "select=*&order=created_at.desc");
+        const d = await wkGet("responses", "select=*&order=created_at.desc");
         setRows(d);
       } catch (e) {
         console.error(e);
@@ -1695,7 +1779,7 @@ function StatPage() {
   useEffect(() => {
     (async () => {
       try {
-        const d = await sbGet("responses", "select=*&completed=eq.true&order=created_at.desc");
+        const d = await wkGet("responses", "select=*&completed=eq.true&order=created_at.desc");
         setRows(Array.isArray(d) ? d : []);
       } catch (e) {
         console.error("Stat load error:", e);

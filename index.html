@@ -7,7 +7,7 @@
 <meta name="description" content="International survey on current trends and practice variation in posterior malleolus fracture management">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/tailwind.css">
 <!-- Cornerstone.js DICOM Viewer -->
 <script src="https://unpkg.com/dicom-parser@1.8.21/dist/dicomParser.min.js"></script>
 <script src="https://unpkg.com/cornerstone-core@2.6.1/dist/cornerstone.min.js"></script>
@@ -115,6 +115,49 @@ const sbFetch = (table, method, body) => fetch(`${SB_URL}/rest/v1/${table}`, {
   },
   body: body ? JSON.stringify(body) : undefined
 });
+
+// ── CLIENT ERROR LOGGING ──
+// Lightweight self-hosted error reporting: uncaught JS errors and unhandled
+// promise rejections are written to the Supabase client_errors table so we
+// can diagnose field issues (browser, country, message) without asking
+// respondents for console screenshots. Deduped per session, capped at 10.
+(function () {
+  let sent = 0;
+  const seen = new Set();
+  window._pmalLogError = function (kind, message, extra) {
+    try {
+      if (sent >= 10) return;
+      const key = kind + "|" + String(message).slice(0, 120);
+      if (seen.has(key)) return;
+      seen.add(key);
+      sent++;
+      fetch(`${SB_URL}/rest/v1/client_errors`, {
+        method: "POST",
+        headers: {
+          "apikey": SB_KEY,
+          "Authorization": `Bearer ${SB_KEY}`,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          app: "survey",
+          kind: kind,
+          message: String(message).slice(0, 1000),
+          extra: extra ? String(extra).slice(0, 1000) : null,
+          url: location.href.slice(0, 300),
+          user_agent: navigator.userAgent
+        })
+      }).catch(function () {});
+    } catch (e) { /* never let the logger itself throw */ }
+  };
+  window.addEventListener("error", function (ev) {
+    window._pmalLogError("uncaught_error", ev.message || "unknown", (ev.filename || "") + ":" + (ev.lineno || ""));
+  });
+  window.addEventListener("unhandledrejection", function (ev) {
+    var r = ev.reason;
+    window._pmalLogError("unhandled_rejection", (r && (r.message || r.toString())) || "unknown", r && r.stack ? r.stack.slice(0, 500) : null);
+  });
+})();
 
 // ── COUNTRY LIST ──
 const COUNTRIES = ["Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", "Belarus", "Belgium", "Bolivia", "Bosnia and Herzegovina", "Brazil", "Brunei", "Bulgaria", "Cambodia", "Cameroon", "Canada", "Chile", "China", "Colombia", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Northern Cyprus (TRNC)", "Denmark", "Dominican Republic", "Ecuador", "Egypt", "Estonia", "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece", "Guatemala", "Honduras", "Hong Kong", "Hungary", "Iceland", "India", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kosovo", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Libya", "Lithuania", "Luxembourg", "Malaysia", "Maldives", "Malta", "Mexico", "Moldova", "Mongolia", "Montenegro", "Morocco", "Myanmar", "Nepal", "Netherlands", "New Zealand", "Nigeria", "North Macedonia", "Norway", "Oman", "Pakistan", "Palestine", "Panama", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saudi Arabia", "Senegal", "Serbia", "Singapore", "Slovakia", "Slovenia", "Somalia", "South Africa", "South Korea", "Spain", "Sri Lanka", "Sudan", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Tunisia", "Turkey", "Turkmenistan", "UAE", "Uganda", "Ukraine", "United Kingdom", "United States", "Uruguay", "Uzbekistan", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
@@ -3394,6 +3437,7 @@ function App() {
   const [email, setEmail] = useState(_saved && _saved.email ? _saved.email : "");
   const [emailSent, setEmailSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const [submitBlock, setSubmitBlock] = useState(null); // { section, count } for modal
   const [startTime] = useState(Date.now());
   const ll = lang === 'tr' || lang === 'en' ? lang : 'en';
@@ -3574,17 +3618,43 @@ function App() {
         duration_seconds: duration,
         user_agent: navigator.userAgent
       };
-      const resp = await sbFetch("responses", "POST", row);
-      if (resp && !resp.ok) {
-        console.error("Submit non-OK response:", resp.status, await resp.text());
-        throw new Error("Submission failed: " + resp.status);
+      // Retry loop: 3 attempts with exponential backoff (0s, 2s, 5s).
+      // On total failure we do NOT advance to the thank-you screen — the
+      // respondent sees an error panel with a manual retry button, and their
+      // answers remain safely in localStorage.
+      let submitted = false;
+      let lastErr = null;
+      const delays = [0, 2000, 5000];
+      for (let attempt = 0; attempt < delays.length; attempt++) {
+        if (delays[attempt] > 0) await new Promise(r => setTimeout(r, delays[attempt]));
+        try {
+          const resp = await sbFetch("responses", "POST", row);
+          if (resp && resp.ok) {
+            submitted = true;
+            break;
+          }
+          lastErr = new Error("HTTP " + (resp ? resp.status : "no-response"));
+          console.error("Submit attempt " + (attempt + 1) + " failed:", lastErr.message);
+        } catch (e) {
+          lastErr = e;
+          console.error("Submit attempt " + (attempt + 1) + " error:", e);
+        }
+      }
+      if (!submitted) {
+        try { window._pmalLogError && window._pmalLogError("submit_failed_all_retries", String(lastErr)); } catch (e) {}
+        setSubmitting(false);
+        setSubmitError(true);
+        return; // stay on this step; user can retry
       }
       // Successful submit — clear locally saved state so a fresh visitor
       // doesn't see this submission's data.
       try { if (typeof window !== 'undefined') window.localStorage.removeItem(LS_KEY); } catch (e) {}
+      setSubmitError(false);
     } catch (e) {
       console.error("Submit error:", e);
-      // Re-throw so the UI can show error state. For now, log only.
+      setSubmitting(false);
+      setSubmitError(true);
+      return;
     }
     setSubmitting(false);
     setStep(step + 1);
@@ -3996,7 +4066,17 @@ function App() {
     value: answers[q.id],
     onChange: v => setAnswer(q.id, v),
     labels: tt.likert
-  }))), /*#__PURE__*/React.createElement("div", {
+  }))), submitError && /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 p-4 rounded-xl border-2 border-red-300 bg-red-50 animate-fadeIn"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-red-700 text-sm mb-1"
+  }, "Your responses could not be submitted"), /*#__PURE__*/React.createElement("p", {
+    className: "text-red-600 text-xs mb-3"
+  }, "This is usually a temporary network issue. Your answers are saved on this device — nothing is lost. Please try again."), /*#__PURE__*/React.createElement("button", {
+    disabled: submitting,
+    onClick: tryAttemptSubmit,
+    className: "px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors"
+  }, submitting ? "Retrying..." : "Try again")), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setStep(step - 1),
