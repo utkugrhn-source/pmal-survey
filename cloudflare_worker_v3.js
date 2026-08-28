@@ -60,9 +60,12 @@ export default {
       } catch (e) {
         out.r2 = "fail: " + e.message;
       }
+      // Report whether the service-role secret is configured (never its value)
+      out.serviceKey = env.SUPABASE_SERVICE_KEY ? "configured" : "MISSING";
       try {
-        const r = await fetch(SB_URL + "/rest/v1/", {
-          headers: { "apikey": SB_ANON_KEY },
+        const key = env.SUPABASE_SERVICE_KEY || SB_ANON_KEY;
+        const r = await fetch(SB_URL + "/rest/v1/responses?select=id&limit=1", {
+          headers: { "apikey": key, "Authorization": "Bearer " + key },
         });
         out.supabase = r.ok ? "ok" : "http " + r.status;
       } catch (e) {
