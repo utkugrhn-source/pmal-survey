@@ -111,6 +111,29 @@ export default {
       }
     }
 
+    // ── TEMPORARY: PUT /upload/<key> — restricted write, removed after Case 2 upload ──
+    // Scope-limited: only keys under case1/ak2/ may be written, and the existing
+    // admin token is required. Removed in the next deploy.
+    if (request.method === "PUT" && url.pathname.startsWith("/upload/")) {
+      const expected = (env.ADMIN_TOKEN || ADMIN_TOKEN_FALLBACK);
+      if (request.headers.get("X-Admin-Token") !== expected) {
+        return new Response("Forbidden", { status: 403, headers: corsHeaders(origin) });
+      }
+      const key = url.pathname.slice("/upload/".length);
+      if (!key.startsWith("case1/ak2/") || !key.endsWith(".dcm")) {
+        return new Response("Key out of allowed scope", { status: 400, headers: corsHeaders(origin) });
+      }
+      try {
+        const body = await request.arrayBuffer();
+        await env.BUCKET.put(key, body, { httpMetadata: { contentType: "application/dicom" } });
+        return new Response(JSON.stringify({ ok: true, key, size: body.byteLength }), {
+          headers: { "Content-Type": "application/json", ...corsHeaders(origin) }
+        });
+      } catch (e) {
+        return new Response("Upload error: " + e.message, { status: 500, headers: corsHeaders(origin) });
+      }
+    }
+
     // ── ROUTE: /file/<key> — proxy DICOM file from R2 ──
     if (url.pathname.startsWith("/file/")) {
       const key = url.pathname.slice("/file/".length);
