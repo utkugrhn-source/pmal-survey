@@ -3618,10 +3618,10 @@ function App() {
   const _saved = loadSaved();
   // English-only for now (multi-language UI disabled; tr: strings kept in code for future re-enable).
   // Always force 'en' regardless of saved preference, and ensure step >= 1 to skip langSelect.
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState(_saved && _saved.lang ? _saved.lang : 'en');
   const [step, setStep] = useState(() => {
-    const s = _saved && typeof _saved.step === 'number' ? _saved.step : 1;
-    return s < 1 ? 1 : s;
+    const s = _saved && typeof _saved.step === 'number' ? _saved.step : 0;
+    return s < 0 ? 0 : s;
   });
   const [answers, setAnswers] = useState(_saved && _saved.answers ? _saved.answers : {});
   const [consented, setConsented] = useState(_saved && _saved.consented ? true : false);
@@ -3693,8 +3693,7 @@ function App() {
     try {
       if (typeof window === 'undefined') return;
       window.localStorage.setItem(LS_KEY, JSON.stringify({
-        // lang intentionally omitted — English-only mode
-        step, answers, consented, email,
+        lang, step, answers, consented, email,
         savedAt: Date.now()
       }));
     } catch (e) { /* quota exceeded or private mode — silent */ }
@@ -3993,7 +3992,7 @@ function App() {
     setStep: setStep,
     lang: lang,
     completion: completion
-  })), false && /*#__PURE__*/React.createElement("button", {
+  })), step > 0 && /*#__PURE__*/React.createElement("button", {
     onClick: () => {
       setStep(0);
       setLang(null);
@@ -4001,7 +4000,7 @@ function App() {
     className: "px-3 py-1.5 rounded-lg border border-gray-300 text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors flex items-center gap-1.5"
   }, LANGS.find(l => l.code === lang)?.flag, " ", LANGS.find(l => l.code === lang)?.native, " \u25BE"))), /*#__PURE__*/React.createElement("main", {
     className: "max-w-3xl mx-auto px-4 py-6 sm:py-8"
-  }, false && /*#__PURE__*/React.createElement("div", {
+  }, step === 0 && /*#__PURE__*/React.createElement("div", {
     className: "animate-fadeIn text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mb-8"
