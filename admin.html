@@ -1082,7 +1082,14 @@ function DashPage() {
     (async () => {
       try {
         const r = await fetch("https://pmal-r2-api.utkugrhn.workers.dev/health");
-        setHealth(await r.json());
+        const h = await r.json();
+        if (h && h.supabase !== "ok") {
+          try {
+            const p = await fetch(`${WORKER_ADMIN}/responses?token=${encodeURIComponent(ADMIN_TOKEN)}&select=id&limit=1`);
+            if (p.ok) h.supabase = "ok";
+          } catch (e) {}
+        }
+        setHealth(h);
       } catch (e) {
         setHealth({ error: String(e && e.message || e) });
       }
