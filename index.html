@@ -1179,12 +1179,13 @@ const CASES = [{
   color: "#E6A817",
   bg: "#FFF8E7",
   vig: {
-    tr: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası ayak bileği ağrısı ve şişlik şikâyetiyle acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %20'sini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
-    en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1.",
-        de: "Eine 52-jährige Patientin stellte sich nach einem Distorsionstrauma beim Treppenhinabsteigen mit Schmerzen und Schwellung des Sprunggelenks in der Notaufnahme vor. Anamnestisch besteht eine arterielle Hypertonie, eingestellt mit Amlodipin 5 mg täglich. Röntgenaufnahmen und Computertomographie zeigten eine trimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 20 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert."
+    tr: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası ayak bileği ağrısı ve şişlik şikâyetiyle acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği bimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %20'sini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
+    en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a bimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1.",
+        de: "Eine 52-jährige Patientin stellte sich nach einem Distorsionstrauma beim Treppenhinabsteigen mit Schmerzen und Schwellung des Sprunggelenks in der Notaufnahme vor. Anamnestisch besteht eine arterielle Hypertonie, eingestellt mit Amlodipin 5 mg täglich. Röntgenaufnahmen und Computertomographie zeigten eine bimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 20 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert."
   },
   prefix: "g1_case1",
   hasSequence: true,
+  pattern: "bimal",
   r2folder: "case1/do/"
 }, {
   id: "case2",
@@ -1302,6 +1303,10 @@ const CASE_OPTS = {
     en: "Fibula → Assess syndesmosis → PM → Medial malleolus",
         de: "Fibula → Syndesmosenprüfung → PM → Innenknöchel"
   }, {
+    tr: "Fibula → PM → Medial malleol → Sindesmoz değerlendir",
+    en: "Fibula → PM → Medial malleolus → Assess syndesmosis",
+        de: "Fibula → PM → Innenknöchel → Syndesmosenprüfung"
+}, {
     tr: "Bireyselleştirilmiş — standart sıram yok",
     en: "Individualised — no standard sequence",
         de: "Individuell — keine Standardreihenfolge"
@@ -1319,6 +1324,10 @@ const CASE_OPTS = {
     en: "Simultaneous / single-approach fixation",
         de: "Simultane Fixation / über einen einzigen Zugang"
   }, {
+    tr: "Lateral malleol → PM → Sindesmoz değerlendir",
+    en: "Lateral malleolus → PM → Assess syndesmosis",
+        de: "Außenknöchel → PM → Syndesmosenprüfung"
+}, {
     tr: "Bireyselleştirilmiş — standart sıram yok",
     en: "Individualised — no standard sequence",
         de: "Individuell — keine Standardreihenfolge"

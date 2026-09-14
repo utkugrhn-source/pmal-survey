@@ -43,7 +43,18 @@ const sbHeaders = {
 // itself is intentionally passwordless) — real protection is that the
 // standard Supabase REST path is closed.
 const WORKER_ADMIN = "https://pmal-r2-api.utkugrhn.workers.dev/admin";
-const ADMIN_TOKEN = "pmal-ctrl-2026";
+const ADMIN_TOKEN = (() => {
+  try {
+    let t = sessionStorage.getItem("pmal_admin_token");
+    if (!t) {
+      t = window.prompt("Admin token:") || "";
+      if (t) sessionStorage.setItem("pmal_admin_token", t);
+    }
+    return t;
+  } catch (e) {
+    return window.prompt("Admin token:") || "";
+  }
+})();
 const wkGet = async (table, query = "") => {
   const path = table === "responses" ? "responses" : table === "client_errors" ? "errors" : "feedback";
   const r = await fetch(`${WORKER_ADMIN}/${path}?${query}`, {
@@ -2907,7 +2918,7 @@ function SetPage() {
     }
   }, /*#__PURE__*/React.createElement("input", {
     readOnly: true,
-    value: "https://pmal.cyprusorthopaedics.com",
+    value: "https://pmalsurvey.org",
     style: {
       flex: 1,
       padding: "10px 14px",
@@ -2920,7 +2931,7 @@ function SetPage() {
     }
   }), /*#__PURE__*/React.createElement("button", {
     onClick: () => {
-      navigator.clipboard?.writeText("https://pmal.cyprusorthopaedics.com");
+      navigator.clipboard?.writeText("https://pmalsurvey.org");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     },
