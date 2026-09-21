@@ -45,10 +45,10 @@ const sbHeaders = {
 const WORKER_ADMIN = "https://pmal-r2-api.utkugrhn.workers.dev/admin";
 const ADMIN_TOKEN = (() => {
   try {
-    let t = sessionStorage.getItem("pmal_admin_token");
+    let t = localStorage.getItem("pmal_admin_token");
     if (!t) {
       t = window.prompt("Admin token:") || "";
-      if (t) sessionStorage.setItem("pmal_admin_token", t);
+      if (t) localStorage.setItem("pmal_admin_token", t);
     }
     return t;
   } catch (e) {
@@ -60,6 +60,11 @@ const wkGet = async (table, query = "") => {
   const r = await fetch(`${WORKER_ADMIN}/${path}?${query}`, {
     headers: { "X-Admin-Token": ADMIN_TOKEN }
   });
+  if (r.status === 403) {
+    try { localStorage.removeItem("pmal_admin_token"); } catch (e) {}
+    alert("Admin token hatal\u0131 \u2014 sayfa yenilenince tekrar sorulacak.");
+    location.reload();
+  }
   if (!r.ok) throw new Error("Admin proxy HTTP " + r.status);
   return await r.json();
 };
@@ -3176,7 +3181,7 @@ function App() {
       margin: 0
     }
   }, PG.find(p => p.id === page)?.label), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setUser(null),
+    onClick: () => { try { localStorage.removeItem("pmal_admin_token"); } catch (e) {} setUser(null); location.reload(); },
     style: {
       padding: "5px 12px",
       borderRadius: 7,
