@@ -40,6 +40,12 @@ const {
 } = React;
 
 // ── 12 LANGUAGES ──
+// Languages offered on the first screen. Spanish is complete in code but stays
+// off the picker until a native-speaking orthopaedic surgeon has reviewed the
+// clinical wording; until then it is reachable only via pmalsurvey.org/?lang=es.
+const PICKER_LANGS = ["tr", "en", "de"];
+// Every language whose survey text is complete — valid for ?lang= links.
+const LINK_LANGS = ["tr", "en", "de", "es"];
 const LANGS = [{
   code: "tr",
   flag: "🇹🇷",
@@ -633,7 +639,8 @@ const SECTIONS = {
     title: {
       tr: "A — Demografik Bilgiler",
       en: "A — Demographics",
-        de: "A — Demografische Angaben"
+        de: "A — Demografische Angaben",
+        es: "A — Datos demográficos"
     },
     questions: [{
       id: "a3",
@@ -641,28 +648,34 @@ const SECTIONS = {
       text: {
         tr: "Hangi tür kurumda çalışıyorsunuz?",
         en: "In what type of institution do you primarily practice?",
-        de: "In welcher Art von Einrichtung sind Sie überwiegend tätig?"
+        de: "In welcher Art von Einrichtung sind Sie überwiegend tätig?",
+        es: "¿En qué tipo de institución ejerce principalmente?"
       },
       opts: [{
         tr: "Üniversite hastanesi / akademik eğitim hastanesi",
         en: "University hospital / Academic teaching hospital",
-        de: "Universitätsklinikum / akademisches Lehrkrankenhaus"
+        de: "Universitätsklinikum / akademisches Lehrkrankenhaus",
+        es: "Hospital universitario / hospital docente académico"
       }, {
         tr: "3. basamak travma merkezi (akademik olmayan)",
         en: "Tertiary-level trauma center (non-academic)",
-        de: "Überregionales Traumazentrum (nicht-akademisch)"
+        de: "Überregionales Traumazentrum (nicht-akademisch)",
+        es: "Centro de trauma de tercer nivel (no académico)"
       }, {
         tr: "2. basamak / toplum / devlet hastanesi",
         en: "Secondary / community / district hospital",
-        de: "Krankenhaus der Grund-/Regelversorgung"
+        de: "Krankenhaus der Grund-/Regelversorgung",
+        es: "Hospital de segundo nivel / comunitario / regional"
       }, {
         tr: "Özel klinik (solo veya grup)",
         en: "Private practice (solo or group)",
-        de: "Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)"
+        de: "Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)",
+        es: "Práctica privada (individual o en grupo)"
       }, {
         tr: "Diğer",
         en: "Other",
-        de: "Sonstiges"
+        de: "Sonstiges",
+        es: "Otro"
       }]
     }, {
       id: "a4",
@@ -670,7 +683,8 @@ const SECTIONS = {
       text: {
         tr: "Çalıştığınız ülke",
         en: "Country of practice",
-        de: "Land der Berufstätigkeit"
+        de: "Land der Berufstätigkeit",
+        es: "País de ejercicio"
       }
     }, {
       id: "a5",
@@ -678,24 +692,29 @@ const SECTIONS = {
       text: {
         tr: "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?",
         en: "Approximately how many ankle fracture surgeries do you perform per year?",
-        de: "Wie viele Sprunggelenkfraktur-Operationen führen Sie ungefähr pro Jahr durch?"
+        de: "Wie viele Sprunggelenkfraktur-Operationen führen Sie ungefähr pro Jahr durch?",
+        es: "¿Aproximadamente cuántas cirugías de fractura de tobillo realiza al año?"
       },
       opts: [{
         tr: "< 20",
         en: "< 20",
-        de: "< 20"
+        de: "< 20",
+        es: "< 20"
       }, {
         tr: "20–50",
         en: "20–50",
-        de: "20–50"
+        de: "20–50",
+        es: "20–50"
       }, {
         tr: "51–100",
         en: "51–100",
-        de: "51–100"
+        de: "51–100",
+        es: "51–100"
       }, {
         tr: "> 100",
         en: "> 100",
-        de: "> 100"
+        de: "> 100",
+        es: "> 100"
       }]
     }, {
       id: "a6",
@@ -703,28 +722,34 @@ const SECTIONS = {
       text: {
         tr: "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?",
         en: "What best describes your primary clinical focus?",
-        de: "Was beschreibt Ihren klinischen Schwerpunkt am besten?"
+        de: "Was beschreibt Ihren klinischen Schwerpunkt am besten?",
+        es: "¿Qué describe mejor su área clínica principal?"
       },
       opts: [{
         tr: "Ayak ve ayak bileği cerrahisi",
         en: "Foot and ankle surgery",
-        de: "Fuß- und Sprunggelenkchirurgie"
+        de: "Fuß- und Sprunggelenkchirurgie",
+        es: "Cirugía de pie y tobillo"
       }, {
         tr: "Ortopedik travma",
         en: "Orthopaedic trauma",
-        de: "Orthopädische Traumatologie / Unfallchirurgie"
+        de: "Orthopädische Traumatologie / Unfallchirurgie",
+        es: "Traumatología ortopédica"
       }, {
         tr: "Genel ortopedi",
         en: "General orthopaedics",
-        de: "Allgemeine Orthopädie"
+        de: "Allgemeine Orthopädie",
+        es: "Ortopedia general"
       }, {
         tr: "Asistan / fellow eğitim aşamasında",
         en: "Resident / fellow in training",
-        de: "Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung"
+        de: "Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung",
+        es: "Residente / fellow en formación"
       }, {
         tr: "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)",
         en: "Other orthopaedic subspecialty (spine, sports, arthroplasty, etc.)",
-        de: "Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)"
+        de: "Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)",
+        es: "Otra subespecialidad ortopédica (columna, deportiva, artroplastia, etc.)"
       }]
     }, {
       id: "a7",
@@ -732,28 +757,34 @@ const SECTIONS = {
       text: {
         tr: "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?",
         en: "How often do you obtain preoperative CT for ankle fractures with suspected PM involvement?",
-        de: "Wie häufig veranlassen Sie eine präoperative CT bei Sprunggelenkfrakturen mit Verdacht auf PM-Beteiligung?"
+        de: "Wie häufig veranlassen Sie eine präoperative CT bei Sprunggelenkfrakturen mit Verdacht auf PM-Beteiligung?",
+        es: "¿Con qué frecuencia solicita una TC preoperatoria en fracturas de tobillo con sospecha de afectación del MP?"
       },
       opts: [{
         tr: "Rutin olarak",
         en: "Routinely",
-        de: "Routinemäßig"
+        de: "Routinemäßig",
+        es: "De forma rutinaria"
       }, {
         tr: "Sıklıkla",
         en: "Often",
-        de: "Häufig"
+        de: "Häufig",
+        es: "Con frecuencia"
       }, {
         tr: "Seçici olarak",
         en: "Selectively",
-        de: "Selektiv"
+        de: "Selektiv",
+        es: "De forma selectiva"
       }, {
         tr: "Nadiren",
         en: "Rarely",
-        de: "Selten"
+        de: "Selten",
+        es: "Rara vez"
       }, {
         tr: "Pratiğimde BT erişimi sınırlı",
         en: "CT access is limited in my setting",
-        de: "Der Zugang zur CT ist in meinem Umfeld begrenzt"
+        de: "Der Zugang zur CT ist in meinem Umfeld begrenzt",
+        es: "El acceso a la TC es limitado en mi centro"
       }]
     }]
   },
@@ -761,7 +792,8 @@ const SECTIONS = {
     title: {
       tr: "B — Sınıflama",
       en: "B — Classification",
-        de: "B — Klassifikation"
+        de: "B — Klassifikation",
+        es: "B — Clasificación"
     },
     questions: [{
       id: "c1",
@@ -769,36 +801,44 @@ const SECTIONS = {
       text: {
         tr: "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?",
         en: "Which classification systems do you use when evaluating PM fractures?",
-        de: "Welche Klassifikationssysteme verwenden Sie bei der Beurteilung von PM-Frakturen?"
+        de: "Welche Klassifikationssysteme verwenden Sie bei der Beurteilung von PM-Frakturen?",
+        es: "¿Qué sistemas de clasificación utiliza al evaluar las fracturas del MP?"
       },
       opts: [{
         tr: "Haraguchi sınıflaması",
         en: "Haraguchi classification",
-        de: "Haraguchi-Klassifikation"
+        de: "Haraguchi-Klassifikation",
+        es: "Clasificación de Haraguchi"
       }, {
         tr: "Bartoníček/Rammelt sınıflaması",
         en: "Bartoníček/Rammelt classification",
-        de: "Bartoníček/Rammelt-Klassifikation"
+        de: "Bartoníček/Rammelt-Klassifikation",
+        es: "Clasificación de Bartoníček/Rammelt"
       }, {
         tr: "Mason & Molloy sınıflaması",
         en: "Mason & Molloy classification",
-        de: "Mason-&-Molloy-Klassifikation"
+        de: "Mason-&-Molloy-Klassifikation",
+        es: "Clasificación de Mason y Molloy"
       }, {
         tr: "AO/OTA sınıflaması",
         en: "AO/OTA classification",
-        de: "AO/OTA-Klassifikation"
+        de: "AO/OTA-Klassifikation",
+        es: "Clasificación AO/OTA"
       }, {
         tr: "Lauge-Hansen sınıflaması",
         en: "Lauge-Hansen classification",
-        de: "Lauge-Hansen-Klassifikation"
+        de: "Lauge-Hansen-Klassifikation",
+        es: "Clasificación de Lauge-Hansen"
       }, {
         tr: "Fragment boyutu (% eklem yüzeyi)",
         en: "Fragment size (% articular surface)",
-        de: "Fragmentgröße (% der Gelenkfläche)"
+        de: "Fragmentgröße (% der Gelenkfläche)",
+        es: "Tamaño del fragmento (% de superficie articular)"
       }, {
         tr: "Spesifik bir sınıflama kullanmıyorum",
         en: "I do not use a specific classification",
         de: "Ich verwende keine spezifische Klassifikation",
+        es: "No utilizo una clasificación específica",
         exclusive: true
       }]
     }, {
@@ -807,20 +847,24 @@ const SECTIONS = {
       text: {
         tr: "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?",
         en: "Does the classification system guide your treatment decisions?",
-        de: "Leitet das Klassifikationssystem Ihre Therapieentscheidungen?"
+        de: "Leitet das Klassifikationssystem Ihre Therapieentscheidungen?",
+        es: "¿Guía el sistema de clasificación sus decisiones terapéuticas?"
       },
       opts: [{
         tr: "Evet — primer olarak sınıflamaya göre karar veririm",
         en: "Yes — I primarily decide based on classification",
-        de: "Ja — ich entscheide primär anhand der Klassifikation"
+        de: "Ja — ich entscheide primär anhand der Klassifikation",
+        es: "Sí — decido principalmente según la clasificación"
       }, {
         tr: "Kısmen — sınıflama faktörlerden biridir",
         en: "Partially — classification is one of several factors",
-        de: "Teilweise — die Klassifikation ist einer von mehreren Faktoren"
+        de: "Teilweise — die Klassifikation ist einer von mehreren Faktoren",
+        es: "En parte — la clasificación es uno de varios factores"
       }, {
         tr: "Hayır — sınıflamadan bağımsız değerlendiririm",
         en: "No — I evaluate independently of classification",
-        de: "Nein — ich beurteile unabhängig von der Klassifikation"
+        de: "Nein — ich beurteile unabhängig von der Klassifikation",
+        es: "No — evalúo con independencia de la clasificación"
       }]
     }]
   },
@@ -828,7 +872,8 @@ const SECTIONS = {
     title: {
       tr: "C — Fiksasyon Endikasyonları",
       en: "C — Fixation Indications",
-        de: "C — Fixationsindikationen"
+        de: "C — Fixationsindikationen",
+        es: "C — Indicaciones de fijación"
     },
     questions: [{
       id: "d1",
@@ -836,36 +881,44 @@ const SECTIONS = {
       text: {
         tr: "Fragment boyutu tek başına değerlendirildiğinde, posterior malleol fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?",
         en: "When fragment size is considered in isolation, what articular surface involvement would usually prompt you to fix the posterior malleolar fragment?",
-        de: "Wenn die Fragmentgröße isoliert betrachtet wird: Ab welcher Gelenkflächenbeteiligung würden Sie das posteriore Malleolusfragment in der Regel fixieren?"
+        de: "Wenn die Fragmentgröße isoliert betrachtet wird: Ab welcher Gelenkflächenbeteiligung würden Sie das posteriore Malleolusfragment in der Regel fixieren?",
+        es: "Considerando únicamente el tamaño del fragmento, ¿qué grado de afectación de la superficie articular le llevaría habitualmente a fijar el fragmento del maléolo posterior?"
       },
       opts: [{
         tr: "< %10",
         en: "< 10%",
-        de: "< 10 %"
+        de: "< 10 %",
+        es: "< 10%"
       }, {
         tr: "%10–25",
         en: "10–25%",
-        de: "10–25 %"
+        de: "10–25 %",
+        es: "10–25%"
       }, {
         tr: "%25–33",
         en: "25–33%",
-        de: "25–33 %"
+        de: "25–33 %",
+        es: "25–33%"
       }, {
         tr: "> %33",
         en: "> 33%",
-        de: "> 33 %"
+        de: "> 33 %",
+        es: "> 33%"
       }, {
         tr: "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim",
         en: "I fix all PM fragments if technically feasible",
-        de: "Ich fixiere alle PM-Fragmente, sofern technisch möglich"
+        de: "Ich fixiere alle PM-Fragmente, sofern technisch möglich",
+        es: "Fijo todos los fragmentos del MP si es técnicamente posible"
       }, {
         tr: "Boyutu tek başına bir endikasyon olarak kullanmam",
         en: "I do not use size alone as an indication",
-        de: "Ich verwende die Größe allein nicht als Indikation"
+        de: "Ich verwende die Größe allein nicht als Indikation",
+        es: "No utilizo el tamaño por sí solo como indicación"
       }, {
         tr: "PM fragmentini nadiren / hiç fikse etmem",
         en: "I rarely/never fix the PM fragment",
-        de: "Ich fixiere das PM-Fragment selten/nie"
+        de: "Ich fixiere das PM-Fragment selten/nie",
+        es: "Rara vez o nunca fijo el fragmento del MP"
       }]
     }, {
       id: "d3",
@@ -873,44 +926,54 @@ const SECTIONS = {
       text: {
         tr: "PM fiksasyon kararınızı etkileyen faktörler nelerdir?",
         en: "Which factors influence your PM fixation decision?",
-        de: "Welche Faktoren beeinflussen Ihre Entscheidung zur PM-Fixation?"
+        de: "Welche Faktoren beeinflussen Ihre Entscheidung zur PM-Fixation?",
+        es: "¿Qué factores influyen en su decisión de fijar el MP?"
       },
       opts: [{
         tr: "Artiküler step-off miktarı",
         en: "Articular step-off",
-        de: "Gelenkstufe (Step-off)"
+        de: "Gelenkstufe (Step-off)",
+        es: "Escalón articular"
       }, {
         tr: "Fibular notch tutulumu",
         en: "Fibular notch involvement",
-        de: "Beteiligung der Incisura fibularis"
+        de: "Beteiligung der Incisura fibularis",
+        es: "Afectación de la incisura peroneal"
       }, {
         tr: "Sindesmoz instabilitesi",
         en: "Syndesmotic instability",
-        de: "Syndesmoseninstabilität"
+        de: "Syndesmoseninstabilität",
+        es: "Inestabilidad sindesmal"
       }, {
         tr: "Fragment morfolojisi (Bartoníček/Haraguchi tipi)",
         en: "Fragment morphology (Bartoníček/Haraguchi type)",
-        de: "Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)"
+        de: "Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)",
+        es: "Morfología del fragmento (tipo de Bartoníček/Haraguchi)"
       }, {
         tr: "Hasta yaşı ve aktivite düzeyi",
         en: "Patient age and activity level",
-        de: "Alter und Aktivitätsniveau des Patienten"
+        de: "Alter und Aktivitätsniveau des Patienten",
+        es: "Edad y nivel de actividad del paciente"
       }, {
         tr: "Kemik kalitesi (osteoporoz)",
         en: "Bone quality (osteoporosis)",
-        de: "Knochenqualität (Osteoporose)"
+        de: "Knochenqualität (Osteoporose)",
+        es: "Calidad ósea (osteoporosis)"
       }, {
         tr: "Yumuşak doku durumu",
         en: "Soft tissue condition",
-        de: "Weichteilverhältnisse"
+        de: "Weichteilverhältnisse",
+        es: "Estado de las partes blandas"
       }, {
         tr: "İmpakte artiküler fragment varlığı",
         en: "Presence of impacted articular fragments",
-        de: "Vorliegen impaktierter Gelenkfragmente"
+        de: "Vorliegen impaktierter Gelenkfragmente",
+        es: "Presencia de fragmentos articulares impactados"
       }, {
         tr: "Komorbidite (DM, sigara vb.)",
         en: "Comorbidities (DM, smoking, etc.)",
-        de: "Komorbiditäten (Diabetes, Rauchen etc.)"
+        de: "Komorbiditäten (Diabetes, Rauchen etc.)",
+        es: "Comorbilidades (DM, tabaquismo, etc.)"
       }]
     }, {
       id: "d4",
@@ -918,40 +981,49 @@ const SECTIONS = {
       text: {
         tr: "Posterior malleol kırığında BT'de interkalar (intermediate, serbest artiküler) fragman bulunduğunda, bu fragmanı ayrıca ele almanıza (fiksasyon veya çıkarma) yol açan faktörler hangileridir?",
         en: "When a posterior malleolus fracture contains an intercalary/free intra-articular fragment on CT, which factors make you address the fragment separately (by fixation or removal)?",
-        de: "Wenn eine posteriore Malleolusfraktur im CT ein interkalares/freies intraartikuläres Fragment enthält: Welche Faktoren veranlassen Sie, das Fragment gesondert zu adressieren (durch Fixation oder Entfernung)?"
+        de: "Wenn eine posteriore Malleolusfraktur im CT ein interkalares/freies intraartikuläres Fragment enthält: Welche Faktoren veranlassen Sie, das Fragment gesondert zu adressieren (durch Fixation oder Entfernung)?",
+        es: "Cuando una fractura del maléolo posterior presenta en la TC un fragmento intercalar/intraarticular libre, ¿qué factores le llevan a tratar ese fragmento por separado (mediante fijación o extracción)?"
       },
       opts: [{
         tr: "Fragmana bağlı artiküler step-off veya boşluk",
         en: "Articular step-off or gap caused by the fragment",
-        de: "Durch das Fragment bedingte Gelenkstufe oder Spaltbildung"
+        de: "Durch das Fragment bedingte Gelenkstufe oder Spaltbildung",
+        es: "Escalón o separación articular causados por el fragmento"
       }, {
         tr: "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi",
         en: "Fragment blocks reduction of the main PM fragment",
-        de: "Das Fragment blockiert die Reposition des PM-Hauptfragments"
+        de: "Das Fragment blockiert die Reposition des PM-Hauptfragments",
+        es: "El fragmento impide la reducción del fragmento principal del MP"
       }, {
         tr: "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması",
         en: "Fragment ≥ 5 mm — large enough for independent fixation",
-        de: "Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation"
+        de: "Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation",
+        es: "Fragmento ≥ 5 mm — suficientemente grande para una fijación independiente"
       }, {
         tr: "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması",
         en: "Fragment is accessible through my planned approach (PL or PM)",
-        de: "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar"
+        de: "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar",
+        es: "El fragmento es accesible a través del abordaje planificado (PL o PM)"
       }, {
         tr: "Elevasyon/greftleme gerektiren impakte osteokondral fragman",
         en: "Impacted osteochondral fragment requiring elevation/grafting",
-        de: "Impaktiertes osteochondrales Fragment, das Anhebung/Unterfütterung erfordert"
+        de: "Impaktiertes osteochondrales Fragment, das Anhebung/Unterfütterung erfordert",
+        es: "Fragmento osteocondral impactado que requiere elevación/injerto"
       }, {
         tr: "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)",
         en: "Patient is young/active (high functional demand)",
-        de: "Junger/aktiver Patient (hoher funktioneller Anspruch)"
+        de: "Junger/aktiver Patient (hoher funktioneller Anspruch)",
+        es: "Paciente joven/activo (alta demanda funcional)"
       }, {
         tr: "Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)",
         en: "Fragment behaves as a loose body or is not amenable to fixation (removal considered)",
-        de: "Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)"
+        de: "Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)",
+        es: "El fragmento se comporta como un cuerpo libre o no es susceptible de fijación (se considera su extracción)"
       }, {
         tr: "İnterkalar fragmanları genellikle ayrıca ele almam",
         en: "I do not usually address intercalary fragments separately",
         de: "Ich adressiere interkalare Fragmente üblicherweise nicht gesondert",
+        es: "Habitualmente no trato los fragmentos intercalares por separado",
         exclusive: true
       }]
     }, {
@@ -960,7 +1032,8 @@ const SECTIONS = {
       text: {
         tr: "İnterkalar (serbest intra-artiküler) fragmanlarla ilgili mevcut pratiğinizi en iyi hangisi tanımlar?",
         en: "Which best describes your current practice regarding intercalary (free intra-articular) fragments?",
-        de: "Was beschreibt Ihre aktuelle Praxis bei interkalaren (freien intraartikulären) Fragmenten am besten?"
+        de: "Was beschreibt Ihre aktuelle Praxis bei interkalaren (freien intraartikulären) Fragmenten am besten?",
+        es: "¿Qué describe mejor su práctica actual respecto a los fragmentos intercalares (intraarticulares libres)?"
       },
       showIf: (answers) => {
         const d4 = answers.d4 || [];
@@ -979,19 +1052,23 @@ const SECTIONS = {
       opts: [{
         tr: "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim",
         en: "I routinely attempt direct fixation of intercalary fragments when accessible",
-        de: "Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar"
+        de: "Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar",
+        es: "Intento de forma rutinaria la fijación directa de los fragmentos intercalares cuando son accesibles"
       }, {
         tr: "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim",
         en: "I selectively fix intercalary fragments based on size, location, or comminution",
-        de: "Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerzone"
+        de: "Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerzone",
+        es: "Fijo de forma selectiva los fragmentos intercalares según su tamaño, localización o conminución"
       }, {
         tr: "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli",
         en: "I generally do not fix intercalary fragments directly — main PM fragment fixation usually suffices",
-        de: "Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist"
+        de: "Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist",
+        es: "Por lo general no fijo directamente los fragmentos intercalares — la fijación del fragmento principal del MP suele ser suficiente"
       }, {
         tr: "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili",
         en: "I do not have a settled practice yet — evidence is conflicting",
-        de: "Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich"
+        de: "Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich",
+        es: "Aún no tengo una práctica establecida — la evidencia es contradictoria"
       }]
     }]
   },
@@ -999,7 +1076,8 @@ const SECTIONS = {
     title: {
       tr: "D — Teknik Tercihler",
       en: "D — Technique Preferences",
-        de: "D — Technikpräferenzen"
+        de: "D — Technikpräferenzen",
+        es: "D — Preferencias técnicas"
     },
     questions: [{
       id: "e1",
@@ -1007,36 +1085,44 @@ const SECTIONS = {
       text: {
         tr: "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?",
         en: "What is your most commonly preferred technique for PM fixation?",
-        de: "Welche Technik bevorzugen Sie am häufigsten zur PM-Fixation?"
+        de: "Welche Technik bevorzugen Sie am häufigsten zur PM-Fixation?",
+        es: "¿Cuál es su técnica preferida con mayor frecuencia para la fijación del MP?"
       },
       opts: [{
         tr: "Perkütan AP lag vida",
         en: "Percutaneous AP lag screw",
-        de: "Perkutane AP-Zugschraube"
+        de: "Perkutane AP-Zugschraube",
+        es: "Tornillo de compresión (lag) percutáneo AP"
       }, {
         tr: "Perkütan PA lag vida",
         en: "Percutaneous PA lag screw",
-        de: "Perkutane PA-Zugschraube"
+        de: "Perkutane PA-Zugschraube",
+        es: "Tornillo de compresión (lag) percutáneo PA"
       }, {
         tr: "Trans-Achilles perkütan PA vida",
         en: "Trans-Achilles percutaneous PA screw",
-        de: "Transachilläre perkutane PA-Schraube"
+        de: "Transachilläre perkutane PA-Schraube",
+        es: "Tornillo percutáneo PA transaquíleo"
       }, {
         tr: "Açık posterolateral — buttress/locking plak",
         en: "Open posterolateral — buttress/locking plate",
-        de: "Offen posterolateral — Abstütz-/winkelstabile Platte"
+        de: "Offen posterolateral — Abstütz-/winkelstabile Platte",
+        es: "Abierto posterolateral — placa de sostén/bloqueada"
       }, {
         tr: "Açık posterolateral — lag vida",
         en: "Open posterolateral — lag screw",
-        de: "Offen posterolateral — Zugschraube"
+        de: "Offen posterolateral — Zugschraube",
+        es: "Abierto posterolateral — tornillo de compresión (lag)"
       }, {
         tr: "Açık posteromedyal — buttress/kilitli plak",
         en: "Open posteromedial — buttress/locking plate",
-        de: "Offen posteromedial — Abstütz-/winkelstabile Platte"
+        de: "Offen posteromedial — Abstütz-/winkelstabile Platte",
+        es: "Abierto posteromedial — placa de sostén/bloqueada"
       }, {
         tr: "Açık posteromedyal — lag vida",
         en: "Open posteromedial — lag screw",
-        de: "Offen posteromedial — Zugschraube"
+        de: "Offen posteromedial — Zugschraube",
+        es: "Abierto posteromedial — tornillo de compresión (lag)"
       }]
     }, {
       id: "e2",
@@ -1044,44 +1130,54 @@ const SECTIONS = {
       text: {
         tr: "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?",
         en: "What is your most commonly preferred surgical approach for PM fractures?",
-        de: "Welchen operativen Zugang bevorzugen Sie am häufigsten bei PM-Frakturen?"
+        de: "Welchen operativen Zugang bevorzugen Sie am häufigsten bei PM-Frakturen?",
+        es: "¿Cuál es su abordaje quirúrgico preferido con mayor frecuencia para las fracturas del MP?"
       },
       opts: [{
         tr: "Posterolateral",
         en: "Posterolateral",
-        de: "Posterolateral"
+        de: "Posterolateral",
+        es: "Posterolateral"
       }, {
         tr: "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)",
         en: "Posteromedial — standard (between FDL and posterior tibial tendon)",
-        de: "Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)"
+        de: "Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)",
+        es: "Posteromedial — estándar (entre el FDL y el tendón tibial posterior)"
       }, {
         tr: "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)",
         en: "Posteromedial — modified (medial window, lateral to FHL)",
-        de: "Posteromedial — modifiziert (mediales Fenster, lateral der FHL)"
+        de: "Posteromedial — modifiziert (mediales Fenster, lateral der FHL)",
+        es: "Posteromedial — modificado (ventana medial, lateral al FHL)"
       }, {
         tr: "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)",
         en: "Posteromedial — extended (FHL retraction / FHL window approach)",
-        de: "Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)"
+        de: "Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)",
+        es: "Posteromedial — ampliado (retracción del FHL / abordaje por la ventana del FHL)"
       }, {
         tr: "Kombine posterolateral + posteromedyal",
         en: "Combined posterolateral + posteromedial",
-        de: "Kombiniert posterolateral + posteromedial"
+        de: "Kombiniert posterolateral + posteromedial",
+        es: "Combinado posterolateral + posteromedial"
       }, {
         tr: "Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)",
         en: "Combined posterolateral + medial (separate medial incision for medial malleolus)",
-        de: "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)"
+        de: "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)",
+        es: "Combinado posterolateral + medial (incisión medial independiente para el maléolo medial)"
       }, {
         tr: "Anterior (perkütan)",
         en: "Anterior (percutaneous)",
-        de: "Anterior (perkutan)"
+        de: "Anterior (perkutan)",
+        es: "Anterior (percutáneo)"
       }, {
         tr: "Artroskopi yardımlı",
         en: "Arthroscopic-assisted",
-        de: "Arthroskopisch assistiert"
+        de: "Arthroskopisch assistiert",
+        es: "Asistido por artroscopia"
       }, {
         tr: "Vakaya göre değişir",
         en: "Varies by case",
-        de: "Fallabhängig unterschiedlich"
+        de: "Fallabhängig unterschiedlich",
+        es: "Varía según el caso"
       }]
     }, {
       id: "e3",
@@ -1089,20 +1185,24 @@ const SECTIONS = {
       text: {
         tr: "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?",
         en: "What is your most commonly preferred patient position for PM fractures?",
-        de: "Welche Patientenlagerung bevorzugen Sie am häufigsten bei PM-Frakturen?"
+        de: "Welche Patientenlagerung bevorzugen Sie am häufigsten bei PM-Frakturen?",
+        es: "¿Cuál es la posición del paciente que prefiere con mayor frecuencia para las fracturas del MP?"
       },
       opts: [{
         tr: "Supine",
         en: "Supine",
-        de: "Rückenlage"
+        de: "Rückenlage",
+        es: "Decúbito supino"
       }, {
         tr: "Prone",
         en: "Prone",
-        de: "Bauchlage"
+        de: "Bauchlage",
+        es: "Decúbito prono"
       }, {
         tr: "Lateral dekübitus",
         en: "Lateral decubitus",
-        de: "Seitenlage"
+        de: "Seitenlage",
+        es: "Decúbito lateral"
       }]
     }]
   },
@@ -1110,7 +1210,8 @@ const SECTIONS = {
     title: {
       tr: "E — Fiksasyon Sırası ve Sindesmotik Değerlendirme",
       en: "E — Sequence and Syndesmotic Considerations",
-        de: "E — Reihenfolge und Syndesmose"
+        de: "E — Reihenfolge und Syndesmose",
+        es: "E — Secuencia y consideraciones sobre la sindesmosis"
     },
     questions: [{
       id: "f1",
@@ -1118,24 +1219,29 @@ const SECTIONS = {
       text: {
         tr: "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?",
         en: "What is your general fixation sequence in trimalleolar fractures?",
-        de: "Wie ist Ihre übliche Fixationsreihenfolge bei trimalleolären Frakturen?"
+        de: "Wie ist Ihre übliche Fixationsreihenfolge bei trimalleolären Frakturen?",
+        es: "¿Cuál es su secuencia general de fijación en las fracturas trimaleolares?"
       },
       opts: [{
         tr: "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)",
         en: "Fibula → PM → Medial malleolus → Syndesmosis (if unstable)",
-        de: "Fibula → PM → Innenknöchel → Syndesmose (falls instabil)"
+        de: "Fibula → PM → Innenknöchel → Syndesmose (falls instabil)",
+        es: "Peroné → MP → Maléolo medial → Sindesmosis (si es inestable)"
       }, {
         tr: "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)",
         en: "PM first → Fibula → Medial malleolus → Syndesmosis (if unstable)",
-        de: "PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)"
+        de: "PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)",
+        es: "Primero MP → Peroné → Maléolo medial → Sindesmosis (si es inestable)"
       }, {
         tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
         en: "Fibula → Assess syndesmosis → PM → Medial malleolus",
-        de: "Fibula → Syndesmosenprüfung → PM → Innenknöchel"
+        de: "Fibula → Syndesmosenprüfung → PM → Innenknöchel",
+        es: "Peroné → Evaluar la sindesmosis → MP → Maléolo medial"
       }, {
         tr: "Bireyselleştirilmiş — standart sıram yok",
         en: "Individualised — no standard sequence",
-        de: "Individuell — keine Standardreihenfolge"
+        de: "Individuell — keine Standardreihenfolge",
+        es: "Individualizada — sin una secuencia estándar"
       }]
     }, {
       id: "f2",
@@ -1143,24 +1249,29 @@ const SECTIONS = {
       text: {
         tr: "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?",
         en: "How do you assess the syndesmosis after PM fixation?",
-        de: "Wie beurteilen Sie die Syndesmose nach der PM-Fixation?"
+        de: "Wie beurteilen Sie die Syndesmose nach der PM-Fixation?",
+        es: "¿Cómo evalúa la sindesmosis tras la fijación del MP?"
       },
       opts: [{
         tr: "İntraoperatif stres testi (eksternal rotasyon / hook test)",
         en: "Intraoperative stress test (external rotation / hook test)",
-        de: "Intraoperativer Stresstest (Außenrotations-/Hakentest)"
+        de: "Intraoperativer Stresstest (Außenrotations-/Hakentest)",
+        es: "Prueba de estrés intraoperatoria (rotación externa / prueba del gancho)"
       }, {
         tr: "Medial clear space değerlendirmesi yeterlidir",
         en: "Medial clear space assessment is sufficient",
-        de: "Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend"
+        de: "Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend",
+        es: "La evaluación del espacio claro medial es suficiente"
       }, {
         tr: "İntraoperatif artroskopi",
         en: "Intraoperative arthroscopy",
-        de: "Intraoperative Arthroskopie"
+        de: "Intraoperative Arthroskopie",
+        es: "Artroscopia intraoperatoria"
       }, {
         tr: "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım",
         en: "I routinely fix the syndesmosis regardless of stability",
-        de: "Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität"
+        de: "Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität",
+        es: "Fijo la sindesmosis de forma rutinaria, independientemente de su estabilidad"
       }]
     }, {
       id: "f3",
@@ -1168,24 +1279,29 @@ const SECTIONS = {
       text: {
         tr: "Deneyiminize göre PM fiksasyonu sıklıkla sindesmotik stabiliteyi sağlar mı?",
         en: "In your experience, does PM fixation frequently restore syndesmotic stability?",
-        de: "Stellt die PM-Fixation Ihrer Erfahrung nach häufig die Syndesmosenstabilität wieder her?"
+        de: "Stellt die PM-Fixation Ihrer Erfahrung nach häufig die Syndesmosenstabilität wieder her?",
+        es: "Según su experiencia, ¿la fijación del MP restablece con frecuencia la estabilidad sindesmal?"
       },
       opts: [{
         tr: "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar",
         en: "Yes — consistently; PM fixation restores syndesmotic stability",
-        de: "Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her"
+        de: "Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her",
+        es: "Sí — de forma constante; la fijación del MP restablece la estabilidad sindesmal"
       }, {
         tr: "Evet — bazı vakalarda",
         en: "Yes — in some cases",
-        de: "Ja — in manchen Fällen"
+        de: "Ja — in manchen Fällen",
+        es: "Sí — en algunos casos"
       }, {
         tr: "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder",
         en: "No — syndesmotic instability often persists despite PM fixation",
-        de: "Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig"
+        de: "Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig",
+        es: "No — la inestabilidad sindesmal suele persistir pese a la fijación del MP"
       }, {
         tr: "Pratiğimde bunu spesifik olarak değerlendirmedim",
         en: "I have not specifically assessed this in my practice",
-        de: "Ich habe dies in meiner Praxis nicht gezielt untersucht"
+        de: "Ich habe dies in meiner Praxis nicht gezielt untersucht",
+        es: "No lo he evaluado específicamente en mi práctica"
       }]
     }, {
       id: "f4",
@@ -1193,24 +1309,29 @@ const SECTIONS = {
       text: {
         tr: "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?",
         en: "When evaluating an ankle fracture with PM involvement, do you specifically assess for anterior syndesmotic avulsions (Chaput tubercle / Wagstaffe fragment)?",
-        de: "Prüfen Sie bei Sprunggelenkfrakturen mit PM-Beteiligung gezielt auf anteriore syndesmotische Avulsionen (Tubercule de Chaput / Wagstaffe-Fragment)?"
+        de: "Prüfen Sie bei Sprunggelenkfrakturen mit PM-Beteiligung gezielt auf anteriore syndesmotische Avulsionen (Tubercule de Chaput / Wagstaffe-Fragment)?",
+        es: "Al evaluar una fractura de tobillo con afectación del MP, ¿busca específicamente avulsiones sindesmales anteriores (tubérculo de Chaput / fragmento de Wagstaffe)?"
       },
       opts: [{
         tr: "Evet — rutin olarak BT'de",
         en: "Yes — routinely, on CT",
-        de: "Ja — routinemäßig im CT"
+        de: "Ja — routinemäßig im CT",
+        es: "Sí — de forma rutinaria, en la TC"
       }, {
         tr: "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)",
         en: "Yes — only when syndesmotic instability is clinically suspected (positive hook test, persistent diastasis on stress imaging, etc.)",
-        de: "Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hakentest, persistierende Diastase in der Stressbildgebung etc.)"
+        de: "Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hakentest, persistierende Diastase in der Stressbildgebung etc.)",
+        es: "Sí — solo cuando se sospecha clínicamente inestabilidad sindesmal (prueba del gancho positiva, diástasis persistente en las imágenes de estrés, etc.)"
       }, {
         tr: "Bazen — kırık paternine göre",
         en: "Sometimes — depending on fracture pattern",
-        de: "Manchmal — je nach Frakturmuster"
+        de: "Manchmal — je nach Frakturmuster",
+        es: "A veces — según el patrón de fractura"
       }, {
         tr: "Nadiren veya spesifik olarak değil",
         en: "Rarely or not specifically",
-        de: "Selten oder nicht gezielt"
+        de: "Selten oder nicht gezielt",
+        es: "Rara vez o no específicamente"
       }]
     }, {
       id: "f5",
@@ -1218,28 +1339,34 @@ const SECTIONS = {
       text: {
         tr: "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?",
         en: "If a Chaput or Wagstaffe fragment is identified, what is your preferred management?",
-        de: "Wie behandeln Sie ein identifiziertes Chaput- oder Wagstaffe-Fragment bevorzugt?"
+        de: "Wie behandeln Sie ein identifiziertes Chaput- oder Wagstaffe-Fragment bevorzugt?",
+        es: "Si se identifica un fragmento de Chaput o de Wagstaffe, ¿cuál es su tratamiento preferido?"
       },
       opts: [{
         tr: "Direkt fiksasyon (vida, sütur ankoru veya plak)",
         en: "Direct fixation (screw, suture anchor, or plate)",
-        de: "Direkte Fixation (Schraube, Fadenanker oder Platte)"
+        de: "Direkte Fixation (Schraube, Fadenanker oder Platte)",
+        es: "Fijación directa (tornillo, anclaje de sutura o placa)"
       }, {
         tr: "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)",
         en: "Trans-syndesmotic fixation only (without addressing the fragment directly)",
-        de: "Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)"
+        de: "Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)",
+        es: "Solo fijación transindesmal (sin tratar directamente el fragmento)"
       }, {
         tr: "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon",
         en: "Both — direct fragment fixation and trans-syndesmotic stabilisation",
-        de: "Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung"
+        de: "Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung",
+        es: "Ambas — fijación directa del fragmento y estabilización transindesmal"
       }, {
         tr: "Sindesmoz aksi takdirde stabil ise non-operatif",
         en: "Non-operative if syndesmosis is otherwise stable",
-        de: "Konservativ, sofern die Syndesmose ansonsten stabil ist"
+        de: "Konservativ, sofern die Syndesmose ansonsten stabil ist",
+        es: "Tratamiento no quirúrgico si la sindesmosis es por lo demás estable"
       }, {
         tr: "Karar fragman boyutu ve erişilebilirliğine göre",
         en: "Decision based on fragment size and accessibility",
-        de: "Entscheidung nach Fragmentgröße und Erreichbarkeit"
+        de: "Entscheidung nach Fragmentgröße und Erreichbarkeit",
+        es: "Decisión según el tamaño y la accesibilidad del fragmento"
       }]
     }]
   }
@@ -1249,14 +1376,16 @@ const CASES = [{
   title: {
     tr: "VAKA 1",
     en: "CASE 1",
-        de: "FALL 1"
+        de: "FALL 1",
+        es: "CASO 1"
   },
   color: "#E6A817",
   bg: "#FFF8E7",
   vig: {
     tr: "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası ayak bileği ağrısı ve şişlik şikâyetiyle acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Yapılan direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği bimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %20'sini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
     en: "A 52-year-old female patient presented to the emergency department with ankle pain and swelling following a twisting injury while descending stairs. Her medical history is notable for hypertension, managed with amlodipine 5 mg daily. Plain radiographs and computed tomography revealed a bimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 20% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1.",
-        de: "Eine 52-jährige Patientin stellte sich nach einem Distorsionstrauma beim Treppenhinabsteigen mit Schmerzen und Schwellung des Sprunggelenks in der Notaufnahme vor. Anamnestisch besteht eine arterielle Hypertonie, eingestellt mit Amlodipin 5 mg täglich. Röntgenaufnahmen und Computertomographie zeigten eine bimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 20 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert."
+        de: "Eine 52-jährige Patientin stellte sich nach einem Distorsionstrauma beim Treppenhinabsteigen mit Schmerzen und Schwellung des Sprunggelenks in der Notaufnahme vor. Anamnestisch besteht eine arterielle Hypertonie, eingestellt mit Amlodipin 5 mg täglich. Röntgenaufnahmen und Computertomographie zeigten eine bimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 20 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert.",
+        es: "Mujer de 52 años que acude a urgencias por dolor e inflamación del tobillo tras una lesión por torsión al bajar unas escaleras. Entre sus antecedentes destaca hipertensión arterial tratada con amlodipino 5 mg al día. Las radiografías simples y la tomografía computarizada mostraron una fractura bimaleolar de tobillo con una fractura de peroné Weber B asociada. En la TC, el fragmento del maléolo posterior afectaba aproximadamente al 20% de la superficie articular. La fractura se clasificó como tipo 2 de Bartoníček y tipo 1 de Haraguchi."
   },
   prefix: "g1_case1",
   hasSequence: true,
@@ -1267,14 +1396,16 @@ const CASES = [{
   title: {
     tr: "VAKA 2",
     en: "CASE 2",
-        de: "FALL 2"
+        de: "FALL 2",
+        es: "CASO 2"
   },
   color: "#3A7D44",
   bg: "#F0F7EE",
   vig: {
     tr: "76 yaşında aktif erkek hasta, bahçede yürürken düzensiz zeminde ayağının dönmesi sonrası ayak bileği ağrısı ve yürüyememe şikâyetiyle başvurmuştur. Özgeçmişinde iyi kontrollü tip 2 diabetes mellitus (metformin tedavisi altında, HbA1c %6.8) ve benign prostat hiperplazisi mevcuttur. Direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığının eşlik ettiği trimalleolar ayak bileği kırığı saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %18'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 3 ve Haraguchi Tip 2 olarak sınıflandırılmıştır.",
     en: "A 76-year-old active male patient presented with ankle pain and inability to bear weight after his foot turned on uneven ground while walking in his garden. His medical history includes well-controlled type 2 diabetes mellitus (on metformin, HbA1c 6.8%) and benign prostatic hyperplasia. Plain radiographs and computed tomography revealed a trimalleolar ankle fracture with an associated Weber B fibula fracture. On CT, the posterior malleolus fragment was found to involve approximately 18% of the articular surface. The fracture was classified as Bartoníček Type 3 and Haraguchi Type 2.",
-        de: "Ein 76-jähriger aktiver Patient stellte sich mit Sprunggelenkschmerzen und Belastungsunfähigkeit vor, nachdem er beim Gehen im Garten auf unebenem Boden umgeknickt war. Anamnestisch bestehen ein gut eingestellter Typ-2-Diabetes mellitus (unter Metformin, HbA1c 6,8 %) und eine benigne Prostatahyperplasie. Röntgenaufnahmen und Computertomographie zeigten eine trimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 18 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 3 und Haraguchi Typ 2 klassifiziert."
+        de: "Ein 76-jähriger aktiver Patient stellte sich mit Sprunggelenkschmerzen und Belastungsunfähigkeit vor, nachdem er beim Gehen im Garten auf unebenem Boden umgeknickt war. Anamnestisch bestehen ein gut eingestellter Typ-2-Diabetes mellitus (unter Metformin, HbA1c 6,8 %) und eine benigne Prostatahyperplasie. Röntgenaufnahmen und Computertomographie zeigten eine trimalleoläre Sprunggelenkfraktur mit begleitender Weber-B-Fibulafraktur. Im CT umfasste das posteriore Malleolusfragment etwa 18 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 3 und Haraguchi Typ 2 klassifiziert.",
+        es: "Varón activo de 76 años que consulta por dolor de tobillo e imposibilidad para la carga tras torcerse el pie en un terreno irregular mientras caminaba por su jardín. Entre sus antecedentes figuran diabetes mellitus tipo 2 bien controlada (con metformina, HbA1c 6,8%) e hiperplasia benigna de próstata. Las radiografías simples y la tomografía computarizada mostraron una fractura trimaleolar de tobillo con una fractura de peroné Weber B asociada. En la TC, el fragmento del maléolo posterior afectaba aproximadamente al 18% de la superficie articular. La fractura se clasificó como tipo 3 de Bartoníček y tipo 2 de Haraguchi."
   },
   prefix: "g2_case2",
   hasSequence: true,
@@ -1284,14 +1415,16 @@ const CASES = [{
   title: {
     tr: "VAKA 3",
     en: "CASE 3",
-        de: "FALL 3"
+        de: "FALL 3",
+        es: "CASO 3"
   },
   color: "#6A3D9A",
   bg: "#F3EEF8",
   vig: {
     tr: "74 yaşında kadın hasta, evde düşme sonrası başka bir merkeze başvurmuş ve atelle stabilize edilerek kliniğimize sevk edilmiştir. İlk başvuruda anteromedialde yumuşak doku hasarı tespit edilmiş olup, debridman ve primer kapama uygulanmıştır; aktif enfeksiyon bulgusu yoktur. Hastaya Gustilo-Anderson Tip 3A açık trimalleolar kırık tanısı konularak eksternal fiksatör uygulanmış ve VAC tedavisi başlanmıştır. Üçüncü haftada yapılan değerlendirmede lateral ve posterior bölgelerde büzüşme testi pozitif bulunmuştur. Özgeçmişinde osteoporoz ve hipertansiyon mevcuttur. Weber B fibula kırığı eşlik etmektedir. Preoperatif bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %28'ini tuttuğu görülmüştür. Kırık Bartoníček Tip 2 ve Haraguchi Tip 1 olarak sınıflandırılmıştır.",
     en: "A 74-year-old female patient initially presented to another centre following a fall at home and was referred to our clinic after being stabilised with a splint. At the initial presentation, a soft tissue injury was identified on the anteromedial aspect; debridement and primary closure were performed with no signs of active infection. The patient was diagnosed with a Gustilo-Anderson Type 3A open trimalleolar fracture, and an external fixator was applied along with VAC therapy. At the third week of follow-up, the wrinkle test was found to be positive over the lateral and posterior aspects. Her medical history includes osteoporosis and hypertension. An associated Weber B fibula fracture is present. Preoperative computed tomography showed the posterior malleolus fragment involving approximately 28% of the articular surface. The fracture was classified as Bartoníček Type 2 and Haraguchi Type 1.",
-        de: "Eine 74-jährige Patientin stellte sich zunächst nach einem häuslichen Sturz in einem anderen Zentrum vor und wurde nach Stabilisierung mit einer Schiene in unsere Klinik überwiesen. Bei der Erstvorstellung fand sich anteromedial eine Weichteilverletzung; es erfolgten Débridement und Primärverschluss ohne Zeichen einer aktiven Infektion. Es wurde eine offene trimalleoläre Fraktur Gustilo-Anderson Typ 3A diagnostiziert; ein Fixateur externe wurde angelegt und eine VAC-Therapie eingeleitet. In der dritten Woche der Verlaufskontrolle war der Wrinkle-Test über dem lateralen und posterioren Aspekt positiv. Anamnestisch bestehen Osteoporose und arterielle Hypertonie. Es liegt eine begleitende Weber-B-Fibulafraktur vor. Die präoperative Computertomographie zeigte ein posteriores Malleolusfragment mit Beteiligung von etwa 28 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert."
+        de: "Eine 74-jährige Patientin stellte sich zunächst nach einem häuslichen Sturz in einem anderen Zentrum vor und wurde nach Stabilisierung mit einer Schiene in unsere Klinik überwiesen. Bei der Erstvorstellung fand sich anteromedial eine Weichteilverletzung; es erfolgten Débridement und Primärverschluss ohne Zeichen einer aktiven Infektion. Es wurde eine offene trimalleoläre Fraktur Gustilo-Anderson Typ 3A diagnostiziert; ein Fixateur externe wurde angelegt und eine VAC-Therapie eingeleitet. In der dritten Woche der Verlaufskontrolle war der Wrinkle-Test über dem lateralen und posterioren Aspekt positiv. Anamnestisch bestehen Osteoporose und arterielle Hypertonie. Es liegt eine begleitende Weber-B-Fibulafraktur vor. Die präoperative Computertomographie zeigte ein posteriores Malleolusfragment mit Beteiligung von etwa 28 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 2 und Haraguchi Typ 1 klassifiziert.",
+        es: "Mujer de 74 años atendida inicialmente en otro centro tras una caída en su domicilio y derivada a nuestra consulta tras ser estabilizada con una férula. En la valoración inicial se identificó una lesión de partes blandas en la cara anteromedial; se realizaron desbridamiento y cierre primario, sin signos de infección activa. Se diagnosticó una fractura trimaleolar abierta tipo IIIA de Gustilo-Anderson y se colocó un fijador externo junto con terapia VAC. En la tercera semana de seguimiento, el signo de las arrugas (wrinkle test) fue positivo en las caras lateral y posterior. Entre sus antecedentes figuran osteoporosis e hipertensión arterial. Presenta una fractura de peroné Weber B asociada. La tomografía computarizada preoperatoria mostró que el fragmento del maléolo posterior afectaba aproximadamente al 28% de la superficie articular. La fractura se clasificó como tipo 2 de Bartoníček y tipo 1 de Haraguchi."
   },
   prefix: "g3_case3",
   hasSequence: true,
@@ -1300,13 +1433,14 @@ const CASES = [{
   id: "case4",
   defaultZoom: 1.4,
   title: { tr: "VAKA 4", en: "CASE 4",
-        de: "FALL 4" },
+        de: "FALL 4", es: "CASO 4" },
   color: "#8C564B",
   bg: "#F4ECEB",
   vig: {
     tr: "55 yaşında kadın hasta, ev içinde merdivenden inerken ayağının dönmesi sonrası sol ayak bileğinde belirgin deformite, şiddetli ağrı ve yük verememe şikâyetiyle acil servise getirilmiştir. İlk muayenede ayak bileğinde gözle görülür dislokasyon mevcut; nörovasküler muayene başlangıçta intaktır. Acil serviste sedasyon altında kapalı redüksiyon uygulanmış ve eksternal fiksatörle stabilize edilmiştir. Yumuşak doku ödeminin gerilemesi ve büzüşme (wrinkle) testinin pozitifleşmesini takiben definitif cerrahi planlama için karşınızdadır. Özgeçmişinde Tip 1 von Willebrand hastalığı (hafif kanama diyatezi, hematoloji takibinde) ve kronik miyeloid lösemi (kronik faz, imatinib 400 mg/gün altında, BCR-ABL transkript düzeyi major moleküler yanıtta) mevcuttur. Direkt grafi ve bilgisayarlı tomografi incelemesinde Weber B fibula kırığı, medial malleol kırığı ve posterior malleol fragmanından oluşan trimalleolar kırıklı çıkık saptanmıştır. Bilgisayarlı tomografide posterior malleol fragmentinin eklem yüzeyinin yaklaşık %36'sını tuttuğu görülmüştür. Kırık Bartoníček Tip 3 ve Haraguchi Tip 2 olarak sınıflandırılmıştır.",
     en: "A 55-year-old female presented to the emergency department after twisting her foot while descending an indoor staircase, complaining of marked deformity, severe pain and inability to bear weight in the left ankle. On initial examination an obvious ankle dislocation was apparent; neurovascular examination was intact at presentation. Closed reduction was performed under conscious sedation in the emergency department and the ankle was stabilised with an external fixator. After soft-tissue oedema had resolved and the wrinkle test had become positive, the patient now presents for definitive surgical planning. Her past medical history includes Type 1 von Willebrand disease (mild bleeding diathesis, followed by haematology) and chronic myeloid leukaemia in chronic phase, on imatinib 400 mg daily with BCR-ABL transcripts in major molecular response. Plain radiographs and computed tomography demonstrated a trimalleolar fracture-dislocation comprising a Weber B fibula fracture, a medial malleolar fracture and a posterior malleolus fragment. On CT the posterior malleolus fragment was found to involve approximately 36% of the articular surface. The fracture was classified as Bartoníček Type 3 and Haraguchi Type 2.",
-        de: "Eine 55-jährige Patientin stellte sich nach Umknicken beim Hinabsteigen einer Innentreppe mit deutlicher Fehlstellung, starken Schmerzen und Belastungsunfähigkeit des linken Sprunggelenks in der Notaufnahme vor. Bei der Erstuntersuchung zeigte sich eine offensichtliche Sprunggelenkluxation; der neurovaskuläre Status war bei Aufnahme intakt. In der Notaufnahme erfolgte die geschlossene Reposition in Analgosedierung, und das Sprunggelenk wurde mit einem Fixateur externe stabilisiert. Nach Rückgang des Weichteilödems und positivem Wrinkle-Test stellt sich die Patientin nun zur definitiven Operationsplanung vor. Anamnestisch bestehen ein Von-Willebrand-Syndrom Typ 1 (milde Blutungsneigung, hämatologisch betreut) und eine chronische myeloische Leukämie in chronischer Phase unter Imatinib 400 mg täglich mit BCR-ABL-Transkripten in gutem molekularem Ansprechen. Röntgenaufnahmen und Computertomographie zeigten eine trimalleoläre Luxationsfraktur mit Weber-B-Fibulafraktur, Innenknöchelfraktur und posteriorem Malleolusfragment. Im CT umfasste das posteriore Malleolusfragment etwa 36 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 3 und Haraguchi Typ 2 klassifiziert."
+        de: "Eine 55-jährige Patientin stellte sich nach Umknicken beim Hinabsteigen einer Innentreppe mit deutlicher Fehlstellung, starken Schmerzen und Belastungsunfähigkeit des linken Sprunggelenks in der Notaufnahme vor. Bei der Erstuntersuchung zeigte sich eine offensichtliche Sprunggelenkluxation; der neurovaskuläre Status war bei Aufnahme intakt. In der Notaufnahme erfolgte die geschlossene Reposition in Analgosedierung, und das Sprunggelenk wurde mit einem Fixateur externe stabilisiert. Nach Rückgang des Weichteilödems und positivem Wrinkle-Test stellt sich die Patientin nun zur definitiven Operationsplanung vor. Anamnestisch bestehen ein Von-Willebrand-Syndrom Typ 1 (milde Blutungsneigung, hämatologisch betreut) und eine chronische myeloische Leukämie in chronischer Phase unter Imatinib 400 mg täglich mit BCR-ABL-Transkripten in gutem molekularem Ansprechen. Röntgenaufnahmen und Computertomographie zeigten eine trimalleoläre Luxationsfraktur mit Weber-B-Fibulafraktur, Innenknöchelfraktur und posteriorem Malleolusfragment. Im CT umfasste das posteriore Malleolusfragment etwa 36 % der Gelenkfläche. Die Fraktur wurde als Bartoníček Typ 3 und Haraguchi Typ 2 klassifiziert.",
+        es: "Mujer de 55 años que acude a urgencias tras torcerse el pie al bajar una escalera interior, con deformidad marcada, dolor intenso e imposibilidad para la carga en el tobillo izquierdo. En la exploración inicial se apreciaba una luxación evidente del tobillo; la exploración neurovascular era normal a su llegada. Se realizó una reducción cerrada bajo sedación consciente en urgencias y el tobillo se estabilizó con un fijador externo. Una vez resuelto el edema de partes blandas y con el signo de las arrugas (wrinkle test) positivo, la paciente acude ahora para la planificación quirúrgica definitiva. Entre sus antecedentes figuran enfermedad de von Willebrand tipo 1 (diátesis hemorrágica leve, en seguimiento por hematología) y leucemia mieloide crónica en fase crónica, en tratamiento con imatinib 400 mg al día, con tránscritos BCR-ABL en respuesta molecular mayor. Las radiografías simples y la tomografía computarizada mostraron una fractura-luxación trimaleolar con fractura de peroné Weber B, fractura del maléolo medial y fragmento del maléolo posterior. En la TC, el fragmento del maléolo posterior afectaba aproximadamente al 36% de la superficie articular. La fractura se clasificó como tipo 3 de Bartoníček y tipo 2 de Haraguchi."
   },
   prefix: "g4_case4",
   hasSequence: true,
@@ -1318,175 +1452,215 @@ const CASE_OPTS = {
   pos: [{
     tr: "Supine",
     en: "Supine",
-        de: "Rückenlage"
+        de: "Rückenlage",
+        es: "Decúbito supino"
   }, {
     tr: "Prone",
     en: "Prone",
-        de: "Bauchlage"
+        de: "Bauchlage",
+        es: "Decúbito prono"
   }, {
     tr: "Lateral dekübitus",
     en: "Lateral decubitus",
-        de: "Seitenlage"
+        de: "Seitenlage",
+        es: "Decúbito lateral"
   }, {
     tr: "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)",
     en: "Multiple positions required (e.g., repositioning intra-op)",
-        de: "Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)"
+        de: "Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)",
+        es: "Se requieren varias posiciones (p. ej., cambio de posición intraoperatorio)"
   }],
   app: [{
     tr: "Posterolateral",
     en: "Posterolateral",
-        de: "Posterolateral"
+        de: "Posterolateral",
+        es: "Posterolateral"
   }, {
     tr: "Posteromedyal — standart",
     en: "Posteromedial — standard",
-        de: "Posteromedial — Standard"
+        de: "Posteromedial — Standard",
+        es: "Posteromedial — estándar"
   }, {
     tr: "Posteromedyal — modifiye",
     en: "Posteromedial — modified",
-        de: "Posteromedial — modifiziert"
+        de: "Posteromedial — modifiziert",
+        es: "Posteromedial — modificado"
   }, {
     tr: "Posteromedyal — geniş (FHL)",
     en: "Posteromedial — extended (FHL)",
-        de: "Posteromedial — erweitert (FHL)"
+        de: "Posteromedial — erweitert (FHL)",
+        es: "Posteromedial — ampliado (FHL)"
   }, {
     tr: "Kombine posterolateral + posteromedyal",
     en: "Combined posterolateral + posteromedial",
-        de: "Kombiniert posterolateral + posteromedial"
+        de: "Kombiniert posterolateral + posteromedial",
+        es: "Combinado posterolateral + posteromedial"
   }, {
     tr: "Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)",
     en: "Combined posterolateral + medial (separate medial incision for medial malleolus)",
-        de: "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)"
+        de: "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)",
+        es: "Combinado posterolateral + medial (incisión medial independiente para el maléolo medial)"
   }, {
     tr: "Anterior (perkütan)",
     en: "Anterior (percutaneous)",
-        de: "Anterior (perkutan)"
+        de: "Anterior (perkutan)",
+        es: "Anterior (percutáneo)"
   }, {
     tr: "Artroskopi yardımlı",
     en: "Arthroscopic-assisted",
-        de: "Arthroskopisch assistiert"
+        de: "Arthroskopisch assistiert",
+        es: "Asistido por artroscopia"
   }],
   seq: [{
     tr: "PM önce → Fibula → Medial malleol",
     en: "PM first → Fibula → Medial malleolus",
-        de: "PM zuerst → Fibula → Innenknöchel"
+        de: "PM zuerst → Fibula → Innenknöchel",
+        es: "Primero MP → Peroné → Maléolo medial"
   }, {
     tr: "Fibula → PM → Medial malleol",
     en: "Fibula → PM → Medial malleolus",
-        de: "Fibula → PM → Innenknöchel"
+        de: "Fibula → PM → Innenknöchel",
+        es: "Peroné → MP → Maléolo medial"
   }, {
     tr: "Fibula → Sindesmoz değerlendir → PM → Medial malleol",
     en: "Fibula → Assess syndesmosis → PM → Medial malleolus",
-        de: "Fibula → Syndesmosenprüfung → PM → Innenknöchel"
+        de: "Fibula → Syndesmosenprüfung → PM → Innenknöchel",
+        es: "Peroné → Evaluar la sindesmosis → MP → Maléolo medial"
   }, {
     tr: "Fibula → PM → Medial malleol → Sindesmoz değerlendir",
     en: "Fibula → PM → Medial malleolus → Assess syndesmosis",
-        de: "Fibula → PM → Innenknöchel → Syndesmosenprüfung"
+        de: "Fibula → PM → Innenknöchel → Syndesmosenprüfung",
+        es: "Peroné → MP → Maléolo medial → Evaluar la sindesmosis"
 }, {
     tr: "Bireyselleştirilmiş — standart sıram yok",
     en: "Individualised — no standard sequence",
-        de: "Individuell — keine Standardreihenfolge"
+        de: "Individuell — keine Standardreihenfolge",
+        es: "Individualizada — sin una secuencia estándar"
   }],
   seqBimal: [{
     tr: "PM önce → Lateral malleol",
     en: "PM first → Lateral malleolus",
-        de: "PM zuerst → Außenknöchel"
+        de: "PM zuerst → Außenknöchel",
+        es: "Primero MP → Maléolo lateral"
   }, {
     tr: "Lateral malleol önce → PM",
     en: "Lateral malleolus first → PM",
-        de: "Außenknöchel zuerst → PM"
+        de: "Außenknöchel zuerst → PM",
+        es: "Primero maléolo lateral → MP"
   }, {
     tr: "Eşzamanlı / tek yaklaşımdan fiksasyon",
     en: "Simultaneous / single-approach fixation",
-        de: "Simultane Fixation / über einen einzigen Zugang"
+        de: "Simultane Fixation / über einen einzigen Zugang",
+        es: "Fijación simultánea / por un único abordaje"
   }, {
     tr: "Lateral malleol → PM → Sindesmoz değerlendir",
     en: "Lateral malleolus → PM → Assess syndesmosis",
-        de: "Außenknöchel → PM → Syndesmosenprüfung"
+        de: "Außenknöchel → PM → Syndesmosenprüfung",
+        es: "Maléolo lateral → MP → Evaluar la sindesmosis"
 }, {
     tr: "Bireyselleştirilmiş — standart sıram yok",
     en: "Individualised — no standard sequence",
-        de: "Individuell — keine Standardreihenfolge"
+        de: "Individuell — keine Standardreihenfolge",
+        es: "Individualizada — sin una secuencia estándar"
   }],
   tech: [{
     tr: "Perkütan AP vida fiksasyonu",
     en: "Percutaneous AP screw fixation",
-        de: "Perkutane AP-Schraubenfixation"
+        de: "Perkutane AP-Schraubenfixation",
+        es: "Fijación percutánea con tornillo AP"
   }, {
     tr: "Perkütan PA vida fiksasyonu",
     en: "Percutaneous PA screw fixation",
-        de: "Perkutane PA-Schraubenfixation"
+        de: "Perkutane PA-Schraubenfixation",
+        es: "Fijación percutánea con tornillo PA"
   }, {
     tr: "Açık posterolateral — lag vida (plaksız)",
     en: "Open posterolateral — lag screw (no plate)",
-        de: "Offen posterolateral — Zugschraube (ohne Platte)"
+        de: "Offen posterolateral — Zugschraube (ohne Platte)",
+        es: "Abierto posterolateral — tornillo de compresión (lag) (sin placa)"
   }, {
     tr: "Açık posterolateral — buttress/kilitli plak",
     en: "Open posterolateral — buttress/locking plate",
-        de: "Offen posterolateral — Abstütz-/winkelstabile Platte"
+        de: "Offen posterolateral — Abstütz-/winkelstabile Platte",
+        es: "Abierto posterolateral — placa de sostén/bloqueada"
   }, {
     tr: "Açık posteromedyal — buttress/kilitli plak",
     en: "Open posteromedial — buttress/locking plate",
-        de: "Offen posteromedial — Abstütz-/winkelstabile Platte"
+        de: "Offen posteromedial — Abstütz-/winkelstabile Platte",
+        es: "Abierto posteromedial — placa de sostén/bloqueada"
   }, {
     tr: "Açık posteromedyal — lag vida (plaksız)",
     en: "Open posteromedial — lag screw (no plate)",
-        de: "Offen posteromedial — Zugschraube (ohne Platte)"
+        de: "Offen posteromedial — Zugschraube (ohne Platte)",
+        es: "Abierto posteromedial — tornillo de compresión (lag) (sin placa)"
   }, {
     tr: "Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu",
     en: "Mini-fragment / intercalary fragment fixation in addition to main PM fixation",
-        de: "Minifragment-/interkalare Fragmentfixation zusätzlich zur PM-Hauptfixation"
+        de: "Minifragment-/interkalare Fragmentfixation zusätzlich zur PM-Hauptfixation",
+        es: "Fijación de minifragmentos / fragmento intercalar además de la fijación principal del MP"
   }, {
     tr: "Artroskopi yardımlı redüksiyon / fiksasyon",
     en: "Arthroscopic-assisted reduction / fixation",
-        de: "Arthroskopisch assistierte Reposition/Fixation"
+        de: "Arthroskopisch assistierte Reposition/Fixation",
+        es: "Reducción / fijación asistida por artroscopia"
   }, {
     tr: "Diğer",
     en: "Other",
-        de: "Sonstiges"
+        de: "Sonstiges",
+        es: "Otro"
   }],
   comorbidModify: [{
     tr: "Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)",
     en: "Yes — I would modify the surgical approach (e.g., less invasive or different incision)",
-        de: "Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)"
+        de: "Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)",
+        es: "Sí — modificaría el abordaje quirúrgico (p. ej., menos invasivo o con otra incisión)"
   }, {
     tr: "Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)",
     en: "Yes — I would adjust the timing (delay or stage the procedure)",
-        de: "Ja — ich würde das Timing anpassen (Verschiebung oder zweizeitiges Vorgehen)"
+        de: "Ja — ich würde das Timing anpassen (Verschiebung oder zweizeitiges Vorgehen)",
+        es: "Sí — ajustaría el momento de la cirugía (diferirla o realizarla por etapas)"
   }, {
     tr: "Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım",
     en: "Yes — I would obtain specialist consultation (hematology / oncology) before surgery",
-        de: "Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen"
+        de: "Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen",
+        es: "Sí — solicitaría una interconsulta especializada (hematología / oncología) antes de la cirugía"
   }, {
     tr: "Hayır — sağlıklı hastadakiyle aynı planı uygularım",
     en: "No — I would proceed with the same plan as in a healthy patient",
-        de: "Nein — ich würde wie bei einem gesunden Patienten vorgehen"
+        de: "Nein — ich würde wie bei einem gesunden Patienten vorgehen",
+        es: "No — seguiría el mismo plan que en un paciente sano"
   }]
 };
 const LIKERT_QS = [{
   id: "h1",
   tr: "Fragment boyutu PM fiksasyon kararında en önemli faktördür.",
   en: "Fragment size is the most important factor in PM fixation decisions.",
-        de: "Die Fragmentgröße ist der wichtigste Faktor bei der Entscheidung zur PM-Fixation."
+        de: "Die Fragmentgröße ist der wichtigste Faktor bei der Entscheidung zur PM-Fixation.",
+        es: "El tamaño del fragmento es el factor más importante en la decisión de fijar el MP."
 }, {
   id: "h2",
   tr: "Fragment morfolojisi boyuttan daha önemlidir.",
   en: "Fragment morphology is more important than size.",
-        de: "Die Fragmentmorphologie ist wichtiger als die Größe."
+        de: "Die Fragmentmorphologie ist wichtiger als die Größe.",
+        es: "La morfología del fragmento es más importante que su tamaño."
 }, {
   id: "h3",
   tr: "Direkt posterior yaklaşım perkütan tekniklerden üstündür.",
   en: "Direct posterior approach is superior to percutaneous techniques.",
-        de: "Der direkte posteriore Zugang ist perkutanen Techniken überlegen."
+        de: "Der direkte posteriore Zugang ist perkutanen Techniken überlegen.",
+        es: "El abordaje posterior directo es superior a las técnicas percutáneas."
 }, {
   id: "h7",
   tr: "Açık posterior yaklaşımların artan cerrahi karmaşıklığı, bu yaklaşımları kullanmamı sınırlıyor.",
   en: "The added surgical complexity of open posterior approaches limits my use of them.",
-        de: "Die höhere operative Komplexität offener posteriorer Zugänge schränkt deren Einsatz bei mir ein."
+        de: "Die höhere operative Komplexität offener posteriorer Zugänge schränkt deren Einsatz bei mir ein.",
+        es: "La mayor complejidad quirúrgica de los abordajes posteriores abiertos limita mi uso de ellos."
 }, {
   id: "h8",
   tr: "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, açık yaklaşımın artan cerrahi karmaşıklığını geride bırakır.",
   en: "In selected PM fracture morphologies, the expected benefit of direct reduction outweighs the added surgical complexity of the open approach.",
-        de: "Bei ausgewählten PM-Frakturmorphologien überwiegt der erwartete Nutzen der direkten Reposition die zusätzliche operative Komplexität des offenen Zugangs."
+        de: "Bei ausgewählten PM-Frakturmorphologien überwiegt der erwartete Nutzen der direkten Reposition die zusätzliche operative Komplexität des offenen Zugangs.",
+        es: "En determinadas morfologías de fractura del MP, el beneficio esperado de la reducción directa supera la mayor complejidad quirúrgica del abordaje abierto."
 }];
 
 // Practice Evolution sub-section (Rammelt rev. — Change of practice over last 10 years)
@@ -1525,24 +1699,29 @@ const PRACTICE_EVOLUTION_QS = [{
   text: {
     tr: "Sizin (veya kliniğinizin) posterior malleol kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?",
     en: "Has your (or your institution's) approach to posterior malleolus fracture management changed significantly in the last 10 years?",
-        de: "Hat sich Ihr Vorgehen (bzw. das Ihrer Einrichtung) bei posterioren Malleolusfrakturen in den letzten 10 Jahren wesentlich verändert?"
+        de: "Hat sich Ihr Vorgehen (bzw. das Ihrer Einrichtung) bei posterioren Malleolusfrakturen in den letzten 10 Jahren wesentlich verändert?",
+        es: "¿Ha cambiado significativamente en los últimos 10 años su enfoque (o el de su institución) en el tratamiento de las fracturas del maléolo posterior?"
   },
   opts: [{
     tr: "Evet — köklü değişiklik",
     en: "Yes — substantially",
-        de: "Ja — erheblich"
+        de: "Ja — erheblich",
+        es: "Sí — sustancialmente"
   }, {
     tr: "Evet — orta düzeyde değişiklik",
     en: "Yes — moderate change",
-        de: "Ja — mäßige Veränderung"
+        de: "Ja — mäßige Veränderung",
+        es: "Sí — cambio moderado"
   }, {
     tr: "Sadece küçük iyileştirmeler",
     en: "Minor refinements only",
-        de: "Nur geringfügige Anpassungen"
+        de: "Nur geringfügige Anpassungen",
+        es: "Solo ajustes menores"
   }, {
     tr: "Anlamlı değişiklik yok",
     en: "No significant change",
-        de: "Keine wesentliche Veränderung"
+        de: "Keine wesentliche Veränderung",
+        es: "Sin cambios significativos"
   }]
 }, {
   id: "h6_driver",
@@ -1552,76 +1731,88 @@ const PRACTICE_EVOLUTION_QS = [{
   text: {
     tr: "Son on yıldaki aşağıdaki gelişmelerden hangileri mevcut PM kırığı yönetiminizi etkiledi? (Hepsi geçerli olanları işaretleyin)",
     en: "Which of the following developments in the last decade have influenced your current PM fracture management? (Select all that apply)",
-        de: "Welche der folgenden Entwicklungen des letzten Jahrzehnts haben Ihr aktuelles PM-Frakturmanagement beeinflusst? (Mehrfachauswahl möglich)"
+        de: "Welche der folgenden Entwicklungen des letzten Jahrzehnts haben Ihr aktuelles PM-Frakturmanagement beeinflusst? (Mehrfachauswahl möglich)",
+        es: "¿Cuáles de los siguientes avances de la última década han influido en su tratamiento actual de las fracturas del MP? (Seleccione todas las opciones que correspondan)"
   },
   opts: [{
     category: "A",
     categoryLabel: { tr: "Görüntüleme ve değerlendirme", en: "Imaging & assessment",
-        de: "Bildgebung & Beurteilung" },
+        de: "Bildgebung & Beurteilung", es: "Imagen y evaluación" },
     tr: "Daha rutin preoperatif BT / morfoloji bazlı değerlendirme",
     en: "More routine preoperative CT / morphology-based assessment",
-        de: "Routinemäßigere präoperative CT / morphologiebasierte Beurteilung"
+        de: "Routinemäßigere präoperative CT / morphologiebasierte Beurteilung",
+        es: "Uso más rutinario de la TC preoperatoria / evaluación basada en la morfología"
   }, {
     category: "B",
     categoryLabel: { tr: "Sınıflama kullanımı", en: "Classification adoption",
-        de: "Etablierung von Klassifikationen" },
+        de: "Etablierung von Klassifikationen", es: "Adopción de clasificaciones" },
     tr: "Bartoníček/Rammelt veya Mason & Molloy sınıflamasının karar verme sürecinde benimsenmesi",
     en: "Adoption of Bartoníček/Rammelt or Mason & Molloy classifications in decision-making",
-        de: "Übernahme der Bartoníček/Rammelt- oder Mason-&-Molloy-Klassifikation in die Entscheidungsfindung"
+        de: "Übernahme der Bartoníček/Rammelt- oder Mason-&-Molloy-Klassifikation in die Entscheidungsfindung",
+        es: "Adopción de las clasificaciones de Bartoníček/Rammelt o de Mason y Molloy en la toma de decisiones"
   }, {
     category: "C",
     categoryLabel: { tr: "Cerrahi yaklaşım", en: "Surgical approach",
-        de: "Operativer Zugang" },
+        de: "Operativer Zugang", es: "Abordaje quirúrgico" },
     tr: "Direkt posterior yaklaşımların (PL veya PM) daha fazla kullanılması",
     en: "Greater use of direct posterior approaches (PL or PM)",
-        de: "Häufigere Nutzung direkter posteriorer Zugänge (PL oder PM)"
+        de: "Häufigere Nutzung direkter posteriorer Zugänge (PL oder PM)",
+        es: "Mayor uso de abordajes posteriores directos (PL o PM)"
   }, {
     category: "C",
     tr: "Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)",
     en: "Posteromedial approach variations (modified / extended FHL)",
-        de: "Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)"
+        de: "Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)",
+        es: "Variantes del abordaje posteromedial (modificado / ampliado por el FHL)"
   }, {
     category: "D",
     categoryLabel: { tr: "Endikasyon felsefesi", en: "Indication philosophy",
-        de: "Indikationsphilosophie" },
+        de: "Indikationsphilosophie", es: "Filosofía de indicación" },
     tr: "Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş",
     en: "Shift from size-based threshold to morphology-based indications",
-        de: "Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen"
+        de: "Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen",
+        es: "Paso de un umbral basado en el tamaño a indicaciones basadas en la morfología"
   }, {
     category: "D",
     tr: "Daha küçük fragmanları fikse etme eşiğinin düşmesi",
     en: "Lower threshold for fixing smaller fragments",
-        de: "Niedrigere Schwelle für die Fixation kleinerer Fragmente"
+        de: "Niedrigere Schwelle für die Fixation kleinerer Fragmente",
+        es: "Umbral más bajo para fijar fragmentos más pequeños"
   }, {
     category: "D",
     tr: "PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi",
     en: "Recognition that PM fixation reduces need for syndesmotic screw",
-        de: "Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert"
+        de: "Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert",
+        es: "Reconocimiento de que la fijación del MP reduce la necesidad de un tornillo sindesmal"
   }, {
     category: "E",
     categoryLabel: { tr: "Sindesmotik anlayış", en: "Syndesmotic understanding",
-        de: "Syndesmosenverständnis" },
+        de: "Syndesmosenverständnis", es: "Comprensión de la sindesmosis" },
     tr: "İncisura / fibular notch redüksiyonuna daha fazla dikkat",
     en: "Greater attention to incisura / fibular notch reduction",
-        de: "Größere Aufmerksamkeit für die Reposition in der Incisura fibularis"
+        de: "Größere Aufmerksamkeit für die Reposition in der Incisura fibularis",
+        es: "Mayor atención a la reducción en la incisura peroneal"
   }, {
     category: "E",
     tr: "Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi",
     en: "Recognition of Chaput / Wagstaffe fragment relevance",
-        de: "Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten"
+        de: "Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten",
+        es: "Reconocimiento de la relevancia de los fragmentos de Chaput / Wagstaffe"
   }, {
     category: "F",
     categoryLabel: { tr: "Hiçbiri / Diğer", en: "None / Other",
-        de: "Keine / Sonstiges" },
+        de: "Keine / Sonstiges", es: "Ninguno / Otro" },
     tr: "Hiçbiri — pratiğim büyük ölçüde değişmedi",
     en: "None of these — my practice has remained largely unchanged",
         de: "Keine davon — meine Praxis ist weitgehend unverändert geblieben",
+        es: "Ninguno — mi práctica se ha mantenido prácticamente sin cambios",
     exclusive: true
   }, {
     category: "F",
     tr: "Diğer (belirtiniz)",
     en: "Other (specify)",
-        de: "Sonstiges (bitte angeben)"
+        de: "Sonstiges (bitte angeben)",
+        es: "Otro (especificar)"
   }]
 }, {
   id: "h6",
@@ -1632,7 +1823,8 @@ const PRACTICE_EVOLUTION_QS = [{
   text: {
     tr: "İsteğe bağlı tek cümlelik açıklama (maks 300 karakter):",
     en: "Optional one-sentence elaboration (max 300 characters):",
-        de: "Optionale Erläuterung in einem Satz (max. 300 Zeichen):"
+        de: "Optionale Erläuterung in einem Satz (max. 300 Zeichen):",
+        es: "Explicación opcional en una frase (máx. 300 caracteres):"
   }
 }];
 
@@ -3741,9 +3933,18 @@ function App() {
   const _saved = loadSaved();
   // Language comes from the participant's choice on the first screen (TR / EN / DE),
   // restored from saved progress if present.
-  const [lang, setLang] = useState(_saved && _saved.lang ? _saved.lang : 'en');
+  // Language-specific invitation links, e.g. pmalsurvey.org/?lang=de for a DAF
+  // mailing: skip the picker and open the consent page in that language.
+  const _urlLang = (() => {
+    try {
+      const v = new URLSearchParams(window.location.search).get('lang');
+      return v && LINK_LANGS.includes(v.toLowerCase()) ? v.toLowerCase() : null;
+    } catch (e) { return null; }
+  })();
+  const [lang, setLang] = useState(_urlLang || (_saved && _saved.lang ? _saved.lang : 'en'));
   const [step, setStep] = useState(() => {
     const s = _saved && typeof _saved.step === 'number' ? _saved.step : 0;
+    if (_urlLang && s < 1) return 1;
     return s < 0 ? 0 : s;
   });
   const [answers, setAnswers] = useState(_saved && _saved.answers ? _saved.answers : {});
@@ -4136,7 +4337,7 @@ function App() {
     className: "text-gray-600 text-sm mb-6"
   }, "L\xFCtfen dilinizi se\xE7iniz \xB7 Please select your language"), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-3 sm:grid-cols-4 gap-3 max-w-lg mx-auto"
-  }, LANGS.filter(l => ["tr", "en", "de"].includes(l.code)).map(l => /*#__PURE__*/React.createElement("button", {
+  }, LANGS.filter(l => PICKER_LANGS.includes(l.code)).map(l => /*#__PURE__*/React.createElement("button", {
     key: l.code,
     onClick: () => {
       setLang(l.code);
