@@ -552,6 +552,81 @@ const T = {
 };
 const t = (lang, key) => (T[lang] || T.en)[key] || T.en[key] || key;
 
+// ── Inline UI strings (TR / EN / DE / ES) ────────────────────────────────
+// Strings that used to be hard-coded as `lang === 'tr' ? ... : ...`, which
+// silently showed English to German and Spanish participants.
+const UIX = {
+  st_complete: { tr: 'Tamamlandı ✓', en: 'Complete ✓', de: 'Vollständig ✓', es: 'Completo ✓' },
+  st_partial: { tr: 'Kısmen dolu', en: 'Partial', de: 'Teilweise', es: 'Parcial' },
+  st_empty: { tr: 'Boş', en: 'Empty', de: 'Leer', es: 'Vacío' },
+  comorbid_q: {
+    tr: "Hastanın kanama diyatezi (vWD) ve immün modülasyon (KML/imatinib) durumu, planınızı (yaklaşım veya zamanlama) değiştirir mi?",
+    en: "Given the patient's bleeding diathesis (vWD) and immunomodulation (CML on imatinib), would you modify your plan (approach or timing)?",
+    de: "Würden Sie angesichts der Blutungsneigung des Patienten (von-Willebrand-Syndrom) und der Immunmodulation (CML unter Imatinib) Ihr Vorgehen (Zugang oder Zeitpunkt) ändern?",
+    es: "Dada la diátesis hemorrágica del paciente (enfermedad de von Willebrand) y la inmunomodulación (LMC en tratamiento con imatinib), ¿modificaría su plan (abordaje o momento de la cirugía)?"
+  },
+  incomplete_title: { tr: 'Eksik Yanıtlar', en: 'Incomplete Answers', de: 'Unvollständige Antworten', es: 'Respuestas incompletas' },
+  incomplete_intro: {
+    tr: 'Anketi tamamlamadan önce eksik bir bölüm var: ',
+    en: 'There are unanswered questions before you can submit: ',
+    de: 'Vor dem Absenden ist noch ein Abschnitt unvollständig: ',
+    es: 'Antes de enviar, hay una sección incompleta: '
+  },
+  incomplete_help: {
+    tr: 'Lütfen bu bölüme dönüp yanıtlarınızı tamamlayın. Anketinizi tam olarak göndermeden kaydedemiyoruz.',
+    en: 'Please return to this section and complete your answers. The survey cannot be submitted until all sections are complete.',
+    de: 'Bitte kehren Sie zu diesem Abschnitt zurück und vervollständigen Sie Ihre Antworten. Die Umfrage kann erst abgesendet werden, wenn alle Abschnitte vollständig sind.',
+    es: 'Vuelva a esta sección y complete sus respuestas. La encuesta no puede enviarse hasta que todas las secciones estén completas.'
+  },
+  close: { tr: 'Kapat', en: 'Close', de: 'Schließen', es: 'Cerrar' },
+  go_section: { tr: 'Bölüme Git →', en: 'Go to Section →', de: 'Zum Abschnitt →', es: 'Ir a la sección →' },
+  g_title: { tr: 'G — Klinik Vaka Senaryoları', en: 'G — Clinical Case Vignettes', de: 'G — Klinische Fallvignetten', es: 'G — Viñetas de casos clínicos' },
+  g_intro: {
+    tr: 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.',
+    en: 'Please evaluate the following clinical scenario. You may review the CT images.',
+    de: 'Bitte beurteilen Sie das folgende klinische Szenario. Sie können die CT-Bilder ansehen.',
+    es: 'Evalúe el siguiente escenario clínico. Puede revisar las imágenes de TC.'
+  },
+  case_upper: { tr: 'VAKA ', en: 'CASE ', de: 'FALL ', es: 'CASO ' },
+  case_word: { tr: 'Vaka ', en: 'Case ', de: 'Fall ', es: 'Caso ' },
+  f_title: { tr: 'F — Pratikteki Evrim', en: 'F — Practice Evolution', de: 'F — Entwicklung der Praxis', es: 'F — Evolución de la práctica' },
+  f_sub: { tr: 'Son on yıldaki değişim', en: 'Change over the last decade', de: 'Veränderung im letzten Jahrzehnt', es: 'Cambios en la última década' },
+  select_all: { tr: 'Hepsi geçerli olanları işaretleyin', en: 'Select all that apply', de: 'Alle zutreffenden auswählen', es: 'Seleccione todas las opciones que correspondan' },
+  optional: { tr: 'İsteğe bağlı...', en: 'Optional...', de: 'Optional...', es: 'Opcional...' },
+  h_title: { tr: 'H — Tutum ve Görüşler', en: 'H — Attitudes and Opinions', de: 'H — Einstellungen und Meinungen', es: 'H — Actitudes y opiniones' },
+  submitting: { tr: 'Gönderiliyor...', en: 'Submitting...', de: 'Wird gesendet...', es: 'Enviando...' },
+  saved: { tr: 'Kaydedildi!', en: 'Saved!', de: 'Gespeichert!', es: '¡Guardado!' },
+  submit_err_title: {
+    tr: 'Yanıtlarınız gönderilemedi',
+    en: 'Your responses could not be submitted',
+    de: 'Ihre Antworten konnten nicht übermittelt werden',
+    es: 'No se pudieron enviar sus respuestas'
+  },
+  submit_err_text: {
+    tr: 'Bu genellikle geçici bir ağ sorunudur. Yanıtlarınız bu cihazda kayıtlı — hiçbir şey kaybolmadı. Lütfen tekrar deneyin.',
+    en: 'This is usually a temporary network issue. Your answers are saved on this device — nothing is lost. Please try again.',
+    de: 'Dies ist meist ein vorübergehendes Netzwerkproblem. Ihre Antworten sind auf diesem Gerät gespeichert — nichts geht verloren. Bitte versuchen Sie es erneut.',
+    es: 'Suele tratarse de un problema temporal de red. Sus respuestas están guardadas en este dispositivo; no se ha perdido nada. Inténtelo de nuevo.'
+  },
+  retrying: { tr: 'Tekrar deneniyor...', en: 'Retrying...', de: 'Erneuter Versuch...', es: 'Reintentando...' },
+  try_again: { tr: 'Tekrar dene', en: 'Try again', de: 'Erneut versuchen', es: 'Reintentar' },
+  comments_q: {
+    tr: 'Ankette yer almayan, eklemek istediğiniz görüş veya yorumlarınız var mı? (isteğe bağlı)',
+    en: 'Do you have any comments on aspects not covered by the questions above? (optional)',
+    de: 'Haben Sie Anmerkungen zu Aspekten, die in den obigen Fragen nicht berücksichtigt wurden? (optional)',
+    es: '¿Tiene algún comentario sobre aspectos no contemplados en las preguntas anteriores? (opcional)'
+  }
+};
+const ux = (lang, key) => { const e = UIX[key]; return (e && (e[lang] || e.en)) || key; };
+const uxMissing = (lang, n) => {
+  if (lang === 'tr') return `${n} soru yanıtlanmamış`;
+  if (lang === 'de') return n === 1 ? '1 Frage unbeantwortet' : `${n} Fragen unbeantwortet`;
+  if (lang === 'es') return n === 1 ? '1 pregunta sin responder' : `${n} preguntas sin responder`;
+  return `${n} question${n === 1 ? '' : 's'} unanswered`;
+};
+const COMMENTS_MAX = 1000;
+
+
 // ── SECTIONS ──
 const SECTIONS = {
   A: {
@@ -890,16 +965,16 @@ const SECTIONS = {
       showIf: (answers) => {
         const d4 = answers.d4 || [];
         if (!Array.isArray(d4) || d4.length === 0) return false;
-        const skipTR = "İnterkalar fragmanları genellikle ayrıca ele almam";
+        const d4q = _findQ('d4');
         const skipEN = "I do not usually address intercalary fragments separately";
-        return !d4.includes(skipTR) && !d4.includes(skipEN);
+        return !d4.some(v => _answerIsOpt(v, d4q && d4q.opts, [skipEN]));
       },
       requiredIf: (answers) => {
         const d4 = answers.d4 || [];
         if (!Array.isArray(d4) || d4.length === 0) return false;
-        const skipTR = "İnterkalar fragmanları genellikle ayrıca ele almam";
+        const d4q = _findQ('d4');
         const skipEN = "I do not usually address intercalary fragments separately";
-        return !d4.includes(skipTR) && !d4.includes(skipEN);
+        return !d4.some(v => _answerIsOpt(v, d4q && d4q.opts, [skipEN]));
       },
       opts: [{
         tr: "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim",
@@ -1417,10 +1492,30 @@ const LIKERT_QS = [{
 // Practice Evolution sub-section (Rammelt rev. — Change of practice over last 10 years)
 // h5 = single-choice (always required), h6 = conditional free-text (only if h5 indicates change)
 // Helper used by both h6_driver (required) and h6 (optional) — true when h5 indicates a change
+// ── Language-agnostic answer matching ─────────────────────────────────────
+// Answers are stored as the label shown in the participant's own language, so
+// branching rules must recognise every translation of an option (TR, EN, DE,
+// ES, ...), not only Turkish and English. Options are identified by their
+// English label, which is stable across versions.
+function _optLabels(opt) {
+  if (!opt || typeof opt !== 'object') return [];
+  return LANGS.map(l => opt[l.code]).filter(v => typeof v === 'string');
+}
+function _answerIsOpt(value, opts, enLabels) {
+  if (value == null) return false;
+  return (opts || []).some(o => o && typeof o === 'object' && enLabels.includes(o.en) && _optLabels(o).includes(value));
+}
+function _findQ(id) {
+  for (const sec of Object.values(SECTIONS)) {
+    const q = (sec.questions || []).find(x => x.id === id);
+    if (q) return q;
+  }
+  return null;
+}
+
 const _h5IndicatesChange = (answers) => {
-  const v = answers.h5;
-  return v === "Yes — substantially" || v === "Yes — moderate change"
-      || v === "Evet — köklü değişiklik" || v === "Evet — orta düzeyde değişiklik";
+  const h5 = PRACTICE_EVOLUTION_QS.find(q => q.id === 'h5');
+  return _answerIsOpt(answers.h5, h5 && h5.opts, ["Yes — substantially", "Yes — moderate change"]);
 };
 
 const PRACTICE_EVOLUTION_QS = [{
@@ -1671,7 +1766,7 @@ function CountryDropdown({
     className: "w-full border border-gray-200 rounded-lg px-4 py-3 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none"
   }), value && /*#__PURE__*/React.createElement("div", {
     className: "mt-1 text-xs text-amber-600 font-medium"
-  }, lang === 'tr' ? 'Seçili' : 'Selected', ": ", value), open && search.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, ({ tr: 'Seçili', de: 'Ausgewählt', es: 'Seleccionado' })[lang] || 'Selected', ": ", value), open && search.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
   }, filtered.length > 0 ? filtered.map((c, i) => /*#__PURE__*/React.createElement("button", {
     key: i,
@@ -1683,7 +1778,7 @@ function CountryDropdown({
     className: "w-full text-left px-4 py-2.5 text-sm hover:bg-amber-50 text-gray-800 border-b border-gray-50 last:border-0"
   }, c)) : /*#__PURE__*/React.createElement("div", {
     className: "px-4 py-3 text-sm text-gray-400"
-  }, lang === 'tr' ? 'Sonuç bulunamadı' : 'No results')));
+  }, ({ tr: 'Sonuç bulunamadı', de: 'Keine Ergebnisse', es: 'Sin resultados' })[lang] || 'No results')));
 }
 function LikertScale({
   value,
@@ -1808,6 +1903,14 @@ function ProgressBar({
     en: {
       A: 'Demogr', B: 'Class', C: 'Indic',
       D: 'Tech', E: 'Seq', F: 'Evol', G: 'Cases', H: 'Attitude'
+    },
+    de: {
+      A: 'Demogr.', B: 'Klass.', C: 'Indik.',
+      D: 'Technik', E: 'Reihenf.', F: 'Entw.', G: 'Fälle', H: 'Meinung'
+    },
+    es: {
+      A: 'Demogr.', B: 'Clasif.', C: 'Indic.',
+      D: 'Técnica', E: 'Secuencia', F: 'Evol.', G: 'Casos', H: 'Opinión'
     }
   };
   const TIPS = {
@@ -1822,9 +1925,21 @@ function ProgressBar({
       C: 'Fixation Indications', D: 'Technique Preferences',
       E: 'Sequence and Syndesmotic Considerations', F: 'Practice Evolution',
       G: 'Clinical Cases', H: 'Attitudes & Opinions'
+    },
+    de: {
+      A: 'Demografie', B: 'Klassifikation',
+      C: 'Fixationsindikationen', D: 'Technische Präferenzen',
+      E: 'Fixationsreihenfolge und Syndesmose', F: 'Entwicklung der Praxis',
+      G: 'Klinische Fälle', H: 'Einstellungen & Meinungen'
+    },
+    es: {
+      A: 'Datos demográficos', B: 'Clasificación',
+      C: 'Indicaciones de fijación', D: 'Preferencias técnicas',
+      E: 'Secuencia y sindesmosis', F: 'Evolución de la práctica',
+      G: 'Casos clínicos', H: 'Actitudes y opiniones'
     }
   };
-  const l = (lang === 'tr' || lang === 'en') ? lang : 'en';
+  const l = SHORT[lang] ? lang : 'en';
   const lbl = SHORT[l];
   const tip = TIPS[l];
 
@@ -1887,7 +2002,7 @@ function ProgressBar({
           key: s.key,
           type: 'button',
           onClick: () => setStep(targetStep),
-          title: `${tip[s.key]} — ${state === 'complete' ? (l === 'tr' ? 'Tamamlandı ✓' : 'Complete ✓') : state === 'partial' ? (l === 'tr' ? 'Kısmen dolu' : 'Partial') : (l === 'tr' ? 'Boş' : 'Empty')}`,
+          title: `${tip[s.key]} — ${state === 'complete' ? ux(l, 'st_complete') : state === 'partial' ? ux(l, 'st_partial') : ux(l, 'st_empty')}`,
           className: 'flex-1 min-w-0 py-1 px-0.5 text-[10px] sm:text-xs font-semibold rounded transition-all truncate',
           style: { ...styleFor(state, active), cursor: 'pointer', letterSpacing: '0.01em' }
         }, lbl[s.key]);
@@ -1902,7 +2017,7 @@ function QuestionBlock({
   setAnswer,
   tt
 }) {
-  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const l = lang || 'en';
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-1"
   }, /*#__PURE__*/React.createElement("p", {
@@ -1935,7 +2050,7 @@ function SectionPage({
   tt
 }) {
   const sec = SECTIONS[sectionKey];
-  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const l = lang || 'en';
   return /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("h2", {
@@ -3476,8 +3591,7 @@ function _approachIncompatibleWithPosition(approachOpt, positionLabel, lang) {
   // "Multiple positions required" - cerrah konum değiştiriyorsa, hiçbir
   // yaklaşım inaktif değildir (Anterior + Posterior aynı vakada mümkün).
   const isMultiplePositions =
-    positionLabel === "Multiple positions required (e.g., repositioning intra-op)" ||
-    positionLabel === "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)";
+    _answerIsOpt(positionLabel, CASE_OPTS.pos, ["Multiple positions required (e.g., repositioning intra-op)"]);
   if (isMultiplePositions) return false;
 
   const aTR = approachOpt && approachOpt.tr;
@@ -3490,9 +3604,9 @@ function _approachIncompatibleWithPosition(approachOpt, positionLabel, lang) {
     aEN === "Combined posterolateral + posteromedial" ||
     aTR === "Kombine posterolateral + posteromedyal";
   const isProne =
-    positionLabel === "Prone";
+    _answerIsOpt(positionLabel, CASE_OPTS.pos, ["Prone"]);
   const isLateral =
-    positionLabel === "Lateral decubitus" || positionLabel === "Lateral dekübitus";
+    _answerIsOpt(positionLabel, CASE_OPTS.pos, ["Lateral decubitus"]);
 
   // Hard-disable rules (lead author clinical judgement):
   //  - Prone + Anterior (percutaneous): anatomically impossible
@@ -3511,7 +3625,7 @@ function CaseCard({
   setAnswer,
   tt
 }) {
-  const l = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const l = lang || 'en';
   const fixVal = answers[`${c.prefix}_fix`];
   const showSub = fixVal === tt.fix_yes;
   const positionLabel = answers[`${c.prefix}_position`];
@@ -3599,7 +3713,7 @@ function CaseCard({
     lang: l
   })), c.hasComorbidQ && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "font-semibold text-gray-900 text-sm"
-  }, l === "tr" ? "Hastanın kanama diyatezi (vWD) ve immün modülasyon (KML/imatinib) durumu, planınızı (yaklaşım veya zamanlama) değiştirir mi?" : "Given the patient's bleeding diathesis (vWD) and immunomodulation (CML on imatinib), would you modify your plan (approach or timing)?"), /*#__PURE__*/React.createElement(RadioGroup, {
+  }, ux(l, 'comorbid_q')), /*#__PURE__*/React.createElement(RadioGroup, {
     name: `${c.prefix}_comorbid_modify`,
     options: CASE_OPTS.comorbidModify,
     value: answers[`${c.prefix}_comorbid_modify`],
@@ -3625,8 +3739,8 @@ function App() {
     } catch (e) { return null; }
   };
   const _saved = loadSaved();
-  // English-only for now (multi-language UI disabled; tr: strings kept in code for future re-enable).
-  // Always force 'en' regardless of saved preference, and ensure step >= 1 to skip langSelect.
+  // Language comes from the participant's choice on the first screen (TR / EN / DE),
+  // restored from saved progress if present.
   const [lang, setLang] = useState(_saved && _saved.lang ? _saved.lang : 'en');
   const [step, setStep] = useState(() => {
     const s = _saved && typeof _saved.step === 'number' ? _saved.step : 0;
@@ -3640,7 +3754,7 @@ function App() {
   const [submitError, setSubmitError] = useState(false);
   const [submitBlock, setSubmitBlock] = useState(null); // { section, count } for modal
   const [startTime] = useState(Date.now());
-  const ll = lang === 'tr' || lang === 'en' ? lang : 'en';
+  const ll = lang || 'en';
   const tt = T[ll] || T.en;
   const totalSteps = STEP_KEYS.length - 1;
 
@@ -3813,6 +3927,7 @@ function App() {
         h6_text: answers.h6,
         h7_complexity_limit: answers.h7,
         h8_benefit_outweighs: answers.h8,
+        participant_comments: (answers.comments || '').trim() || null,
         completed: true,
         duration_seconds: duration,
         user_agent: navigator.userAgent
@@ -3930,13 +4045,11 @@ function App() {
       }, '⚠️'),
       /*#__PURE__*/React.createElement("h3", {
         className: "text-lg font-black text-gray-900"
-      }, ll === 'tr' ? 'Eksik Yanıtlar' : 'Incomplete Answers')
+      }, ux(ll, 'incomplete_title'))
     ),
     /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-gray-700 mb-2"
-    }, ll === 'tr'
-      ? `Anketi tamamlamadan önce eksik bir bölüm var: `
-      : `There are unanswered questions before you can submit: `),
+    }, ux(ll, 'incomplete_intro')),
     /*#__PURE__*/React.createElement("div", {
       className: "my-3 p-3 bg-amber-50 border border-amber-200 rounded-lg"
     },
@@ -3946,8 +4059,10 @@ function App() {
         (() => {
           const SHORT_TR = { A: 'Demografi', B: 'Sınıflama', C: 'Endikasyon', D: 'Teknik', E: 'Sıra/Sindesmoz', F: 'Pratikteki Evrim', G: 'Vakalar', H: 'Tutumlar' };
           const SHORT_EN = { A: 'Demographics', B: 'Classification', C: 'Indications', D: 'Technique', E: 'Sequence/Syndesmosis', F: 'Practice Evolution', G: 'Cases', H: 'Attitudes' };
+          const SHORT_DE = { A: 'Demografie', B: 'Klassifikation', C: 'Indikationen', D: 'Technik', E: 'Reihenfolge/Syndesmose', F: 'Entwicklung der Praxis', G: 'Fälle', H: 'Einstellungen' };
+          const SHORT_ES = { A: 'Datos demográficos', B: 'Clasificación', C: 'Indicaciones', D: 'Técnica', E: 'Secuencia/Sindesmosis', F: 'Evolución de la práctica', G: 'Casos', H: 'Actitudes' };
           const s = submitBlock.section;
-          return (ll === 'tr' ? SHORT_TR : SHORT_EN)[s] + ' (' + s + ')';
+          return ({ tr: SHORT_TR, de: SHORT_DE, es: SHORT_ES }[ll] || SHORT_EN)[s] + ' (' + s + ')';
         })()
       ),
       /*#__PURE__*/React.createElement("p", {
@@ -3957,28 +4072,24 @@ function App() {
           const missing = submitBlock.section === 'H'
             ? Object.values(completion.cases).reduce((a, c) => a + c.missing.length, 0)
             : completion[submitBlock.section].missing.length;
-          return ll === 'tr'
-            ? `${missing} soru yanıtlanmamış`
-            : `${missing} question${missing === 1 ? '' : 's'} unanswered`;
+          return uxMissing(ll, missing);
         })()
       )
     ),
     /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-gray-600 mb-5"
-    }, ll === 'tr'
-      ? 'Lütfen bu bölüme dönüp yanıtlarınızı tamamlayın. Anketinizi tam olarak göndermeden kaydedemiyoruz.'
-      : 'Please return to this section and complete your answers. The survey cannot be submitted until all sections are complete.'),
+    }, ux(ll, 'incomplete_help')),
     /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2"
     },
       /*#__PURE__*/React.createElement("button", {
         onClick: () => setSubmitBlock(null),
         className: "flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
-      }, ll === 'tr' ? 'Kapat' : 'Close'),
+      }, ux(ll, 'close')),
       /*#__PURE__*/React.createElement("button", {
         onClick: () => { setStep(submitBlock.targetStep); setSubmitBlock(null); },
         className: "flex-1 px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 shadow-lg shadow-amber-200 transition"
-      }, ll === 'tr' ? 'Bölüme Git →' : 'Go to Section →')
+      }, ux(ll, 'go_section'))
     )
   )), step > 0 && /*#__PURE__*/React.createElement("header", {
     className: "sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/60"
@@ -4073,9 +4184,9 @@ function App() {
     className: "space-y-4 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black text-gray-900"
-  }, ll === 'tr' ? 'G — Klinik Vaka Senaryoları' : 'G — Clinical Case Vignettes'), /*#__PURE__*/React.createElement("p", {
+  }, ux(ll, 'g_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-gray-500 mt-1"
-  }, ll === 'tr' ? 'Aşağıdaki klinik senaryoyu değerlendiriniz. BT görüntülerini inceleyebilirsiniz.' : 'Please evaluate the following clinical scenario. You may review the CT images.')),
+  }, ux(ll, 'g_intro'))),
   /*#__PURE__*/React.createElement("div", {
     className: "flex gap-1.5 flex-wrap",
     style: { padding: "8px 0" }
@@ -4091,10 +4202,10 @@ function App() {
         key: c.id,
         type: 'button',
         onClick: (e) => { e.preventDefault(); setStep(targetStep); },
-        title: (ll === 'tr' ? 'VAKA ' : 'CASE ') + (idx+1),
+        title: ux(ll, 'case_upper') + (idx+1),
         className: 'px-3 py-1.5 text-xs font-bold rounded transition',
         style: { background: bg, color: color, border: border, cursor: 'pointer', whiteSpace: 'nowrap' }
-      }, (ll === 'tr' ? 'Vaka ' : 'Case ') + (idx+1) + (completion_state === 'complete' ? ' ✓' : ''));
+      }, ux(ll, 'case_word') + (idx+1) + (completion_state === 'complete' ? ' ✓' : ''));
     })
   ),
   /*#__PURE__*/React.createElement(CaseCard, {
@@ -4107,9 +4218,9 @@ function App() {
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black text-gray-900"
-  }, ll === 'tr' ? 'F — Pratikteki Evrim' : 'F — Practice Evolution'), /*#__PURE__*/React.createElement("p", {
+  }, ux(ll, 'f_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-gray-500 mt-1"
-  }, ll === 'tr' ? 'Son on yıldaki değişim' : 'Change over the last decade')),
+  }, ux(ll, 'f_sub'))),
     // H5 — single choice (always shown)
     (() => {
       const q5 = PRACTICE_EVOLUTION_QS[0];
@@ -4180,7 +4291,7 @@ function App() {
         }, qd.text[ll] || qd.text.en),
         /*#__PURE__*/React.createElement("p", {
           className: "text-xs text-amber-600 font-medium mb-3"
-        }, ll === "tr" ? "Hepsi geçerli olanları işaretleyin" : "Select all that apply"),
+        }, ux(ll, 'select_all')),
         groupOrder.map((cat, gi) =>
           /*#__PURE__*/React.createElement("div", { key: cat, className: gi > 0 ? "mt-4" : "" },
             // Category labels intentionally hidden per lead-author preference;
@@ -4237,7 +4348,7 @@ function App() {
             setAnswer(q6.id, v.length > max ? v.slice(0, max) : v);
           },
           rows: 3,
-          placeholder: ll === 'tr' ? 'İsteğe bağlı...' : 'Optional...',
+          placeholder: ux(ll, 'optional'),
           className: "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none resize-y"
         }),
         /*#__PURE__*/React.createElement("p", {
@@ -4250,7 +4361,7 @@ function App() {
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl font-black text-gray-900"
-  }, ll === 'tr' ? 'H — Tutum ve Görüşler' : 'H — Attitudes and Opinions'), /*#__PURE__*/React.createElement("div", {
+  }, ux(ll, 'h_title')), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-amber-800 font-medium"
@@ -4263,17 +4374,33 @@ function App() {
     value: answers[q.id],
     onChange: v => setAnswer(q.id, v),
     labels: tt.likert
-  }))), submitError && /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "pt-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-gray-900 text-sm mb-2"
+  }, ux(ll, 'comments_q')), /*#__PURE__*/React.createElement("textarea", {
+    value: answers.comments || '',
+    onChange: e => {
+      const v = e.target.value;
+      setAnswer('comments', v.length > COMMENTS_MAX ? v.slice(0, COMMENTS_MAX) : v);
+    },
+    rows: 4,
+    maxLength: COMMENTS_MAX,
+    placeholder: ux(ll, 'optional'),
+    className: "w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-200 outline-none resize-y"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mt-1 text-gray-400"
+  }, (answers.comments || '').length + ' / ' + COMMENTS_MAX)), submitError && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 p-4 rounded-xl border-2 border-red-300 bg-red-50 animate-fadeIn"
   }, /*#__PURE__*/React.createElement("p", {
     className: "font-bold text-red-700 text-sm mb-1"
-  }, "Your responses could not be submitted"), /*#__PURE__*/React.createElement("p", {
+  }, ux(ll, 'submit_err_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-red-600 text-xs mb-3"
-  }, "This is usually a temporary network issue. Your answers are saved on this device — nothing is lost. Please try again."), /*#__PURE__*/React.createElement("button", {
+  }, ux(ll, 'submit_err_text')), /*#__PURE__*/React.createElement("button", {
     disabled: submitting,
     onClick: tryAttemptSubmit,
     className: "px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors"
-  }, submitting ? "Retrying..." : "Try again")), /*#__PURE__*/React.createElement("div", {
+  }, submitting ? ux(ll, 'retrying') : ux(ll, 'try_again'))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 mt-6"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: () => setStep(step - 1),
@@ -4282,7 +4409,7 @@ function App() {
     disabled: submitting,
     onClick: tryAttemptSubmit,
     className: `flex-1 py-3 rounded-xl text-white font-bold shadow-lg shadow-green-200 transition-all ${submitting ? 'bg-gray-400 cursor-wait' : 'bg-green-600 hover:bg-green-700'}`
-  }, submitting ? ll === 'tr' ? 'Gönderiliyor...' : 'Submitting...' : tt.submit + ' ✓'))), STEP_KEYS[step] === 'thanks' && /*#__PURE__*/React.createElement("div", {
+  }, submitting ? ux(ll, 'submitting') : tt.submit + ' ✓'))), STEP_KEYS[step] === 'thanks' && /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-2xl shadow-lg p-6 sm:p-8 space-y-6 animate-fadeIn text-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto"
@@ -4328,7 +4455,7 @@ function App() {
     points: "20 6 9 17 4 12"
   })), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-medium"
-  }, ll === 'tr' ? 'Kaydedildi!' : 'Saved!'))), /*#__PURE__*/React.createElement("p", {
+  }, ux(ll, 'saved')))), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-gray-400 mt-6"
   }, "pmalsurvey.org"))), /*#__PURE__*/React.createElement("style", null, `
         @keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
