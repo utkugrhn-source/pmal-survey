@@ -1,0 +1,120 @@
+{
+ "date": "2026-09-27",
+ "commit_note": "Seçenek etiketleri çeviri denetimi sonrası değişti. Yanıtlar etiket metni olarak kaydedildiği için, bu tarihten önceki kayıtlarda 'old', sonrakilerde 'new' görünür. Analizde ikisi aynı seçenek sayılmalıdır.",
+ "changes": [
+  {
+   "question": "d3",
+   "lang": "en",
+   "old": "Articular step-off",
+   "new": "Magnitude of articular step-off"
+  },
+  {
+   "question": "d3",
+   "lang": "de",
+   "old": "Gelenkstufe (Step-off)",
+   "new": "Ausmaß der Gelenkstufe (Step-off)"
+  },
+  {
+   "question": "d3",
+   "lang": "es",
+   "old": "Escalón articular",
+   "new": "Magnitud del escalón articular"
+  },
+  {
+   "question": "d1",
+   "lang": "tr",
+   "old": "%25–33",
+   "new": ">%25–33"
+  },
+  {
+   "question": "d1",
+   "lang": "en",
+   "old": "25–33%",
+   "new": ">25–33%"
+  },
+  {
+   "question": "d1",
+   "lang": "de",
+   "old": "25–33 %",
+   "new": ">25–33 %"
+  },
+  {
+   "question": "d1",
+   "lang": "es",
+   "old": "25–33%",
+   "new": ">25–33%"
+  },
+  {
+   "question": "d4",
+   "lang": "tr",
+   "old": "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması",
+   "new": "Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması"
+  },
+  {
+   "question": "d4",
+   "lang": "en",
+   "old": "Fragment is accessible through my planned approach (PL or PM)",
+   "new": "Fragment is accessible through my planned approach (posterolateral or posteromedial)"
+  },
+  {
+   "question": "d4",
+   "lang": "de",
+   "old": "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar",
+   "new": "Das Fragment ist über meinen geplanten Zugang (posterolateral oder posteromedial) erreichbar"
+  },
+  {
+   "question": "d4",
+   "lang": "es",
+   "old": "El fragmento es accesible a través del abordaje planificado (PL o PM)",
+   "new": "El fragmento es accesible a través del abordaje planificado (posterolateral o posteromedial)"
+  },
+  {
+   "question": "h6_driver",
+   "lang": "tr",
+   "old": "Direkt posterior yaklaşımların (PL veya PM) daha fazla kullanılması",
+   "new": "Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması"
+  },
+  {
+   "question": "h6_driver",
+   "lang": "en",
+   "old": "Greater use of direct posterior approaches (PL or PM)",
+   "new": "Greater use of direct posterior approaches (posterolateral or posteromedial)"
+  },
+  {
+   "question": "h6_driver",
+   "lang": "de",
+   "old": "Häufigere Nutzung direkter posteriorer Zugänge (PL oder PM)",
+   "new": "Häufigere Nutzung direkter posteriorer Zugänge (posterolateral oder posteromedial)"
+  },
+  {
+   "question": "h6_driver",
+   "lang": "es",
+   "old": "Mayor uso de abordajes posteriores directos (PL o PM)",
+   "new": "Mayor uso de abordajes posteriores directos (posterolateral o posteromedial)"
+  },
+  {
+   "question": "a3",
+   "lang": "en",
+   "old": "Secondary / community / district hospital",
+   "new": "Secondary-level / community / public hospital"
+  },
+  {
+   "question": "a3",
+   "lang": "de",
+   "old": "Krankenhaus der Grund-/Regelversorgung",
+   "new": "Krankenhaus der sekundären Versorgungsstufe / gemeindenahes / öffentliches Krankenhaus"
+  },
+  {
+   "question": "a3",
+   "lang": "es",
+   "old": "Hospital de segundo nivel / comunitario / regional",
+   "new": "Hospital de segundo nivel / comunitario / público"
+  },
+  {
+   "question": "a3",
+   "lang": "de",
+   "old": "Überregionales Traumazentrum (nicht-akademisch)",
+   "new": "Traumazentrum der tertiären Versorgungsstufe (nicht-akademisch)"
+  }
+ ]
+}
