@@ -1,0 +1,5 @@
+# Repoda kalir, sitede yayinlanmaz (kaynak kod, analiz ve gelistirme dosyalari)
+cloudflare_worker_*.js
+pass6_feedback.py
+analysis/
+tailwind.config.js
