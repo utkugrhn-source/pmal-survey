@@ -193,6 +193,20 @@ const R = [{
   pYear: 1991,
   pMp3: "mp3/comeasyouare.mp3",
   pStory: "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı."
+}, {
+  id: "rammelt",
+  name: "Stefan Rammelt",
+  title: "Prof. Dr.",
+  email: "Stefan.Rammelt@ukdd.de",
+  char: "Klaus Meine",
+  band: "Scorpions",
+  color: "#A78BFA",
+  colorImg: "card_meine_color_web.png",
+  bwImg: "card_meine_bw_web.png",
+  pTrack: "Wind of Change",
+  pYear: 1990,
+  pMp3: "mp3/windofchange.mp3",
+  pStory: "Klaus Meine şarkıyı 1989 Moskova Müzik Barış Festivali'nin ardından yazdı. Doğulu ve Batılı müzisyenlerle Moskova Nehri'nde yapılan bir gece tekne gezisi ve Gorki Parkı sözlere girdi. Açılıştaki ıslığı Meine'nin kendisi çaldı. Şarkı Soğuk Savaş'ın bitişinin ve Almanya'nın yeniden birleşmesinin marşı oldu."
 }];
 const PG = [{
   id: "dashboard",
@@ -629,7 +643,7 @@ function LoginPage({
       gap: 16,
       flexWrap: "wrap",
       justifyContent: "center",
-      maxWidth: 900
+      maxWidth: 1000
     }
   }, R.map((r, i) => /*#__PURE__*/React.createElement("div", {
     key: r.id,
@@ -637,6 +651,7 @@ function LoginPage({
     onMouseLeave: () => setHover(null),
     onClick: () => {
       setSelected(r);
+      PmalI18n.set(r.id === "rammelt" ? "de" : "tr");
       setPass("");
       setErr("");
     },
@@ -835,7 +850,7 @@ function LoginPage({
       transition: "opacity 0.2s"
     }
   }, "Giri\u015F Yap")), /*#__PURE__*/React.createElement("button", {
-    onClick: () => setSelected(null),
+    onClick: () => { PmalI18n.set("tr"); setSelected(null); },
     style: {
       background: "none",
       border: "none",
@@ -1111,7 +1126,7 @@ function DashPage() {
         const todayStr = new Date().toISOString().split('T')[0];
         const today = rows.filter(r => r.created_at && r.created_at.startsWith(todayStr)).length;
         const fixCount = key => {
-          const yes = rows.filter(r => r[key] === 'Evet' || r[key] === 'Yes').length;
+          const yes = rows.filter(r => pmalCanonValue(key, r[key]) === 'Evet').length;
           return total ? Math.round(yes / total * 100) : 0;
         };
         setData({
@@ -1163,7 +1178,7 @@ function DashPage() {
     l: "Vaka 3 — 74Y K, Açık 3A, %28",
     pct: data.fixes.c3 || 0
   }, {
-    l: "Vaka 4 — 47Y K, İzole PM, %26",
+    l: "Vaka 4 — 55Y K, Bart 3, %36, lüksasyon",
     pct: data.fixes.c4 || 0
   }];
     return /*#__PURE__*/React.createElement("div", null, health && /*#__PURE__*/React.createElement("div", {
@@ -1189,7 +1204,7 @@ function DashPage() {
       }, (ok ? "● " : "○ ") + label);
     }),
     health.error && /*#__PURE__*/React.createElement("span", { style: { color: "#f87171", fontSize: 11 } }, "health check unreachable")
-  ), /*#__PURE__*/React.createElement("div", {
+  ), React.createElement(PmalLiveStage, null), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
@@ -1274,7 +1289,7 @@ function DashPage() {
       borderRadius: 4,
       transition: "width 0.5s"
     }
-  }))))), /*#__PURE__*/React.createElement("h3", {
+  }))))), React.createElement(PmalIntlPanel, null), React.createElement(PmalQualityPanel, null), /*#__PURE__*/React.createElement("h3", {
     style: {
       color: TH.tx,
       fontSize: 15,
@@ -1547,7 +1562,7 @@ function RespPage() {
       color: TH.td,
       fontSize: 10
     }
-  }, r.created_at ? new Date(r.created_at).toLocaleDateString('tr-TR') : ""))))));
+  }, r.created_at ? new Date(r.created_at).toLocaleDateString((window.PMAL_LOCALE||"tr-TR")) : ""))))));
 }
 
 // ── STATISTICS ──
@@ -1803,7 +1818,8 @@ function StatPage() {
     (async () => {
       try {
         const d = await wkGet("responses", "select=*&completed=eq.true&order=created_at.desc");
-        setRows(Array.isArray(d) ? d : []);
+        window._pmalStatRaw = Array.isArray(d) ? d : [];
+        setRows(Array.isArray(d) ? pmalCanonRows(d) : []);
       } catch (e) {
         console.error("Stat load error:", e);
       }
@@ -1839,8 +1855,10 @@ function StatPage() {
 
   const exportCSV = () => {
     if (!rows.length) return;
-    const keys = Object.keys(rows[0]);
-    const csv = [keys.join(","), ...rows.map(r => keys.map(k => {
+    // Export the RAW rows (original-language labels); charts use the canonical copy.
+    const raw = window._pmalStatRaw && window._pmalStatRaw.length ? window._pmalStatRaw : rows;
+    const keys = Object.keys(raw[0]);
+    const csv = [keys.join(","), ...raw.map(r => keys.map(k => {
       const v = r[k];
       return typeof v === "object" ? `"${JSON.stringify(v).replace(/"/g, "'")}"` : v == null ? "" : `"${String(v).replace(/"/g, "'")}"`;
     }).join(","))].join("\n");
@@ -2475,7 +2493,7 @@ function FeedPage({ user }) {
     const lines = [
       `PMAL Anket Geri Bildirimi`,
       `Gönderen: ${user?.name || "Bilinmiyor"} (${user?.id || "?"})`,
-      `Tarih: ${new Date().toLocaleString("tr-TR")}`,
+      `Tarih: ${new Date().toLocaleString((window.PMAL_LOCALE||"tr-TR"))}`,
       `Toplam yorum: ${commentCount}`,
       `Supabase kayıt: ${supabaseOk ? "Başarılı" : "BAŞARISIZ — bu mail yoksa veri kaybolur"}`,
       ``,
@@ -2666,7 +2684,7 @@ function FeedPage({ user }) {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: `${c.id}_fix`,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       paddingLeft: 12,
@@ -2696,7 +2714,7 @@ function FeedPage({ user }) {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: `${c.id}_pos`,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 10
@@ -2713,7 +2731,7 @@ function FeedPage({ user }) {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: `${c.id}_app`,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })), c.hasSeq && /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 10
@@ -2730,7 +2748,7 @@ function FeedPage({ user }) {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: `${c.id}_seq`,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 4
@@ -2747,7 +2765,7 @@ function FeedPage({ user }) {
   }), /*#__PURE__*/React.createElement(CommentBox, {
     qid: `${c.id}_tech`,
     openId: openId,
-    setOpenId: setOpenId
+    setOpenId: setOpenId, comments: comments, setComments: setComments
   })))))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: TH.cd,
@@ -3015,6 +3033,8 @@ function App() {
       setPlaying(true);
     }
   }, [user]);
+  usePmalWatcher(!!user);
+  const pmalDashKey = usePmalDashKey();
   if (!started) return /*#__PURE__*/React.createElement(IntroScreen, {
     onStart: () => setStarted(true)
   });
@@ -3022,7 +3042,7 @@ function App() {
     onLogin: setUser
   });
   const pages = {
-    dashboard: /*#__PURE__*/React.createElement(DashPage, null),
+    dashboard: /*#__PURE__*/React.createElement(DashPage, { key: pmalDashKey }),
     responses: /*#__PURE__*/React.createElement(RespPage, null),
     statistics: /*#__PURE__*/React.createElement(StatPage, null),
     feedback: /*#__PURE__*/React.createElement(FeedPage, { user }),
@@ -3200,7 +3220,7 @@ function App() {
     }
   }, /*#__PURE__*/React.createElement(MusicStory, {
     page: page
-  }), pages[page])), /*#__PURE__*/React.createElement(MusicBar, {
+  }), pages[page])), React.createElement(PmalStageFX, null), /*#__PURE__*/React.createElement(MusicBar, {
     page: page,
     playing: playing,
     setPlaying: setPlaying,
@@ -3208,6 +3228,1559 @@ function App() {
     setVolume: setVolume
   }));
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// PMAL ADMIN — LIVE LAYER (2026-11)
+//   • Canonical answer labels: DE/ES/EN answers are folded into the TR label
+//     of the same option, so dashboards count "Ja" / "Sí" / "Yes" with "Evet".
+//     Raw rows are never modified for export — only the copies used in charts.
+//   • PmalStore: one shared, refreshable load of completed responses.
+//   • Watcher: polls for new responses → tab title (+n), toast, applause,
+//     flying lighters on the stage.
+//   • LiveStage: the dashboard "concert" header.
+//   • IntlPanel: Türkiye vs KKTC vs international, cumulative timeline with a
+//     settable Türkiye cut-off date, country leaderboard, languages.
+//   • QualityPanel: CHERRIES-style completion-time summary, speeders, and
+//     possible duplicate submissions.
+// Source of this file: admin-live.jsx — compiled with Babel preset-react.
+// ═══════════════════════════════════════════════════════════════════════
+
+const PMAL_LABELMAP = {"a3":{"University hospital / Academic teaching hospital":"Üniversite hastanesi / akademik eğitim hastanesi","Universitätsklinikum / akademisches Lehrkrankenhaus":"Üniversite hastanesi / akademik eğitim hastanesi","Hospital universitario / hospital docente académico":"Üniversite hastanesi / akademik eğitim hastanesi","Tertiary-level trauma center (non-academic)":"3. basamak travma merkezi (akademik olmayan)","Traumazentrum der tertiären Versorgungsstufe (nicht-akademisch)":"3. basamak travma merkezi (akademik olmayan)","Centro de trauma de tercer nivel (no académico)":"3. basamak travma merkezi (akademik olmayan)","Secondary-level / community / public hospital":"2. basamak / toplum / devlet hastanesi","Krankenhaus der sekundären Versorgungsstufe / gemeindenahes / öffentliches Krankenhaus":"2. basamak / toplum / devlet hastanesi","Hospital de segundo nivel / comunitario / público":"2. basamak / toplum / devlet hastanesi","Private practice (solo or group)":"Özel klinik (solo veya grup)","Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)":"Özel klinik (solo veya grup)","Práctica privada (individual o en grupo)":"Özel klinik (solo veya grup)","Other":"Diğer","Sonstiges":"Diğer","Otro":"Diğer"},"a5":{},"a6":{"Foot and ankle surgery":"Ayak ve ayak bileği cerrahisi","Fuß- und Sprunggelenkchirurgie":"Ayak ve ayak bileği cerrahisi","Cirugía de pie y tobillo":"Ayak ve ayak bileği cerrahisi","Orthopaedic trauma":"Ortopedik travma","Orthopädische Traumatologie / Unfallchirurgie":"Ortopedik travma","Traumatología ortopédica":"Ortopedik travma","General orthopaedics":"Genel ortopedi","Allgemeine Orthopädie":"Genel ortopedi","Ortopedia general":"Genel ortopedi","Resident / fellow in training":"Asistan / fellow eğitim aşamasında","Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung":"Asistan / fellow eğitim aşamasında","Residente / fellow en formación":"Asistan / fellow eğitim aşamasında","Other orthopaedic subspecialty (spine, sports, arthroplasty, etc.)":"Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)","Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)":"Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)","Otra subespecialidad ortopédica (columna, deportiva, artroplastia, etc.)":"Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)"},"a7":{"Routinely":"Rutin olarak","Routinemäßig":"Rutin olarak","De forma rutinaria":"Rutin olarak","Often":"Sıklıkla","Häufig":"Sıklıkla","Con frecuencia":"Sıklıkla","Selectively":"Seçici olarak","Selektiv":"Seçici olarak","De forma selectiva":"Seçici olarak","Rarely":"Nadiren","Selten":"Nadiren","Rara vez":"Nadiren","CT access is limited in my setting":"Pratiğimde BT erişimi sınırlı","Der Zugang zur CT ist in meinem Umfeld begrenzt":"Pratiğimde BT erişimi sınırlı","El acceso a la TC es limitado en mi centro":"Pratiğimde BT erişimi sınırlı"},"c1":{"Haraguchi classification":"Haraguchi sınıflaması","Haraguchi-Klassifikation":"Haraguchi sınıflaması","Clasificación de Haraguchi":"Haraguchi sınıflaması","Bartoníček/Rammelt classification":"Bartoníček/Rammelt sınıflaması","Bartoníček/Rammelt-Klassifikation":"Bartoníček/Rammelt sınıflaması","Clasificación de Bartoníček/Rammelt":"Bartoníček/Rammelt sınıflaması","Mason & Molloy classification":"Mason & Molloy sınıflaması","Mason-&-Molloy-Klassifikation":"Mason & Molloy sınıflaması","Clasificación de Mason y Molloy":"Mason & Molloy sınıflaması","AO/OTA classification":"AO/OTA sınıflaması","AO/OTA-Klassifikation":"AO/OTA sınıflaması","Clasificación AO/OTA":"AO/OTA sınıflaması","Lauge-Hansen classification":"Lauge-Hansen sınıflaması","Lauge-Hansen-Klassifikation":"Lauge-Hansen sınıflaması","Clasificación de Lauge-Hansen":"Lauge-Hansen sınıflaması","Fragment size (% articular surface)":"Fragment boyutu (% eklem yüzeyi)","Fragmentgröße (% der Gelenkfläche)":"Fragment boyutu (% eklem yüzeyi)","Tamaño del fragmento (% de superficie articular)":"Fragment boyutu (% eklem yüzeyi)","I do not use a specific classification":"Spesifik bir sınıflama kullanmıyorum","Ich verwende keine spezifische Klassifikation":"Spesifik bir sınıflama kullanmıyorum","No utilizo una clasificación específica":"Spesifik bir sınıflama kullanmıyorum"},"c2":{"Yes — I primarily decide based on classification":"Evet — primer olarak sınıflamaya göre karar veririm","Ja — ich entscheide primär anhand der Klassifikation":"Evet — primer olarak sınıflamaya göre karar veririm","Sí — decido principalmente según la clasificación":"Evet — primer olarak sınıflamaya göre karar veririm","Partially — classification is one of several factors":"Kısmen — sınıflama faktörlerden biridir","Teilweise — die Klassifikation ist einer von mehreren Faktoren":"Kısmen — sınıflama faktörlerden biridir","En parte — la clasificación es uno de varios factores":"Kısmen — sınıflama faktörlerden biridir","No — I evaluate independently of classification":"Hayır — sınıflamadan bağımsız değerlendiririm","Nein — ich beurteile unabhängig von der Klassifikation":"Hayır — sınıflamadan bağımsız değerlendiririm","No — evalúo con independencia de la clasificación":"Hayır — sınıflamadan bağımsız değerlendiririm"},"d1":{"< 10%":"< %10","< 10 %":"< %10","10–25%":"%10–25","10–25 %":"%10–25",">25–33%":">%25–33",">25–33 %":">%25–33","> 33%":"> %33","> 33 %":"> %33","I fix all PM fragments if technically feasible":"Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim","Ich fixiere alle PM-Fragmente, sofern technisch möglich":"Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim","Fijo todos los fragmentos del MP si es técnicamente posible":"Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim","I do not use size alone as an indication":"Boyutu tek başına bir endikasyon olarak kullanmam","Ich verwende die Größe allein nicht als Indikation":"Boyutu tek başına bir endikasyon olarak kullanmam","No utilizo el tamaño por sí solo como indicación":"Boyutu tek başına bir endikasyon olarak kullanmam","I rarely/never fix the PM fragment":"PM fragmentini nadiren / hiç fikse etmem","Ich fixiere das PM-Fragment selten/nie":"PM fragmentini nadiren / hiç fikse etmem","Rara vez o nunca fijo el fragmento del MP":"PM fragmentini nadiren / hiç fikse etmem"},"d3":{"Magnitude of articular step-off":"Artiküler step-off miktarı","Ausmaß der Gelenkstufe (Step-off)":"Artiküler step-off miktarı","Magnitud del escalón articular":"Artiküler step-off miktarı","Fibular notch involvement":"Fibular notch tutulumu","Beteiligung der Incisura fibularis":"Fibular notch tutulumu","Afectación de la incisura fibular":"Fibular notch tutulumu","Syndesmotic instability":"Sindesmoz instabilitesi","Syndesmoseninstabilität":"Sindesmoz instabilitesi","Inestabilidad sindesmal":"Sindesmoz instabilitesi","Fragment morphology (Bartoníček/Haraguchi type)":"Fragment morfolojisi (Bartoníček/Haraguchi tipi)","Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)":"Fragment morfolojisi (Bartoníček/Haraguchi tipi)","Morfología del fragmento (tipo de Bartoníček/Haraguchi)":"Fragment morfolojisi (Bartoníček/Haraguchi tipi)","Patient age and activity level":"Hasta yaşı ve aktivite düzeyi","Alter und Aktivitätsniveau des Patienten":"Hasta yaşı ve aktivite düzeyi","Edad y nivel de actividad del paciente":"Hasta yaşı ve aktivite düzeyi","Bone quality (osteoporosis)":"Kemik kalitesi (osteoporoz)","Knochenqualität (Osteoporose)":"Kemik kalitesi (osteoporoz)","Calidad ósea (osteoporosis)":"Kemik kalitesi (osteoporoz)","Soft tissue condition":"Yumuşak doku durumu","Weichteilverhältnisse":"Yumuşak doku durumu","Estado de las partes blandas":"Yumuşak doku durumu","Presence of impacted articular fragments":"İmpakte artiküler fragment varlığı","Vorliegen impaktierter Gelenkfragmente":"İmpakte artiküler fragment varlığı","Presencia de fragmentos articulares impactados":"İmpakte artiküler fragment varlığı","Comorbidities (DM, smoking, etc.)":"Komorbidite (DM, sigara vb.)","Komorbiditäten (Diabetes, Rauchen etc.)":"Komorbidite (DM, sigara vb.)","Comorbilidades (DM, tabaquismo, etc.)":"Komorbidite (DM, sigara vb.)"},"d4":{"Articular step-off or gap caused by the fragment":"Fragmana bağlı artiküler step-off veya boşluk","Durch das Fragment bedingte Gelenkstufe oder Spaltbildung":"Fragmana bağlı artiküler step-off veya boşluk","Escalón o separación articular causados por el fragmento":"Fragmana bağlı artiküler step-off veya boşluk","Fragment blocks reduction of the main PM fragment":"Fragmanın ana PM fragmentinin redüksiyonunu engellemesi","Das Fragment blockiert die Reposition des PM-Hauptfragments":"Fragmanın ana PM fragmentinin redüksiyonunu engellemesi","El fragmento impide la reducción del fragmento principal del MP":"Fragmanın ana PM fragmentinin redüksiyonunu engellemesi","Fragment ≥ 5 mm — large enough for independent fixation":"Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması","Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation":"Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması","Fragmento ≥ 5 mm — suficientemente grande para una fijación independiente":"Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması","Fragment is accessible through my planned approach (posterolateral or posteromedial)":"Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması","Das Fragment ist über meinen geplanten Zugang (posterolateral oder posteromedial) erreichbar":"Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması","El fragmento es accesible a través del abordaje planificado (posterolateral o posteromedial)":"Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması","Impacted osteochondral fragment requiring elevation/grafting":"Elevasyon/greftleme gerektiren impakte osteokondral fragman","Impaktiertes osteochondrales Fragment, das eine Anhebung/Unterfütterung mit Transplantat erfordert":"Elevasyon/greftleme gerektiren impakte osteokondral fragman","Fragmento osteocondral impactado que requiere elevación/injerto":"Elevasyon/greftleme gerektiren impakte osteokondral fragman","Patient is young/active (high functional demand)":"Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)","Junger/aktiver Patient (hoher funktioneller Anspruch)":"Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)","Paciente joven/activo (alta demanda funcional)":"Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)","Fragment behaves as a loose body or is not amenable to fixation (removal considered)":"Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)","Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)":"Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)","El fragmento se comporta como un cuerpo libre o no es susceptible de fijación (se considera su extracción)":"Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)","I do not usually address intercalary fragments separately":"İnterkalar fragmanları genellikle ayrıca ele almam","Ich adressiere interkalare Fragmente üblicherweise nicht gesondert":"İnterkalar fragmanları genellikle ayrıca ele almam","Habitualmente no trato los fragmentos intercalares por separado":"İnterkalar fragmanları genellikle ayrıca ele almam"},"d5":{"I routinely attempt direct fixation of intercalary fragments when accessible":"Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim","Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar":"Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim","Intento de forma rutinaria la fijación directa de los fragmentos intercalares cuando son accesibles":"Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim","I selectively fix intercalary fragments based on size, location, or comminution":"İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim","Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerung":"İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim","Fijo de forma selectiva los fragmentos intercalares según su tamaño, localización o conminución":"İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim","I generally do not fix intercalary fragments directly — main PM fragment fixation usually suffices":"İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli","Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist":"İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli","Por lo general no fijo directamente los fragmentos intercalares — la fijación del fragmento principal del MP suele ser suficiente":"İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli","I do not have a settled practice yet — evidence is conflicting":"Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili","Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich":"Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili","Aún no tengo una práctica establecida — la evidencia es contradictoria":"Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili"},"e1":{"Percutaneous AP lag screw":"Perkütan AP lag vida","Perkutane AP-Zugschraube":"Perkütan AP lag vida","Tornillo de compresión (lag) percutáneo AP":"Perkütan AP lag vida","Percutaneous PA lag screw":"Perkütan PA lag vida","Perkutane PA-Zugschraube":"Perkütan PA lag vida","Tornillo de compresión (lag) percutáneo PA":"Perkütan PA lag vida","Trans-Achilles percutaneous PA screw":"Trans-Achilles perkütan PA vida","Transachilläre perkutane PA-Schraube":"Trans-Achilles perkütan PA vida","Tornillo percutáneo PA transaquíleo":"Trans-Achilles perkütan PA vida","Open posterolateral — buttress/locking plate":"Açık posterolateral — buttress/locking plak","Offen posterolateral — Abstütz-/winkelstabile Platte":"Açık posterolateral — buttress/locking plak","Abierto posterolateral — placa de soporte/bloqueada":"Açık posterolateral — buttress/locking plak","Open posterolateral — lag screw":"Açık posterolateral — lag vida","Offen posterolateral — Zugschraube":"Açık posterolateral — lag vida","Abierto posterolateral — tornillo de compresión (lag)":"Açık posterolateral — lag vida","Open posteromedial — buttress/locking plate":"Açık posteromedyal — buttress/kilitli plak","Offen posteromedial — Abstütz-/winkelstabile Platte":"Açık posteromedyal — buttress/kilitli plak","Abierto posteromedial — placa de soporte/bloqueada":"Açık posteromedyal — buttress/kilitli plak","Open posteromedial — lag screw":"Açık posteromedyal — lag vida","Offen posteromedial — Zugschraube":"Açık posteromedyal — lag vida","Abierto posteromedial — tornillo de compresión (lag)":"Açık posteromedyal — lag vida"},"e2":{"Posteromedial — standard (between FDL and posterior tibial tendon)":"Posteromedyal — standart (FDL ve posterior tibial tendon arasından)","Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)":"Posteromedyal — standart (FDL ve posterior tibial tendon arasından)","Posteromedial — estándar (entre el FDL y el tendón tibial posterior)":"Posteromedyal — standart (FDL ve posterior tibial tendon arasından)","Posteromedial — modified (medial window, lateral to FHL)":"Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)","Posteromedial — modifiziert (mediales Fenster, lateral der FHL)":"Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)","Posteromedial — modificado (ventana medial, lateral al FHL)":"Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)","Posteromedial — extended (FHL retraction / FHL window approach)":"Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)","Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)":"Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)","Posteromedial — ampliado (retracción del FHL / abordaje por la ventana del FHL)":"Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)","Combined posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Kombiniert posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Combinado posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Combined posterolateral + medial (separate medial incision for medial malleolus)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Combinado posterolateral + medial (incisión medial independiente para el maléolo medial)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Anterior (percutaneous)":"Anterior (perkütan)","Anterior (perkutan)":"Anterior (perkütan)","Anterior (percutáneo)":"Anterior (perkütan)","Arthroscopic-assisted":"Artroskopi yardımlı","Arthroskopisch assistiert":"Artroskopi yardımlı","Asistido por artroscopia":"Artroskopi yardımlı","Varies by case":"Vakaya göre değişir","Fallabhängig unterschiedlich":"Vakaya göre değişir","Varía según el caso":"Vakaya göre değişir"},"e3":{"Rückenlage":"Supine","Decúbito supino":"Supine","Bauchlage":"Prone","Decúbito prono":"Prone","Lateral decubitus":"Lateral dekübitus","Seitenlage":"Lateral dekübitus","Decúbito lateral":"Lateral dekübitus"},"f1":{"Fibula → PM → Medial malleolus → Syndesmosis (if unstable)":"Fibula → PM → Medial malleol → Sindesmoz (instabil ise)","Fibula → PM → Innenknöchel → Syndesmose (falls instabil)":"Fibula → PM → Medial malleol → Sindesmoz (instabil ise)","Peroné → MP → Maléolo medial → Sindesmosis (si es inestable)":"Fibula → PM → Medial malleol → Sindesmoz (instabil ise)","PM first → Fibula → Medial malleolus → Syndesmosis (if unstable)":"PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)","PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)":"PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)","Primero MP → Peroné → Maléolo medial → Sindesmosis (si es inestable)":"PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)","Fibula → Assess syndesmosis → PM → Medial malleolus":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Fibula → Syndesmosenprüfung → PM → Innenknöchel":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Peroné → Evaluar la sindesmosis → MP → Maléolo medial":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Individualised — no standard sequence":"Bireyselleştirilmiş — standart sıram yok","Individuell — keine Standardreihenfolge":"Bireyselleştirilmiş — standart sıram yok","Individualizada — sin una secuencia estándar":"Bireyselleştirilmiş — standart sıram yok"},"f2":{"Intraoperative stress test (external rotation / hook test)":"İntraoperatif stres testi (eksternal rotasyon / hook test)","Intraoperativer Stresstest (Außenrotations-/Hakentest)":"İntraoperatif stres testi (eksternal rotasyon / hook test)","Prueba de estrés intraoperatoria (rotación externa / hook test)":"İntraoperatif stres testi (eksternal rotasyon / hook test)","Medial clear space assessment is sufficient":"Medial clear space değerlendirmesi yeterlidir","Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend":"Medial clear space değerlendirmesi yeterlidir","La evaluación del espacio claro medial es suficiente":"Medial clear space değerlendirmesi yeterlidir","Intraoperative arthroscopy":"İntraoperatif artroskopi","Intraoperative Arthroskopie":"İntraoperatif artroskopi","Artroscopia intraoperatoria":"İntraoperatif artroskopi","I routinely fix the syndesmosis regardless of stability":"Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım","Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität":"Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım","Fijo la sindesmosis de forma rutinaria, independientemente de su estabilidad":"Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım"},"f3":{"Yes — consistently; PM fixation restores syndesmotic stability":"Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar","Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her":"Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar","Sí — de forma constante; la fijación del MP restablece la estabilidad sindesmal":"Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar","Yes — in some cases":"Evet — bazı vakalarda","Ja — in manchen Fällen":"Evet — bazı vakalarda","Sí — en algunos casos":"Evet — bazı vakalarda","No — syndesmotic instability often persists despite PM fixation":"Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder","Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig":"Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder","No — la inestabilidad sindesmal suele persistir pese a la fijación del MP":"Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder","I have not specifically assessed this in my practice":"Pratiğimde bunu spesifik olarak değerlendirmedim","Ich habe dies in meiner Praxis nicht gezielt untersucht":"Pratiğimde bunu spesifik olarak değerlendirmedim","No lo he evaluado específicamente en mi práctica":"Pratiğimde bunu spesifik olarak değerlendirmedim"},"f4":{"Yes — routinely, on CT":"Evet — rutin olarak BT'de","Ja — routinemäßig im CT":"Evet — rutin olarak BT'de","Sí — de forma rutinaria, en la TC":"Evet — rutin olarak BT'de","Yes — only when syndesmotic instability is clinically suspected (positive hook test, persistent diastasis on stress imaging, etc.)":"Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)","Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hakentest, persistierende Diastase in der Stressbildgebung etc.)":"Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)","Sí — solo cuando se sospecha clínicamente inestabilidad sindesmal (hook test positivo, diástasis persistente en las imágenes de estrés, etc.)":"Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)","Sometimes — depending on fracture pattern":"Bazen — kırık paternine göre","Manchmal — je nach Frakturmuster":"Bazen — kırık paternine göre","A veces — según el patrón de fractura":"Bazen — kırık paternine göre","Rarely or not specifically":"Nadiren veya spesifik olarak değil","Selten oder nicht gezielt":"Nadiren veya spesifik olarak değil","Rara vez o no específicamente":"Nadiren veya spesifik olarak değil"},"f5":{"Direct fixation (screw, suture anchor, or plate)":"Direkt fiksasyon (vida, sütur ankoru veya plak)","Direkte Fixation (Schraube, Fadenanker oder Platte)":"Direkt fiksasyon (vida, sütur ankoru veya plak)","Fijación directa (tornillo, anclaje de sutura o placa)":"Direkt fiksasyon (vida, sütur ankoru veya plak)","Trans-syndesmotic fixation only (without addressing the fragment directly)":"Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)","Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)":"Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)","Solo fijación transindesmal (sin tratar directamente el fragmento)":"Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)","Both — direct fragment fixation and trans-syndesmotic stabilisation":"Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon","Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung":"Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon","Ambas — fijación directa del fragmento y estabilización transindesmal":"Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon","Non-operative if syndesmosis is otherwise stable":"Sindesmoz aksi takdirde stabil ise non-operatif","Konservativ, sofern die Syndesmose ansonsten stabil ist":"Sindesmoz aksi takdirde stabil ise non-operatif","Tratamiento no quirúrgico si la sindesmosis es por lo demás estable":"Sindesmoz aksi takdirde stabil ise non-operatif","Decision based on fragment size and accessibility":"Karar fragman boyutu ve erişilebilirliğine göre","Entscheidung nach Fragmentgröße und Erreichbarkeit":"Karar fragman boyutu ve erişilebilirliğine göre","Decisión según el tamaño y la accesibilidad del fragmento":"Karar fragman boyutu ve erişilebilirliğine göre"},"h5":{"Yes — substantially":"Evet — köklü değişiklik","Ja — erheblich":"Evet — köklü değişiklik","Sí — sustancialmente":"Evet — köklü değişiklik","Yes — moderate change":"Evet — orta düzeyde değişiklik","Ja — mäßige Veränderung":"Evet — orta düzeyde değişiklik","Sí — cambio moderado":"Evet — orta düzeyde değişiklik","Minor refinements only":"Sadece küçük iyileştirmeler","Nur geringfügige Anpassungen":"Sadece küçük iyileştirmeler","Solo ajustes menores":"Sadece küçük iyileştirmeler","No significant change":"Anlamlı değişiklik yok","Keine wesentliche Veränderung":"Anlamlı değişiklik yok","Sin cambios significativos":"Anlamlı değişiklik yok"},"h6_driver":{"More routine preoperative CT / morphology-based assessment":"Daha rutin preoperatif BT / morfoloji bazlı değerlendirme","Routinemäßigere präoperative CT / morphologiebasierte Beurteilung":"Daha rutin preoperatif BT / morfoloji bazlı değerlendirme","Uso más rutinario de la TC preoperatoria / evaluación basada en la morfología":"Daha rutin preoperatif BT / morfoloji bazlı değerlendirme","Adoption of Bartoníček/Rammelt or Mason & Molloy classifications in decision-making":"Bartoníček/Rammelt veya Mason & Molloy sınıflamasının karar verme sürecinde benimsenmesi","Übernahme der Bartoníček/Rammelt- oder Mason-&-Molloy-Klassifikation in die Entscheidungsfindung":"Bartoníček/Rammelt veya Mason & Molloy sınıflamasının karar verme sürecinde benimsenmesi","Adopción de las clasificaciones de Bartoníček/Rammelt o de Mason y Molloy en la toma de decisiones":"Bartoníček/Rammelt veya Mason & Molloy sınıflamasının karar verme sürecinde benimsenmesi","Greater use of direct posterior approaches (posterolateral or posteromedial)":"Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması","Häufigere Nutzung direkter posteriorer Zugänge (posterolateral oder posteromedial)":"Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması","Mayor uso de abordajes posteriores directos (posterolateral o posteromedial)":"Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması","Posteromedial approach variations (modified / extended FHL)":"Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)","Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)":"Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)","Variantes del abordaje posteromedial (modificado / ampliado por el FHL)":"Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)","Shift from size-based threshold to morphology-based indications":"Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş","Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen":"Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş","Paso de un umbral basado en el tamaño a indicaciones basadas en la morfología":"Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş","Lower threshold for fixing smaller fragments":"Daha küçük fragmanları fikse etme eşiğinin düşmesi","Niedrigere Schwelle für die Fixation kleinerer Fragmente":"Daha küçük fragmanları fikse etme eşiğinin düşmesi","Umbral más bajo para fijar fragmentos más pequeños":"Daha küçük fragmanları fikse etme eşiğinin düşmesi","Recognition that PM fixation reduces need for syndesmotic screw":"PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi","Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert":"PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi","Reconocimiento de que la fijación del MP reduce la necesidad de un tornillo sindesmal":"PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi","Greater attention to incisura / fibular notch reduction":"İncisura / fibular notch redüksiyonuna daha fazla dikkat","Größere Aufmerksamkeit für die Reposition in der Incisura fibularis":"İncisura / fibular notch redüksiyonuna daha fazla dikkat","Mayor atención a la reducción en la incisura fibular":"İncisura / fibular notch redüksiyonuna daha fazla dikkat","Recognition of Chaput / Wagstaffe fragment relevance":"Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi","Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten":"Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi","Reconocimiento de la relevancia de los fragmentos de Tillaux-Chaput / Wagstaffe-Le Fort":"Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi","None of these — my practice has remained largely unchanged":"Hiçbiri — pratiğim büyük ölçüde değişmedi","Keine davon — meine Praxis ist weitgehend unverändert geblieben":"Hiçbiri — pratiğim büyük ölçüde değişmedi","Ninguno — mi práctica se ha mantenido prácticamente sin cambios":"Hiçbiri — pratiğim büyük ölçüde değişmedi","Other (specify)":"Diğer (belirtiniz)","Sonstiges (bitte angeben)":"Diğer (belirtiniz)","Otro (especificar)":"Diğer (belirtiniz)"},"*_position":{"Rückenlage":"Supine","Decúbito supino":"Supine","Bauchlage":"Prone","Decúbito prono":"Prone","Lateral decubitus":"Lateral dekübitus","Seitenlage":"Lateral dekübitus","Decúbito lateral":"Lateral dekübitus","Multiple positions required (e.g., repositioning intra-op)":"Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)","Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)":"Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)","Se requieren varias posiciones (p. ej., cambio de posición intraoperatorio)":"Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)"},"*_approach":{"Posteromedial — standard":"Posteromedyal — standart","Posteromedial — Standard":"Posteromedyal — standart","Posteromedial — estándar":"Posteromedyal — standart","Posteromedial — modified":"Posteromedyal — modifiye","Posteromedial — modifiziert":"Posteromedyal — modifiye","Posteromedial — modificado":"Posteromedyal — modifiye","Posteromedial — extended (FHL)":"Posteromedyal — geniş (FHL)","Posteromedial — erweitert (FHL)":"Posteromedyal — geniş (FHL)","Posteromedial — ampliado (FHL)":"Posteromedyal — geniş (FHL)","Combined posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Kombiniert posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Combinado posterolateral + posteromedial":"Kombine posterolateral + posteromedyal","Combined posterolateral + medial (separate medial incision for medial malleolus)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Combinado posterolateral + medial (incisión medial independiente para el maléolo medial)":"Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)","Anterior (percutaneous)":"Anterior (perkütan)","Anterior (perkutan)":"Anterior (perkütan)","Anterior (percutáneo)":"Anterior (perkütan)","Arthroscopic-assisted":"Artroskopi yardımlı","Arthroskopisch assistiert":"Artroskopi yardımlı","Asistido por artroscopia":"Artroskopi yardımlı"},"*_sequence":{"PM first → Fibula → Medial malleolus":"PM önce → Fibula → Medial malleol","PM zuerst → Fibula → Innenknöchel":"PM önce → Fibula → Medial malleol","Primero MP → Peroné → Maléolo medial":"PM önce → Fibula → Medial malleol","Fibula → PM → Medial malleolus":"Fibula → PM → Medial malleol","Fibula → PM → Innenknöchel":"Fibula → PM → Medial malleol","Peroné → MP → Maléolo medial":"Fibula → PM → Medial malleol","Fibula → Assess syndesmosis → PM → Medial malleolus":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Fibula → Syndesmosenprüfung → PM → Innenknöchel":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Peroné → Evaluar la sindesmosis → MP → Maléolo medial":"Fibula → Sindesmoz değerlendir → PM → Medial malleol","Fibula → PM → Medial malleolus → Assess syndesmosis":"Fibula → PM → Medial malleol → Sindesmoz değerlendir","Fibula → PM → Innenknöchel → Syndesmosenprüfung":"Fibula → PM → Medial malleol → Sindesmoz değerlendir","Peroné → MP → Maléolo medial → Evaluar la sindesmosis":"Fibula → PM → Medial malleol → Sindesmoz değerlendir","Individualised — no standard sequence":"Bireyselleştirilmiş — standart sıram yok","Individuell — keine Standardreihenfolge":"Bireyselleştirilmiş — standart sıram yok","Individualizada — sin una secuencia estándar":"Bireyselleştirilmiş — standart sıram yok","PM first → Lateral malleolus":"PM önce → Lateral malleol","PM zuerst → Außenknöchel":"PM önce → Lateral malleol","Primero MP → Maléolo lateral":"PM önce → Lateral malleol","Lateral malleolus first → PM":"Lateral malleol önce → PM","Außenknöchel zuerst → PM":"Lateral malleol önce → PM","Primero maléolo lateral → MP":"Lateral malleol önce → PM","Simultaneous / single-approach fixation":"Eşzamanlı / tek yaklaşımdan fiksasyon","Simultane Fixation / über einen einzigen Zugang":"Eşzamanlı / tek yaklaşımdan fiksasyon","Fijación simultánea / por un único abordaje":"Eşzamanlı / tek yaklaşımdan fiksasyon","Lateral malleolus → PM → Assess syndesmosis":"Lateral malleol → PM → Sindesmoz değerlendir","Außenknöchel → PM → Syndesmosenprüfung":"Lateral malleol → PM → Sindesmoz değerlendir","Maléolo lateral → MP → Evaluar la sindesmosis":"Lateral malleol → PM → Sindesmoz değerlendir"},"*_technique":{"Percutaneous AP screw fixation":"Perkütan AP vida fiksasyonu","Perkutane AP-Schraubenfixation":"Perkütan AP vida fiksasyonu","Fijación percutánea con tornillo AP":"Perkütan AP vida fiksasyonu","Percutaneous PA screw fixation":"Perkütan PA vida fiksasyonu","Perkutane PA-Schraubenfixation":"Perkütan PA vida fiksasyonu","Fijación percutánea con tornillo PA":"Perkütan PA vida fiksasyonu","Open posterolateral — lag screw (no plate)":"Açık posterolateral — lag vida (plaksız)","Offen posterolateral — Zugschraube (ohne Platte)":"Açık posterolateral — lag vida (plaksız)","Abierto posterolateral — tornillo de compresión (lag) (sin placa)":"Açık posterolateral — lag vida (plaksız)","Open posterolateral — buttress/locking plate":"Açık posterolateral — buttress/kilitli plak","Offen posterolateral — Abstütz-/winkelstabile Platte":"Açık posterolateral — buttress/kilitli plak","Abierto posterolateral — placa de soporte/bloqueada":"Açık posterolateral — buttress/kilitli plak","Open posteromedial — buttress/locking plate":"Açık posteromedyal — buttress/kilitli plak","Offen posteromedial — Abstütz-/winkelstabile Platte":"Açık posteromedyal — buttress/kilitli plak","Abierto posteromedial — placa de soporte/bloqueada":"Açık posteromedyal — buttress/kilitli plak","Open posteromedial — lag screw (no plate)":"Açık posteromedyal — lag vida (plaksız)","Offen posteromedial — Zugschraube (ohne Platte)":"Açık posteromedyal — lag vida (plaksız)","Abierto posteromedial — tornillo de compresión (lag) (sin placa)":"Açık posteromedyal — lag vida (plaksız)","Mini-fragment / intercalary fragment fixation in addition to main PM fixation":"Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu","Minifragment-/interkalare Fragmentfixation zusätzlich zur PM-Hauptfixation":"Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu","Fijación de minifragmentos / fragmento intercalar además de la fijación principal del MP":"Ana PM fiksasyonuna ek olarak mini-fragman / interkalar fragman fiksasyonu","Arthroscopic-assisted reduction / fixation":"Artroskopi yardımlı redüksiyon / fiksasyon","Arthroskopisch assistierte Reposition/Fixation":"Artroskopi yardımlı redüksiyon / fiksasyon","Reducción / fijación asistida por artroscopia":"Artroskopi yardımlı redüksiyon / fiksasyon","Other":"Diğer","Sonstiges":"Diğer","Otro":"Diğer"},"*_comorbid_modify":{"Yes — I would modify the surgical approach (e.g., less invasive or different incision)":"Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)","Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)":"Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)","Sí — modificaría el abordaje quirúrgico (p. ej., menos invasivo o con otra incisión)":"Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)","Yes — I would adjust the timing (delay or stage the procedure)":"Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)","Ja — ich würde den Operationszeitpunkt anpassen (Verschiebung oder mehrzeitiges Vorgehen)":"Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)","Sí — ajustaría el momento de la cirugía (diferirla o realizarla por etapas)":"Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)","Yes — I would obtain specialist consultation (hematology / oncology) before surgery":"Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım","Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen":"Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım","Sí — solicitaría una interconsulta especializada (hematología / oncología) antes de la cirugía":"Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım","No — I would proceed with the same plan as in a healthy patient":"Hayır — sağlıklı hastadakiyle aynı planı uygularım","Nein — ich würde wie bei einem gesunden Patienten vorgehen":"Hayır — sağlıklı hastadakiyle aynı planı uygularım","No — seguiría el mismo plan que en un paciente sano":"Hayır — sağlıklı hastadakiyle aynı planı uygularım"},"*_fix":{"Yes":"Evet","Ja":"Evet","Sí":"Evet","No":"Hayır","Nein":"Hayır"}};
+function pmalCanonValue(key, v) {
+  if (v == null) return v;
+  let m = PMAL_LABELMAP[key];
+  if (!m) {
+    const g = /^g\d_case\d_(.+)$/.exec(key);
+    if (g) m = PMAL_LABELMAP["*_" + g[1]];
+  }
+  if (!m) return v;
+  if (Array.isArray(v)) return v.map(x => typeof x === "string" && m[x] ? m[x] : x);
+  return typeof v === "string" && m[v] ? m[v] : v;
+}
+
+// Returns a canonicalised COPY of a response row (data + classic case columns).
+function pmalCanonRow(r) {
+  if (!r || typeof r !== "object") return r;
+  const out = {
+    ...r
+  };
+  if (r.data && typeof r.data === "object") {
+    const d = {};
+    for (const k in r.data) d[k] = pmalCanonValue(k, r.data[k]);
+    out.data = d;
+  }
+  for (const k in r) {
+    if (/^g\d_case\d_/.test(k)) out[k] = pmalCanonValue(k, r[k]);
+  }
+  return out;
+}
+const pmalCanonRows = rows => Array.isArray(rows) ? rows.map(pmalCanonRow) : rows;
+
+// ── Country buckets ──
+const PMAL_TR = "Turkey";
+const PMAL_KKTC = "Northern Cyprus (TRNC)";
+const pmalCountry = r => r && (r.a4_country || r.data && r.data.a4) || "";
+const pmalBucket = r => {
+  const c = pmalCountry(r);
+  if (c === PMAL_TR) return "tr";
+  if (c === PMAL_KKTC) return "kktc";
+  if (!c) return "unknown";
+  return "intl";
+};
+
+// ── Shared store ──
+const PmalStore = {
+  rows: null,
+  loading: null,
+  subs: new Set(),
+  load(force) {
+    if (this.loading && !force) return this.loading;
+    if (this.rows && !force) return Promise.resolve(this.rows);
+    this.loading = wkGet("responses", "select=*&completed=eq.true&order=created_at.asc").then(d => {
+      this.rows = Array.isArray(d) ? pmalCanonRows(d) : [];
+      this.loading = null;
+      this.subs.forEach(fn => fn(this.rows));
+      return this.rows;
+    }).catch(e => {
+      this.loading = null;
+      console.error("PmalStore load error:", e);
+      throw e;
+    });
+    return this.loading;
+  },
+  subscribe(fn) {
+    this.subs.add(fn);
+    return () => this.subs.delete(fn);
+  }
+};
+function usePmalRows() {
+  const [rows, setRows] = React.useState(PmalStore.rows);
+  const [err, setErr] = React.useState(null);
+  React.useEffect(() => {
+    const un = PmalStore.subscribe(setRows);
+    PmalStore.load().then(setRows).catch(e => setErr(String(e && e.message || e)));
+    return un;
+  }, []);
+  return {
+    rows,
+    err
+  };
+}
+
+// ── Stats helpers ──
+const pmalQuantile = (sorted, q) => {
+  if (!sorted.length) return null;
+  const pos = (sorted.length - 1) * q;
+  const lo = Math.floor(pos),
+    hi = Math.ceil(pos);
+  return sorted[lo] + (sorted[hi] - sorted[lo]) * (pos - lo);
+};
+const pmalMin = s => s == null ? "—" : (s / 60).toFixed(1).replace(".", ",") + " dk";
+const pmalDay = iso => (iso || "").slice(0, 10);
+const pmalFmtDate = iso => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  return d.toLocaleDateString((window.PMAL_LOCALE||"tr-TR"), {
+    day: "2-digit",
+    month: "short"
+  }) + " " + d.toLocaleTimeString((window.PMAL_LOCALE||"tr-TR"), {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+};
+
+// ── Sound: synthesised applause (no asset needed) ──
+const PmalSound = {
+  ctx: null,
+  muted: (() => {
+    try {
+      return localStorage.getItem("pmal_fx_muted") === "1";
+    } catch (e) {
+      return false;
+    }
+  })(),
+  setMuted(m) {
+    this.muted = m;
+    try {
+      localStorage.setItem("pmal_fx_muted", m ? "1" : "0");
+    } catch (e) {}
+  },
+  applause(seconds = 2.6) {
+    if (this.muted) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      this.ctx = this.ctx || new AC();
+      const ctx = this.ctx;
+      if (ctx.state === "suspended") ctx.resume();
+      const sr = ctx.sampleRate;
+      const len = Math.floor(sr * seconds);
+      const buf = ctx.createBuffer(2, len, sr);
+      for (let ch = 0; ch < 2; ch++) {
+        const data = buf.getChannelData(ch);
+        // Hundreds of short, randomly timed "claps" → crowd applause texture
+        const claps = Math.floor(seconds * 140);
+        for (let c = 0; c < claps; c++) {
+          const t0 = Math.floor(Math.random() * (len - sr * 0.03));
+          const clapLen = Math.floor(sr * (0.008 + Math.random() * 0.018));
+          const amp = 0.25 + Math.random() * 0.5;
+          for (let i = 0; i < clapLen; i++) {
+            data[t0 + i] += (Math.random() * 2 - 1) * amp * Math.exp(-i / (clapLen / 4));
+          }
+        }
+        // Swell in, fade out
+        for (let i = 0; i < len; i++) {
+          const x = i / len;
+          const env = Math.min(1, x / 0.12) * Math.pow(1 - x, 1.4);
+          data[i] *= env * 0.5;
+        }
+      }
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      const bp = ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 1800;
+      bp.Q.value = 0.6;
+      const gain = ctx.createGain();
+      gain.gain.value = 0.55;
+      src.connect(bp).connect(gain).connect(ctx.destination);
+      src.start();
+    } catch (e) {/* sound is decoration only */}
+  }
+};
+
+// ── Watcher: new responses → event + tab title ──
+const PMAL_BASE_TITLE = document.title;
+function usePmalWatcher(enabled) {
+  React.useEffect(() => {
+    if (!enabled) return;
+    let known = null;
+    let unseen = 0;
+    let stopped = false;
+    const setTitle = () => {
+      document.title = (unseen > 0 ? `(+${unseen}) ` : "") + PMAL_BASE_TITLE;
+    };
+    const clear = () => {
+      if (document.visibilityState === "visible" && document.hasFocus()) {
+        unseen = 0;
+        setTitle();
+      }
+    };
+    const poll = async () => {
+      try {
+        const d = await wkGet("responses", "select=id,created_at,a4_country,language&completed=eq.true&order=created_at.desc&limit=200");
+        if (stopped || !Array.isArray(d)) return;
+        if (known === null) {
+          known = new Set(d.map(r => r.id));
+          return;
+        }
+        const fresh = d.filter(r => !known.has(r.id));
+        fresh.forEach(r => known.add(r.id));
+        if (fresh.length) {
+          if (document.visibilityState !== "visible" || !document.hasFocus()) unseen += fresh.length;
+          setTitle();
+          PmalStore.load(true).catch(() => {});
+          window.dispatchEvent(new CustomEvent("pmal:new", {
+            detail: {
+              rows: fresh
+            }
+          }));
+        }
+      } catch (e) {/* network hiccup — try again next tick */}
+    };
+    poll();
+    const iv = setInterval(poll, window.PMAL_POLL_MS || 45000);
+    window.addEventListener("focus", clear);
+    document.addEventListener("visibilitychange", clear);
+    return () => {
+      stopped = true;
+      clearInterval(iv);
+      window.removeEventListener("focus", clear);
+      document.removeEventListener("visibilitychange", clear);
+      document.title = PMAL_BASE_TITLE;
+    };
+  }, [enabled]);
+}
+
+// ── Global FX: toast + flying lighters (rendered once in App) ──
+const PMAL_FX_CSS = `
+@keyframes pmalLighterFly { 0%{transform:translate(0,0) rotate(var(--r0));opacity:0} 10%{opacity:1} 100%{transform:translate(var(--dx),-115vh) rotate(var(--r1));opacity:0} }
+@keyframes pmalFlame { 0%,100%{transform:scaleY(1) scaleX(1)} 30%{transform:scaleY(1.15) scaleX(.9)} 60%{transform:scaleY(.9) scaleX(1.08)} }
+@keyframes pmalToastIn { 0%{transform:translateY(-30px) scale(.9);opacity:0} 15%{transform:translateY(0) scale(1.03);opacity:1} 22%{transform:scale(1)} 85%{opacity:1} 100%{opacity:0;transform:translateY(-10px)} }
+@keyframes pmalSweepL { 0%,100%{transform:rotate(-38deg)} 50%{transform:rotate(18deg)} }
+@keyframes pmalSweepR { 0%,100%{transform:rotate(38deg)} 50%{transform:rotate(-18deg)} }
+@keyframes pmalVinyl { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes pmalLamp { 0%,100%{opacity:.55} 50%{opacity:1} }
+@keyframes pmalHaze { 0%,100%{opacity:.35;transform:translateX(0)} 50%{opacity:.6;transform:translateX(-4%)} }
+@keyframes pmalCrowd { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+@keyframes pmalJump { 0%,100%{transform:translateY(0)} 30%{transform:translateY(-16px)} 60%{transform:translateY(-4px)} }
+@keyframes pmalStrobe { 0%,100%{opacity:0} 10%,30%,50%{opacity:.55} 20%,40%{opacity:0} }
+@keyframes pmalPulse { 0%,100%{box-shadow:0 0 0 0 rgba(217,119,6,.55)} 50%{box-shadow:0 0 0 8px rgba(217,119,6,0)} }
+@media (prefers-reduced-motion: reduce) {
+  .pmal-anim { animation: none !important; }
+}
+`;
+function PmalFxStyles() {
+  return React.createElement("style", null, PMAL_FX_CSS);
+}
+function PmalLighter({
+  size = 28
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size * 1.8,
+    viewBox: "0 0 20 36",
+    style: {
+      display: "block",
+      overflow: "visible"
+    }
+  }, /*#__PURE__*/React.createElement("g", {
+    className: "pmal-anim",
+    style: {
+      transformOrigin: "10px 13px",
+      animation: "pmalFlame .35s ease-in-out infinite"
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M10 1 C14 6 15 9 13 12.5 C12 14 8 14 7 12.5 C5 9 6 6 10 1 Z",
+    fill: "#F59E0B"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10 5 C12 8 12.5 10 11.5 12 C11 13 9 13 8.5 12 C7.5 10 8 8 10 5 Z",
+    fill: "#FDE68A"
+  })), /*#__PURE__*/React.createElement("rect", {
+    x: "7.5",
+    y: "13",
+    width: "5",
+    height: "3",
+    rx: "0.6",
+    fill: "#9CA3AF"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "5",
+    y: "16",
+    width: "10",
+    height: "19",
+    rx: "2",
+    fill: "#B91C1C"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "6.3",
+    y: "17.5",
+    width: "2",
+    height: "15",
+    rx: "1",
+    fill: "#ffffff",
+    opacity: ".18"
+  }));
+}
+function PmalStageFX() {
+  const [toasts, setToasts] = React.useState([]);
+  const [lighters, setLighters] = React.useState([]);
+  React.useEffect(() => {
+    const onNew = ev => {
+      const rows = ev.detail && ev.detail.rows || [];
+      const id = Date.now() + Math.random();
+      setToasts(t => [...t, {
+        id,
+        rows
+      }]);
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 5200);
+      const n = Math.min(26, 10 + rows.length * 4);
+      const batch = Array.from({
+        length: n
+      }, (_, i) => ({
+        id: id + "_" + i,
+        left: 4 + Math.random() * 92,
+        dx: Math.random() * 40 - 20 + "vw",
+        r0: Math.random() * 30 - 15 + "deg",
+        r1: Math.random() * 120 - 60 + "deg",
+        dur: 2.8 + Math.random() * 1.8,
+        delay: Math.random() * 0.9,
+        size: 18 + Math.random() * 16
+      }));
+      setLighters(l => [...l, ...batch]);
+      setTimeout(() => setLighters(l => l.filter(x => !String(x.id).startsWith(id + "_"))), 5600);
+      PmalSound.applause(2.4 + Math.min(2, rows.length * 0.4));
+    };
+    window.addEventListener("pmal:new", onNew);
+    return () => window.removeEventListener("pmal:new", onNew);
+  }, []);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      pointerEvents: "none",
+      zIndex: 9999
+    }
+  }, /*#__PURE__*/React.createElement(PmalFxStyles, null), lighters.map(l => /*#__PURE__*/React.createElement("div", {
+    key: l.id,
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      bottom: -70,
+      left: l.left + "%",
+      "--dx": l.dx,
+      "--r0": l.r0,
+      "--r1": l.r1,
+      animation: `pmalLighterFly ${l.dur}s cubic-bezier(.2,.7,.4,1) ${l.delay}s forwards`,
+      opacity: 0
+    }
+  }, /*#__PURE__*/React.createElement(PmalLighter, {
+    size: l.size
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 62,
+      right: 18,
+      display: "flex",
+      flexDirection: "column",
+      gap: 10,
+      alignItems: "flex-end"
+    }
+  }, toasts.map(t => /*#__PURE__*/React.createElement("div", {
+    key: t.id,
+    className: "pmal-anim",
+    style: {
+      animation: "pmalToastIn 5.2s ease forwards",
+      background: "linear-gradient(135deg,#1f1305,#2a1a06)",
+      border: "1px solid #D97706",
+      boxShadow: "0 10px 40px rgba(217,119,6,.35)",
+      borderRadius: 12,
+      padding: "12px 16px",
+      color: "#FDE68A",
+      minWidth: 240,
+      fontSize: 13
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: 14,
+      letterSpacing: ".02em"
+    }
+  }, "🎸 ", t.rows.length > 1 ? `${t.rows.length} yeni yanıt!` : "Yeni yanıt geldi!"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#D6B36A",
+      fontSize: 11,
+      marginTop: 4
+    }
+  }, t.rows.slice(0, 4).map(r => `${r.a4_country || "?"} · ${(r.language || "?").toUpperCase()}`).join("  ·  "))))));
+}
+
+// ── LIVE STAGE (dashboard header) ──
+function PmalCrowd({
+  jumping
+}) {
+  // Deterministic silhouette crowd: heads + some raised hands holding lighters
+  const people = [];
+  for (let i = 0; i < 34; i++) {
+    const x = 10 + i * 29.5 + i * 37 % 11;
+    const h = 34 + i * 53 % 22;
+    const raise = i * 7 % 5 === 0;
+    const lighter = i * 11 % 6 === 0;
+    people.push({
+      x,
+      h,
+      raise,
+      lighter,
+      d: i * 13 % 10 / 10
+    });
+  }
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 1020 90",
+    preserveAspectRatio: "xMidYMax slice",
+    style: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      width: "100%",
+      height: 90
+    }
+  }, people.map((p, i) => /*#__PURE__*/React.createElement("g", {
+    key: i,
+    className: "pmal-anim",
+    style: {
+      transformBox: "fill-box",
+      animation: jumping ? `pmalJump .55s ease ${p.d * 0.3}s 3` : `pmalCrowd ${1.6 + p.d}s ease-in-out ${p.d}s infinite`
+    }
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: p.x,
+    cy: 90 - p.h,
+    r: "10",
+    fill: "#050505"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: p.x - 15,
+    y: 90 - p.h + 8,
+    width: "30",
+    height: p.h,
+    rx: "12",
+    fill: "#050505"
+  }), p.raise && /*#__PURE__*/React.createElement("path", {
+    d: `M${p.x + 9} ${92 - p.h + 12} L${p.x + 20} ${90 - p.h - 22}`,
+    stroke: "#050505",
+    strokeWidth: "6",
+    strokeLinecap: "round"
+  }), p.raise && p.lighter && /*#__PURE__*/React.createElement("g", {
+    transform: `translate(${p.x + 14} ${90 - p.h - 44})`
+  }, /*#__PURE__*/React.createElement(PmalLighterMini, null)))));
+}
+function PmalLighterMini() {
+  return /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("g", {
+    className: "pmal-anim",
+    style: {
+      transformBox: "fill-box",
+      transformOrigin: "50% 100%",
+      animation: "pmalFlame .4s ease-in-out infinite"
+    }
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M6 0 C9 4 9.5 6 8.2 8 C7.5 9 4.5 9 3.8 8 C2.5 6 3 4 6 0 Z",
+    fill: "#F59E0B"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M6 3 C7.2 5 7.4 6.2 6.8 7.4 C6.5 8 5.5 8 5.2 7.4 C4.6 6.2 4.8 5 6 3 Z",
+    fill: "#FEF3C7"
+  })), /*#__PURE__*/React.createElement("circle", {
+    cx: "6",
+    cy: "5",
+    r: "9",
+    fill: "#F59E0B",
+    opacity: ".18"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "3",
+    y: "9",
+    width: "6",
+    height: "12",
+    rx: "1.5",
+    fill: "#1c1c1c"
+  }));
+}
+function PmalVinyl({
+  label,
+  sub,
+  spinning
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      width: 132,
+      height: 132,
+      flexShrink: 0
+    }
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "132",
+    height: "132",
+    viewBox: "0 0 132 132",
+    className: "pmal-anim",
+    style: {
+      animation: spinning ? "pmalVinyl 2.4s linear infinite" : "none",
+      filter: "drop-shadow(0 6px 18px rgba(0,0,0,.6))"
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("radialGradient", {
+    id: "pmalVinylG",
+    cx: "50%",
+    cy: "50%",
+    r: "50%"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0%",
+    stopColor: "#2a2a2a"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "100%",
+    stopColor: "#0a0a0a"
+  })), /*#__PURE__*/React.createElement("linearGradient", {
+    id: "pmalShine",
+    x1: "0",
+    y1: "0",
+    x2: "1",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#fff",
+    stopOpacity: "0"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: ".45",
+    stopColor: "#fff",
+    stopOpacity: ".12"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: ".55",
+    stopColor: "#fff",
+    stopOpacity: "0"
+  }))), /*#__PURE__*/React.createElement("circle", {
+    cx: "66",
+    cy: "66",
+    r: "64",
+    fill: "url(#pmalVinylG)"
+  }), [58, 52, 46, 40, 34].map(r => /*#__PURE__*/React.createElement("circle", {
+    key: r,
+    cx: "66",
+    cy: "66",
+    r: r,
+    fill: "none",
+    stroke: "#333",
+    strokeWidth: ".6"
+  })), /*#__PURE__*/React.createElement("circle", {
+    cx: "66",
+    cy: "66",
+    r: "64",
+    fill: "url(#pmalShine)"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "66",
+    cy: "66",
+    r: "27",
+    fill: "#D97706"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "66",
+    cy: "66",
+    r: "27",
+    fill: "none",
+    stroke: "#92400E",
+    strokeWidth: "1.5"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      pointerEvents: "none"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#1a0f02",
+      fontWeight: 900,
+      fontSize: 18,
+      lineHeight: 1,
+      marginTop: -2
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#3b2304",
+      fontWeight: 700,
+      fontSize: 7.5,
+      letterSpacing: ".12em",
+      marginTop: 2
+    }
+  }, sub)));
+}
+function PmalLiveStage() {
+  const {
+    rows
+  } = usePmalRows();
+  const [jump, setJump] = React.useState(false);
+  const [strobe, setStrobe] = React.useState(0);
+  const [muted, setMuted] = React.useState(PmalSound.muted);
+  React.useEffect(() => {
+    const onNew = () => {
+      setJump(true);
+      setStrobe(s => s + 1);
+      setTimeout(() => setJump(false), 1800);
+    };
+    window.addEventListener("pmal:new", onNew);
+    return () => window.removeEventListener("pmal:new", onNew);
+  }, []);
+  const all = rows || [];
+  const tr = all.filter(r => pmalBucket(r) === "tr").length;
+  const kktc = all.filter(r => pmalBucket(r) === "kktc").length;
+  const intl = all.filter(r => pmalBucket(r) === "intl").length;
+  const countries = new Set(all.map(pmalCountry).filter(Boolean)).size;
+  const soundcheck = () => {
+    const sample = [{
+      a4_country: "Germany",
+      language: "de"
+    }];
+    window.dispatchEvent(new CustomEvent("pmal:new", {
+      detail: {
+        rows: sample,
+        test: true
+      }
+    }));
+  };
+  const lamps = [0, 1, 2, 3, 4, 5, 6, 7];
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "relative",
+      height: 236,
+      borderRadius: 14,
+      overflow: "hidden",
+      marginBottom: 18,
+      background: "radial-gradient(ellipse at 50% 120%, #2b1606 0%, #120a04 45%, #050505 100%)",
+      border: `1px solid ${TH.br}`
+    }
+  }, /*#__PURE__*/React.createElement(PmalFxStyles, null), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: 14,
+      background: "repeating-linear-gradient(45deg,#1d1d1d 0 6px,#111 6px 12px)",
+      borderBottom: "1px solid #2a2a2a"
+    }
+  }), lamps.map(i => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      top: 10,
+      left: `${6 + i * 12.5}%`,
+      width: 14,
+      height: 10,
+      borderRadius: "0 0 7px 7px",
+      background: ["#F59E0B", "#5B8DBE", "#C0392B", "#E6A817"][i % 4],
+      boxShadow: `0 0 18px ${["#F59E0B", "#5B8DBE", "#C0392B", "#E6A817"][i % 4]}`,
+      animation: `pmalLamp ${1.1 + i % 3 * 0.35}s ease-in-out ${i * 0.15}s infinite`
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      top: 8,
+      left: "14%",
+      width: 220,
+      height: 420,
+      transformOrigin: "50% 0",
+      background: "linear-gradient(180deg, rgba(253,230,138,.55) 0%, rgba(253,230,138,.12) 45%, rgba(253,230,138,0) 80%)",
+      clipPath: "polygon(46% 0, 54% 0, 100% 100%, 0 100%)",
+      mixBlendMode: "screen",
+      animation: "pmalSweepL 7s ease-in-out infinite"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      top: 8,
+      right: "14%",
+      width: 220,
+      height: 420,
+      transformOrigin: "50% 0",
+      background: "linear-gradient(180deg, rgba(147,197,253,.45) 0%, rgba(147,197,253,.1) 45%, rgba(147,197,253,0) 80%)",
+      clipPath: "polygon(46% 0, 54% 0, 100% 100%, 0 100%)",
+      mixBlendMode: "screen",
+      animation: "pmalSweepR 8.5s ease-in-out infinite"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      left: "-10%",
+      right: "-10%",
+      bottom: 40,
+      height: 120,
+      background: "radial-gradient(ellipse at center, rgba(255,255,255,.08), rgba(255,255,255,0) 70%)",
+      animation: "pmalHaze 9s ease-in-out infinite"
+    }
+  }), strobe > 0 && /*#__PURE__*/React.createElement("div", {
+    key: strobe,
+    className: "pmal-anim",
+    style: {
+      position: "absolute",
+      inset: 0,
+      background: "#fff",
+      opacity: 0,
+      animation: "pmalStrobe 1s ease"
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 28,
+      left: 22,
+      right: 22,
+      display: "flex",
+      alignItems: "center",
+      gap: 22,
+      zIndex: 2
+    }
+  }, /*#__PURE__*/React.createElement(PmalVinyl, {
+    label: rows ? all.length : "…",
+    sub: "YANIT",
+    spinning: !!rows
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 0
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "pmal-anim",
+    style: {
+      background: "#B91C1C",
+      color: "#fff",
+      fontSize: 10,
+      fontWeight: 800,
+      letterSpacing: ".14em",
+      padding: "3px 8px",
+      borderRadius: 4,
+      animation: "pmalPulse 1.8s ease-in-out infinite"
+    }
+  }, "● LIVE"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#a3a3a3",
+      fontSize: 11,
+      letterSpacing: ".08em"
+    }
+  }, "PMAL WORLD TOUR · 2026")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#FDE68A",
+      fontSize: 24,
+      fontWeight: 900,
+      marginTop: 6,
+      textShadow: "0 0 22px rgba(245,158,11,.45)"
+    }
+  }, "Posterior Malleolus — Live on Stage"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 18,
+      marginTop: 10,
+      flexWrap: "wrap"
+    }
+  }, [["Türkiye", tr, "#C0392B"], ["KKTC", kktc, "#E6A817"], ["Uluslararası", intl, "#5B8DBE"], ["Ülke", countries, "#a3a3a3"]].map(([l, v, c]) => /*#__PURE__*/React.createElement("div", {
+    key: l
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: c,
+      fontSize: 20,
+      fontWeight: 800,
+      lineHeight: 1
+    }
+  }, rows ? v : "…"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#8a8a8a",
+      fontSize: 10,
+      marginTop: 3
+    }
+  }, l))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 6,
+      alignSelf: "flex-start"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: soundcheck,
+    title: "Yeni yanıt efektini dene",
+    style: {
+      padding: "6px 10px",
+      borderRadius: 7,
+      border: "1px solid #D97706",
+      background: "rgba(217,119,6,.12)",
+      color: "#FDE68A",
+      fontSize: 11,
+      fontWeight: 700,
+      cursor: "pointer"
+    }
+  }, "🎤 Soundcheck"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      PmalSound.setMuted(!muted);
+      setMuted(!muted);
+    },
+    style: {
+      padding: "5px 10px",
+      borderRadius: 7,
+      border: `1px solid ${TH.br}`,
+      background: "transparent",
+      color: TH.tm,
+      fontSize: 11,
+      cursor: "pointer"
+    }
+  }, muted ? "🔇 Alkış kapalı" : "🔊 Alkış açık"))), /*#__PURE__*/React.createElement(PmalCrowd, {
+    jumping: jump
+  }));
+}
+
+// ── Small UI atoms ──
+function PmalCard({
+  title,
+  subtitle,
+  children,
+  right
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.cd,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 12,
+      padding: 18,
+      marginBottom: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
+      gap: 12,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
+    style: {
+      color: TH.tx,
+      fontSize: 15,
+      fontWeight: 600,
+      margin: 0
+    }
+  }, title), subtitle && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      marginTop: 4
+    }
+  }, subtitle)), right), children);
+}
+function PmalKpi({
+  label,
+  value,
+  color,
+  hint
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.bg,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 10,
+      padding: "12px 14px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: color || TH.tx,
+      fontSize: 22,
+      fontWeight: 800,
+      lineHeight: 1.1
+    }
+  }, value), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      marginTop: 4
+    }
+  }, label), hint && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 10,
+      marginTop: 2
+    }
+  }, hint));
+}
+function PmalBars({
+  items,
+  color,
+  max
+}) {
+  const m = max || Math.max(1, ...items.map(i => i.value));
+  return /*#__PURE__*/React.createElement("div", null, items.map(it => /*#__PURE__*/React.createElement("div", {
+    key: it.name,
+    style: {
+      display: "grid",
+      gridTemplateColumns: "150px 1fr 34px",
+      alignItems: "center",
+      gap: 10,
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    title: it.name,
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis"
+    }
+  }, it.name), /*#__PURE__*/React.createElement("div", {
+    style: {
+      height: 8,
+      background: TH.bg,
+      borderRadius: 4,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: `${it.value / m * 100}%`,
+      height: "100%",
+      background: it.color || color || TH.ac,
+      borderRadius: 4,
+      transition: "width .5s"
+    }
+  })), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: TH.tx,
+      fontSize: 11,
+      fontWeight: 600,
+      textAlign: "right"
+    }
+  }, it.value))));
+}
+
+// Cumulative timeline (pure SVG, no chart library dependency)
+function PmalTimeline({
+  series,
+  cutoff
+}) {
+  const W = 1000,
+    H = 230,
+    P = {
+      l: 40,
+      r: 16,
+      t: 14,
+      b: 28
+    };
+  const days = series.days;
+  if (days.length < 2) {
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        color: TH.tm,
+        fontSize: 12,
+        padding: "30px 0",
+        textAlign: "center"
+      }
+    }, "Zaman çizgisi için en az iki farklı gün gerekiyor.");
+  }
+  const t0 = new Date(days[0]).getTime(),
+    t1 = new Date(days[days.length - 1]).getTime();
+  const span = Math.max(1, t1 - t0);
+  const ymax = Math.max(1, ...series.lines.map(l => l.values[l.values.length - 1]));
+  const X = d => P.l + (new Date(d).getTime() - t0) / span * (W - P.l - P.r);
+  const Y = v => H - P.b - v / ymax * (H - P.t - P.b);
+  const ticks = 4;
+  const cutX = cutoff ? X(cutoff) : null;
+  const showCut = cutX != null && cutX >= P.l && cutX <= W - P.r;
+  const labelDays = [days[0], days[Math.floor(days.length / 2)], days[days.length - 1]];
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: `0 0 ${W} ${H}`,
+    style: {
+      width: "100%",
+      height: "auto",
+      display: "block"
+    }
+  }, Array.from({
+    length: ticks + 1
+  }, (_, i) => {
+    const v = Math.round(ymax / ticks * i);
+    return /*#__PURE__*/React.createElement("g", {
+      key: i
+    }, /*#__PURE__*/React.createElement("line", {
+      x1: P.l,
+      x2: W - P.r,
+      y1: Y(v),
+      y2: Y(v),
+      stroke: "#222",
+      strokeWidth: "1"
+    }), /*#__PURE__*/React.createElement("text", {
+      x: P.l - 6,
+      y: Y(v) + 3,
+      fill: "#666",
+      fontSize: "10",
+      textAnchor: "end"
+    }, v));
+  }), labelDays.map((d, i) => /*#__PURE__*/React.createElement("text", {
+    key: i,
+    x: X(d),
+    y: H - 8,
+    fill: "#666",
+    fontSize: "10",
+    textAnchor: i === 0 ? "start" : i === 2 ? "end" : "middle"
+  }, new Date(d).toLocaleDateString((window.PMAL_LOCALE||"tr-TR"), {
+    day: "2-digit",
+    month: "short"
+  }))), series.lines.map(l => {
+    const pts = days.map((d, i) => `${X(d).toFixed(1)},${Y(l.values[i]).toFixed(1)}`).join(" ");
+    return /*#__PURE__*/React.createElement("g", {
+      key: l.name
+    }, /*#__PURE__*/React.createElement("polyline", {
+      points: pts,
+      fill: "none",
+      stroke: l.color,
+      strokeWidth: "2.4",
+      strokeLinejoin: "round"
+    }), /*#__PURE__*/React.createElement("circle", {
+      cx: X(days[days.length - 1]),
+      cy: Y(l.values[l.values.length - 1]),
+      r: "3.5",
+      fill: l.color
+    }));
+  }), showCut && /*#__PURE__*/React.createElement("g", null, /*#__PURE__*/React.createElement("line", {
+    x1: cutX,
+    x2: cutX,
+    y1: P.t,
+    y2: H - P.b,
+    stroke: "#FDE68A",
+    strokeWidth: "1.5",
+    strokeDasharray: "5 4"
+  }), /*#__PURE__*/React.createElement("text", {
+    x: cutX + 5,
+    y: P.t + 10,
+    fill: "#FDE68A",
+    fontSize: "10",
+    fontWeight: "700"
+  }, "TR kapanış")));
+}
+
+// ── INTERNATIONAL PANEL ──
+function PmalIntlPanel() {
+  const {
+    rows,
+    err
+  } = usePmalRows();
+  const [cutoff, setCutoff] = React.useState(() => {
+    try {
+      return localStorage.getItem("pmal_tr_cutoff") || "";
+    } catch (e) {
+      return "";
+    }
+  });
+  const saveCutoff = v => {
+    setCutoff(v);
+    try {
+      v ? localStorage.setItem("pmal_tr_cutoff", v) : localStorage.removeItem("pmal_tr_cutoff");
+    } catch (e) {}
+  };
+  if (err) return /*#__PURE__*/React.createElement(PmalCard, {
+    title: "Türkiye vs Uluslararası"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#f87171",
+      fontSize: 12
+    }
+  }, "Veri alınamadı: ", err));
+  if (!rows) return /*#__PURE__*/React.createElement(PmalCard, {
+    title: "Türkiye vs Uluslararası"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tm,
+      fontSize: 12
+    }
+  }, "Yükleniyor…"));
+  const by = {
+    tr: [],
+    kktc: [],
+    intl: [],
+    unknown: []
+  };
+  rows.forEach(r => by[pmalBucket(r)].push(r));
+  // Cumulative per day
+  const dayset = Array.from(new Set(rows.map(r => pmalDay(r.created_at)).filter(Boolean))).sort();
+  const cum = list => {
+    const perDay = {};
+    list.forEach(r => {
+      const d = pmalDay(r.created_at);
+      perDay[d] = (perDay[d] || 0) + 1;
+    });
+    let acc = 0;
+    return dayset.map(d => acc += perDay[d] || 0);
+  };
+  const series = {
+    days: dayset,
+    lines: [{
+      name: "Türkiye",
+      color: "#C0392B",
+      values: cum(by.tr)
+    }, {
+      name: "KKTC",
+      color: "#E6A817",
+      values: cum(by.kktc)
+    }, {
+      name: "Uluslararası",
+      color: "#5B8DBE",
+      values: cum(by.intl)
+    }]
+  };
+  const countryCounts = {};
+  by.intl.forEach(r => {
+    const c = pmalCountry(r);
+    countryCounts[c] = (countryCounts[c] || 0) + 1;
+  });
+  const countries = Object.entries(countryCounts).map(([name, value]) => ({
+    name,
+    value
+  })).sort((a, b) => b.value - a.value);
+  const langCounts = {};
+  rows.forEach(r => {
+    const l = (r.language || "?").toUpperCase();
+    langCounts[l] = (langCounts[l] || 0) + 1;
+  });
+  const langs = Object.entries(langCounts).sort((a, b) => b[1] - a[1]);
+  const afterCut = cutoff ? by.tr.filter(r => pmalDay(r.created_at) > cutoff).length : null;
+  const firstIntl = by.intl.length ? by.intl[0].created_at : null;
+  const pct = n => rows.length ? Math.round(n / rows.length * 100) + "%" : "—";
+  return /*#__PURE__*/React.createElement(PmalCard, {
+    title: "🌍 Türkiye vs Uluslararası",
+    subtitle: "Ülke, A4 yanıtına göre. KKTC ayrı tutulur (Türkçe kanal üzerinden ulaşıldı).",
+    right: /*#__PURE__*/React.createElement("label", {
+      style: {
+        color: TH.tm,
+        fontSize: 11,
+        display: "flex",
+        alignItems: "center",
+        gap: 6
+      }
+    }, "TR kapanış tarihi", /*#__PURE__*/React.createElement("input", {
+      type: "date",
+      value: cutoff,
+      onChange: e => saveCutoff(e.target.value),
+      style: {
+        background: TH.bg,
+        color: TH.tx,
+        border: `1px solid ${TH.br}`,
+        borderRadius: 6,
+        padding: "4px 6px",
+        fontSize: 11,
+        colorScheme: "dark"
+      }
+    }))
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))",
+      gap: 10,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Türkiye",
+    value: by.tr.length,
+    color: "#C0392B",
+    hint: pct(by.tr.length)
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "KKTC",
+    value: by.kktc.length,
+    color: "#E6A817",
+    hint: pct(by.kktc.length)
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Uluslararası",
+    value: by.intl.length,
+    color: "#5B8DBE",
+    hint: `${countries.length} ülke · ${pct(by.intl.length)}`
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "İlk uluslararası yanıt",
+    value: firstIntl ? new Date(firstIntl).toLocaleDateString((window.PMAL_LOCALE||"tr-TR"), {
+      day: "2-digit",
+      month: "short"
+    }) : "—",
+    color: TH.tx
+  }), cutoff && /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Kapanıştan sonra gelen TR",
+    value: afterCut,
+    color: afterCut ? "#f87171" : "#4ade80",
+    hint: "analizde ayrı raporlanmalı"
+  })), /*#__PURE__*/React.createElement(PmalTimeline, {
+    series: series,
+    cutoff: cutoff
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 14,
+      margin: "8px 0 16px",
+      flexWrap: "wrap"
+    }
+  }, series.lines.map(l => /*#__PURE__*/React.createElement("span", {
+    key: l.name,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      color: TH.tm,
+      fontSize: 11
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: 14,
+      height: 3,
+      background: l.color,
+      borderRadius: 2
+    }
+  }), l.name, " (kümülatif)"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "minmax(0,1.4fr) minmax(0,1fr)",
+      gap: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 10
+    }
+  }, "Uluslararası ülkeler"), countries.length ? /*#__PURE__*/React.createElement(PmalBars, {
+    items: countries.slice(0, 12),
+    color: "#5B8DBE"
+  }) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 12
+    }
+  }, "Henüz uluslararası yanıt yok — sahne seni bekliyor.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 10
+    }
+  }, "Anket dili"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: 8
+    }
+  }, langs.map(([l, n]) => /*#__PURE__*/React.createElement("span", {
+    key: l,
+    style: {
+      background: TH.bg,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 20,
+      padding: "4px 10px",
+      color: TH.tx,
+      fontSize: 11
+    }
+  }, /*#__PURE__*/React.createElement("b", {
+    style: {
+      color: TH.ac
+    }
+  }, l), " ", n))), by.unknown.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 10,
+      marginTop: 10
+    }
+  }, "Ülkesi boş: ", by.unknown.length))));
+}
+
+// ── QUALITY / CHERRIES PANEL ──
+const PMAL_SPEEDER_SEC = 5 * 60;
+const PMAL_FREE_TEXT = new Set(["comments", "h6"]);
+function pmalFingerprint(r) {
+  const d = r.data || {};
+  const keys = Object.keys(d).filter(k => !PMAL_FREE_TEXT.has(k) && !/_other$|_text$/.test(k)).sort();
+  return keys.map(k => k + "=" + JSON.stringify(d[k])).join("|");
+}
+function PmalQualityPanel() {
+  const {
+    rows,
+    err
+  } = usePmalRows();
+  const [open, setOpen] = React.useState(null);
+  if (err || !rows) return null;
+  const durs = rows.map(r => r.duration_seconds).filter(x => typeof x === "number" && x > 0).sort((a, b) => a - b);
+  const med = pmalQuantile(durs, 0.5),
+    q1 = pmalQuantile(durs, 0.25),
+    q3 = pmalQuantile(durs, 0.75);
+  const bins = [[0, 5], [5, 8], [8, 10], [10, 15], [15, 20], [20, 30], [30, 60], [60, Infinity]];
+  const hist = bins.map(([a, b]) => ({
+    name: b === Infinity ? `> ${a} dk` : `${a}–${b} dk`,
+    value: durs.filter(s => s >= a * 60 && s < b * 60).length,
+    color: a < 5 ? "#C0392B" : a >= 60 ? "#7c7c7c" : "#D97706"
+  }));
+  const speeders = rows.filter(r => typeof r.duration_seconds === "number" && r.duration_seconds < PMAL_SPEEDER_SEC);
+  const longOnes = rows.filter(r => typeof r.duration_seconds === "number" && r.duration_seconds >= 3600);
+
+  // Possible duplicates: (1) identical answer sets, (2) same browser + country within 30 min
+  const fp = {};
+  rows.forEach(r => {
+    const k = pmalFingerprint(r);
+    if (k) (fp[k] = fp[k] || []).push(r);
+  });
+  const identical = Object.values(fp).filter(g => g.length > 1);
+  const sameDevice = [];
+  const sorted = [...rows].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  for (let i = 0; i < sorted.length; i++) {
+    for (let j = i + 1; j < sorted.length; j++) {
+      const a = sorted[i],
+        b = sorted[j];
+      const dt = new Date(b.created_at) - new Date(a.created_at);
+      if (dt > 30 * 60 * 1000) break;
+      if (a.user_agent && a.user_agent === b.user_agent && pmalCountry(a) === pmalCountry(b)) sameDevice.push([a, b]);
+    }
+  }
+  const flagged = identical.length + sameDevice.length;
+  const rowLine = r => `#${String(r.id).slice(0, 8)} · ${pmalFmtDate(r.created_at)} · ${pmalCountry(r) || "?"} · ${(r.language || "?").toUpperCase()} · ${pmalMin(r.duration_seconds)}`;
+  const list = (key, title, items) => open === key && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: TH.bg,
+      border: `1px solid ${TH.br}`,
+      borderRadius: 8,
+      padding: 12,
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 8
+    }
+  }, title), items.length ? items.map((t, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      color: TH.tm,
+      fontSize: 11,
+      fontFamily: "ui-monospace,Menlo,monospace",
+      marginBottom: 4
+    }
+  }, t)) : /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.td,
+      fontSize: 11
+    }
+  }, "Kayıt yok."));
+  const toggleBtn = (key, label, n, bad) => /*#__PURE__*/React.createElement("button", {
+    onClick: () => setOpen(open === key ? null : key),
+    style: {
+      padding: "6px 10px",
+      borderRadius: 7,
+      cursor: "pointer",
+      fontSize: 11,
+      fontWeight: 600,
+      border: `1px solid ${n && bad ? "#7f1d1d" : TH.br}`,
+      background: open === key ? `${TH.ac}22` : "transparent",
+      color: n && bad ? "#f87171" : TH.tm
+    }
+  }, label, ": ", n, " ", open === key ? "▴" : "▾");
+  return /*#__PURE__*/React.createElement(PmalCard, {
+    title: "🧪 Veri kalitesi (CHERRIES)",
+    subtitle: "Yalnız gönderilen (tamamlanmış) anketler kaydediliyor; başlayıp bırakanlar veritabanına düşmüyor. Bu yüzden görüntülenme/katılım oranı buradan hesaplanamaz."
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))",
+      gap: 10,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Tamamlanan anket",
+    value: rows.length,
+    color: TH.ac
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Medyan süre",
+    value: pmalMin(med),
+    color: "#4ade80",
+    hint: `IQR ${pmalMin(q1)} – ${pmalMin(q3)}`
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Hızlı dolduran (<5 dk)",
+    value: speeders.length,
+    color: speeders.length ? "#f87171" : "#4ade80",
+    hint: rows.length ? `%${Math.round(speeders.length / rows.length * 100)}` : ""
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "Mükerrer şüphesi",
+    value: flagged,
+    color: flagged ? "#f87171" : "#4ade80",
+    hint: "manuel kontrol gerekir"
+  }), /*#__PURE__*/React.createElement(PmalKpi, {
+    label: "≥ 60 dk açık kalan",
+    value: longOnes.length,
+    color: TH.tm,
+    hint: "sekmede unutulmuş olabilir"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: TH.tx,
+      fontSize: 12,
+      fontWeight: 600,
+      marginBottom: 10
+    }
+  }, "Tamamlama süresi dağılımı"), /*#__PURE__*/React.createElement(PmalBars, {
+    items: hist
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flexWrap: "wrap",
+      marginTop: 14
+    }
+  }, toggleBtn("speed", "Hızlı dolduranlar", speeders.length, true), toggleBtn("ident", "Birebir aynı cevaplar", identical.length, true), toggleBtn("device", "Aynı cihaz + ülke ≤30 dk", sameDevice.length, true)), list("speed", "< 5 dk tamamlanan yanıtlar", speeders.map(rowLine)), list("ident", "Tüm kapalı uçlu cevapları aynı olan gruplar", identical.map((g, i) => `Grup ${i + 1}: ` + g.map(rowLine).join("  ⟷  "))), list("device", "Aynı tarayıcı imzası ve ülke, 30 dk içinde", sameDevice.map(([a, b]) => rowLine(a) + "  ⟷  " + rowLine(b))));
+}
+
+// Remount the dashboard a moment after a new response (after the stage FX),
+// so the legacy KPI cards and fix-rate bars pick up the new row too.
+function usePmalDashKey() {
+  const [k, setK] = React.useState(0);
+  React.useEffect(() => {
+    let t = null;
+    const onNew = ev => {
+      if (ev.detail && ev.detail.test) return;
+      clearTimeout(t);
+      t = setTimeout(() => setK(x => x + 1), 2600);
+    };
+    window.addEventListener("pmal:new", onNew);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("pmal:new", onNew);
+    };
+  }, []);
+  return k;
+}
+
+// ── German UI (Rammelt) ────────────────────────────────────────────────
+// Choosing Rammelt's card switches the whole panel to German. The panel's
+// strings are hardcoded Turkish, so translation happens at DOM level: every
+// text node / placeholder / title is looked up in a TR→DE dictionary (exact
+// match first, then regex rules for template strings). Survey labels come
+// from the survey's own DE translations. A MutationObserver keeps React
+// re-renders translated. Switching back restores the original text.
+const PMAL_DE = {"map": {"Evet": "Ja", "Üniversite hastanesi / akademik eğitim hastanesi": "Universitätsklinikum / akademisches Lehrkrankenhaus", "Özel klinik (solo veya grup)": "Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)", "Diğer": "Sonstiges", "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?": "Wie viele Sprunggelenkfraktur-Operationen führen Sie ungefähr pro Jahr durch?", "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?": "Was beschreibt Ihren klinischen Schwerpunkt am besten?", "Ayak ve ayak bileği cerrahisi": "Fuß- und Sprunggelenkchirurgie", "Ortopedik travma": "Orthopädische Traumatologie / Unfallchirurgie", "Genel ortopedi": "Allgemeine Orthopädie", "Asistan / fellow eğitim aşamasında": "Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung", "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)": "Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)", "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?": "Wie häufig veranlassen Sie eine präoperative CT bei Sprunggelenkfrakturen mit Verdacht auf PM-Beteiligung?", "Rutin olarak": "Routinemäßig", "Sıklıkla": "Häufig", "Seçici olarak": "Selektiv", "Nadiren": "Selten", "Pratiğimde BT erişimi sınırlı": "Der Zugang zur CT ist in meinem Umfeld begrenzt", "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?": "Welche Klassifikationssysteme verwenden Sie bei der Beurteilung von PM-Frakturen?", "Haraguchi sınıflaması": "Haraguchi-Klassifikation", "Bartoníček/Rammelt sınıflaması": "Bartoníček/Rammelt-Klassifikation", "Mason & Molloy sınıflaması": "Mason-&-Molloy-Klassifikation", "AO/OTA sınıflaması": "AO/OTA-Klassifikation", "Lauge-Hansen sınıflaması": "Lauge-Hansen-Klassifikation", "Fragment boyutu (% eklem yüzeyi)": "Fragmentgröße (% der Gelenkfläche)", "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?": "Leitet das Klassifikationssystem Ihre Therapieentscheidungen?", "Evet — primer olarak sınıflamaya göre karar veririm": "Ja — ich entscheide primär anhand der Klassifikation", "Kısmen — sınıflama faktörlerden biridir": "Teilweise — die Klassifikation ist einer von mehreren Faktoren", "Hayır — sınıflamadan bağımsız değerlendiririm": "Nein — ich beurteile unabhängig von der Klassifikation", "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim": "Ich fixiere alle PM-Fragmente, sofern technisch möglich", "Boyutu tek başına bir endikasyon olarak kullanmam": "Ich verwende die Größe allein nicht als Indikation", "PM fragmentini nadiren / hiç fikse etmem": "Ich fixiere das PM-Fragment selten/nie", "PM fiksasyon kararınızı etkileyen faktörler nelerdir?": "Welche Faktoren beeinflussen Ihre Entscheidung zur PM-Fixation?", "Artiküler step-off miktarı": "Ausmaß der Gelenkstufe (Step-off)", "Sindesmoz instabilitesi": "Syndesmoseninstabilität", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)": "Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)", "Hasta yaşı ve aktivite düzeyi": "Alter und Aktivitätsniveau des Patienten", "Kemik kalitesi (osteoporoz)": "Knochenqualität (Osteoporose)", "Yumuşak doku durumu": "Weichteilverhältnisse", "İmpakte artiküler fragment varlığı": "Vorliegen impaktierter Gelenkfragmente", "Komorbidite (DM, sigara vb.)": "Komorbiditäten (Diabetes, Rauchen etc.)", "Fragmana bağlı artiküler step-off veya boşluk": "Durch das Fragment bedingte Gelenkstufe oder Spaltbildung", "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi": "Das Fragment blockiert die Reposition des PM-Hauptfragments", "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması": "Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation", "Elevasyon/greftleme gerektiren impakte osteokondral fragman": "Impaktiertes osteochondrales Fragment, das eine Anhebung/Unterfütterung mit Transplantat erfordert", "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)": "Junger/aktiver Patient (hoher funktioneller Anspruch)", "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim": "Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar", "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim": "Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerung", "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli": "Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist", "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili": "Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich", "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?": "Welche Technik bevorzugen Sie am häufigsten zur PM-Fixation?", "Perkütan AP lag vida": "Perkutane AP-Zugschraube", "Perkütan PA lag vida": "Perkutane PA-Zugschraube", "Trans-Achilles perkütan PA vida": "Transachilläre perkutane PA-Schraube", "Açık posterolateral — buttress/locking plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posterolateral — lag vida": "Offen posterolateral — Zugschraube", "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?": "Welchen operativen Zugang bevorzugen Sie am häufigsten bei PM-Frakturen?", "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)": "Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)", "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)": "Posteromedial — modifiziert (mediales Fenster, lateral der FHL)", "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)": "Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)", "Kombine posterolateral + posteromedyal": "Kombiniert posterolateral + posteromedial", "Anterior (perkütan)": "Anterior (perkutan)", "Artroskopi yardımlı": "Arthroskopisch assistiert", "Vakaya göre değişir": "Fallabhängig unterschiedlich", "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?": "Welche Patientenlagerung bevorzugen Sie am häufigsten bei PM-Frakturen?", "Supine": "Rückenlage", "Prone": "Bauchlage", "Lateral dekübitus": "Seitenlage", "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?": "Wie ist Ihre übliche Fixationsreihenfolge bei trimalleolären Frakturen?", "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)": "Fibula → PM → Innenknöchel → Syndesmose (falls instabil)", "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)": "PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)", "Fibula → Sindesmoz değerlendir → PM → Medial malleol": "Fibula → Syndesmosenprüfung → PM → Innenknöchel", "Bireyselleştirilmiş — standart sıram yok": "Individuell — keine Standardreihenfolge", "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?": "Wie beurteilen Sie die Syndesmose nach der PM-Fixation?", "İntraoperatif stres testi (eksternal rotasyon / hook test)": "Intraoperativer Stresstest (Außenrotations-/Hakentest)", "İntraoperatif artroskopi": "Intraoperative Arthroskopie", "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım": "Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität", "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar": "Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her", "Evet — bazı vakalarda": "Ja — in manchen Fällen", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder": "Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig", "Pratiğimde bunu spesifik olarak değerlendirmedim": "Ich habe dies in meiner Praxis nicht gezielt untersucht", "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?": "Prüfen Sie bei Sprunggelenkfrakturen mit PM-Beteiligung gezielt auf anteriore syndesmotische Avulsionen (Chaput-Tuberkel / Wagstaffe-Fragment)?", "Evet — rutin olarak BT'de": "Ja — routinemäßig im CT", "Bazen — kırık paternine göre": "Manchmal — je nach Frakturmuster", "Nadiren veya spesifik olarak değil": "Selten oder nicht gezielt", "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?": "Wie behandeln Sie ein identifiziertes Chaput- oder Wagstaffe-Fragment bevorzugt?", "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)": "Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)", "Sindesmoz aksi takdirde stabil ise non-operatif": "Konservativ, sofern die Syndesmose ansonsten stabil ist", "Karar fragman boyutu ve erişilebilirliğine göre": "Entscheidung nach Fragmentgröße und Erreichbarkeit", "VAKA 1": "FALL 1", "VAKA 2": "FALL 2", "VAKA 3": "FALL 3", "VAKA 4": "FALL 4", "Hayır": "Nein", "Fragment morfolojisi boyuttan daha önemlidir.": "Die Fragmentmorphologie ist wichtiger als die Größe.", "Kesinlikle katılmıyorum": "Stimme überhaupt nicht zu", "Katılmıyorum": "Stimme nicht zu", "Kararsızım": "Unentschieden", "Katılıyorum": "Stimme zu", "Kesinlikle katılıyorum": "Stimme voll zu", "Birden fazla seçebilirsiniz": "Mehrfachauswahl möglich", "Gönderiliyor...": "Wird gesendet …", "G — Klinik Vaka Senaryoları": "G — Klinische Fallszenarien", "Bu vakada posterior malleolü fikse eder misiniz?": "Würden Sie in diesem Fall den posterioren Malleolus fixieren?", "Ameliyata hangi pozisyonda başlarsınız?": "In welcher Lagerung beginnen Sie die Operation?", "Hangi cerrahi yaklaşımı tercih edersiniz?": "Welchen operativen Zugang bevorzugen Sie?", "Fiksasyon sıranız ne olur?": "Welche Fixationsreihenfolge wählen Sie?", "PM fiksasyonu için hangi teknik ve implantı tercih edersiniz?": "Welche Technik und welches Implantat bevorzugen Sie für die PM-Fixation?", "H — Tutum ve Görüşler": "H — Einstellungen und Meinungen", "Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (posterolateral oder posteromedial) erreichbar", "Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)": "Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)", "Açık posteromedyal — buttress/kilitli plak": "Offen posteromedial — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida": "Offen posteromedial — Zugschraube", "Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)": "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)", "Medial clear space değerlendirmesi yeterlidir": "Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend", "Direkt fiksasyon (vida, sütur ankoru veya plak)": "Direkte Fixation (Schraube, Fadenanker oder Platte)", "Evet — köklü değişiklik": "Ja — erheblich", "Evet — orta düzeyde değişiklik": "Ja — mäßige Veränderung", "Sadece küçük iyileştirmeler": "Nur geringfügige Anpassungen", "Anlamlı değişiklik yok": "Keine wesentliche Veränderung", "Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)": "Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)", "Daha küçük fragmanları fikse etme eşiğinin düşmesi": "Niedrigere Schwelle für die Fixation kleinerer Fragmente", "PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi": "Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert", "Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi": "Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten", "Diğer (belirtiniz)": "Sonstiges (bitte angeben)", "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)": "Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)", "Posteromedyal — standart": "Posteromedial — Standard", "Posteromedyal — modifiye": "Posteromedial — modifiziert", "Posteromedyal — geniş (FHL)": "Posteromedial — erweitert (FHL)", "PM önce → Fibula → Medial malleol": "PM zuerst → Fibula → Innenknöchel", "Fibula → PM → Medial malleol → Sindesmoz değerlendir": "Fibula → PM → Innenknöchel → Syndesmosenprüfung", "PM önce → Lateral malleol": "PM zuerst → Außenknöchel", "Lateral malleol önce → PM": "Außenknöchel zuerst → PM", "Eşzamanlı / tek yaklaşımdan fiksasyon": "Simultane Fixation / über einen einzigen Zugang", "Lateral malleol → PM → Sindesmoz değerlendir": "Außenknöchel → PM → Syndesmosenprüfung", "Perkütan AP vida fiksasyonu": "Perkutane AP-Schraubenfixation", "Perkütan PA vida fiksasyonu": "Perkutane PA-Schraubenfixation", "Açık posterolateral — lag vida (plaksız)": "Offen posterolateral — Zugschraube (ohne Platte)", "Açık posterolateral — buttress/kilitli plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida (plaksız)": "Offen posteromedial — Zugschraube (ohne Platte)", "Artroskopi yardımlı redüksiyon / fiksasyon": "Arthroskopisch assistierte Reposition/Fixation", "Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)": "Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)", "Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)": "Ja — ich würde den Operationszeitpunkt anpassen (Verschiebung oder mehrzeitiges Vorgehen)", "Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım": "Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen", "Hayır — sağlıklı hastadakiyle aynı planı uygularım": "Nein — ich würde wie bei einem gesunden Patienten vorgehen", "Admin token hatalı — sayfa yenilenince tekrar sorulacak.": "Admin-Token ungültig — er wird nach dem Neuladen erneut abgefragt.", "Doç. Dr.": "PD Dr.", "Yanıtlar": "Antworten", "İstatistik": "Statistik", "Geri Bildirim": "Feedback", "Yedekleme": "Backup", "Ayarlar": "Einstellungen", "Geçersiz şifre": "Ungültiges Passwort", "Giriş yapmak için kartınızı seçin": "Wählen Sie Ihre Karte, um sich anzumelden", "Şifre": "Passwort", "Giriş Yap": "Anmelden", "← Başka karakter seç": "← Andere Figur wählen", "Çıkış": "Abmelden", "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor.": "Der Schlusstitel des Albums The Division Bell. Gilmour schrieb den Song aus Nostalgie für seine Kindheit in Cambridge. Die erste Zeile beschreibt die Straßen, in denen er aufwuchs und Syd Barrett kennenlernte.", "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti.": "Hetfield schrieb den Song auf Tour, während er mit seiner Freundin telefonierte. Den Hörer zwischen Schulter und Ohr geklemmt, zupfte er mit der freien Hand die offenen Saiten — so entstand das berühmte Intro. Er genierte sich, ihn aufzunehmen, weil er „zu sanft für Metallica“ war. Lars Ulrich musste ihn überreden.", "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi.": "Slash spielte das berühmte Intro-Riff „nur als Fingerübung“ — ein echter Song war nie geplant. Axl Rose hörte es im Nebenzimmer und schrieb den Text dazu. Jahre später sagte Slash: „Das Riff war für mich ein Witz, ich nannte es eine Zirkusmelodie.“", "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı.": "Cobain ließ sich für das Riff von Killing Jokes „Eighties“ inspirieren. Den Text baute er auf Widersprüchen auf: „Komm, wie du bist — lass dir Zeit, aber komm nicht zu spät.“ Er verband den Song mit der Isolation seiner Kindheit in Aberdeen.", "Knopfler şarkıyı New York'ta bir beyaz eşya mağazasında duyduğu konuşmadan yazdı. Bir tesisatçı, mağazadaki TV'lerde MTV izlerken rock yıldızlarına küfrediyordu. Knopfler mikrodalgaların arasından adamı gizlice dinledi ve sözleri bir kağıt peçeteye not etti. Sting tesadüfen aynı stüdyodaydı ve ikonik intro'yu tek seferde söyledi.": "Knopfler schrieb den Song nach einem Gespräch, das er in einem New Yorker Elektrogeschäft mithörte. Ein Handwerker schimpfte über die Rockstars, die auf den Fernsehern im Laden über MTV liefen. Knopfler lauschte zwischen den Mikrowellen und notierte den Text auf einer Papierserviette. Sting war zufällig im selben Studio und sang das berühmte Intro in einem Take ein.", "Kiedis bu şarkıyı yalnızlık ve bağımlılıktan çıkış sürecinde yazdı. Sözleri bir şiir defterinde saklıyordu, kimseye göstermedi. Prodüktör Rick Rubin defteri karıştırırken buldu ve 'Bu bir şarkı olmalı' dedi. Kiedis ilk başta itiraz etti — çok kişisel buluyordu.": "Kiedis schrieb diesen Song in einer Phase der Einsamkeit, auf dem Weg aus der Sucht. Den Text bewahrte er in einem Gedichtheft auf und zeigte ihn niemandem. Produzent Rick Rubin stieß beim Blättern darauf und sagte: „Daraus muss ein Song werden.“ Kiedis sträubte sich zunächst — es war ihm zu persönlich.", "Hammett ana riff'i gece 2-3 civarında Soundgarden dinledikten sonra yazdı. Hetfield'ın orijinal sözleri bebek ölümü hakkındaydı. Prodüktör Bob Rock ve Ulrich, Hetfield'a ilk kez sözlerini değiştirmesini söyleme cesaretini gösterdi. Rock sonra anlattı: 'Kimse daha önce James'e sözleri hakkında bir şey söylememişti.'": "Hammett schrieb das Hauptriff gegen zwei, drei Uhr nachts, nachdem er Soundgarden gehört hatte. Hetfields ursprünglicher Text handelte vom plötzlichen Kindstod. Produzent Bob Rock und Ulrich wagten als Erste, Hetfield um eine Textänderung zu bitten. Rock erzählte später: „Niemand hatte James je etwas zu seinen Texten gesagt.“", "Cobain, 1994'te Rolling Stone'a 'Mükemmel pop şarkısını yazmaya çalışıyordum. Pixies'i taklit etmeye çalışıyordum, itiraf etmeliyim' dedi. Şarkının adı, Kathleen Hanna'nın sarhoş bir gece Kurt'ün duvarına yazdığı 'Kurt smells like Teen Spirit' cümlesinden geldi. Kurt bunun devrimci bir slogan olduğunu sandı — aslında bir kız deodorantı markasıydı.": "Cobain sagte 1994 dem Rolling Stone: „Ich wollte den ultimativen Popsong schreiben. Ich habe versucht, die Pixies zu kopieren, das muss ich zugeben.“ Der Titel stammt von dem Satz „Kurt smells like Teen Spirit“, den Kathleen Hanna in einer durchzechten Nacht an Kurts Wand schrieb. Kurt hielt ihn für einen revolutionären Slogan — tatsächlich war es eine Deodorantmarke für Mädchen.", "Axl Rose bu şarkı üzerinde 1983'ten 1991'e kadar çalıştı. Orijinal demo 18 dakikaydı. Slash'in çölde yağmur altında solo çalması rock tarihinin en ikonik görüntülerinden biri oldu. Slash sonra 'O sahneyi çekerken gerçekten yağmur başladı, planlanmamıştı' dedi.": "Axl Rose arbeitete von 1983 bis 1991 an diesem Song. Das ursprüngliche Demo war 18 Minuten lang. Slashs Solo im Regen in der Wüste wurde zu einem der berühmtesten Bilder der Rockgeschichte. Slash sagte später: „Beim Dreh fing es wirklich an zu regnen, das war nicht geplant.“", "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu.": "Gilmour schrieb diesen Song, während er tatsächlich Flugstunden nahm. Er arbeitete auf seinen Pilotenschein hin und nutzte das Fliegenlernen als Metapher. Der Song bewies, dass Gilmour Pink Floyd nach Waters' Weggang allein führen konnte.", "Axl Rose, şarkının sözlerini Greyhound otobüsüyle LA'e ilk geldiği gece yaşadıklarından yazdı. Otobüsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi.": "Axl Rose schrieb den Text über die Nacht, in der er mit dem Greyhound-Bus zum ersten Mal in L.A. ankam. Kaum war er ausgestiegen, rief ihm ein Obdachloser „Welcome to the jungle“ zu.", "Klaus Meine şarkıyı 1989 Moskova Müzik Barış Festivali'nin ardından yazdı. Doğulu ve Batılı müzisyenlerle Moskova Nehri'nde yapılan bir gece tekne gezisi ve Gorki Parkı sözlere girdi. Açılıştaki ıslığı Meine'nin kendisi çaldı. Şarkı Soğuk Savaş'ın bitişinin ve Almanya'nın yeniden birleşmesinin marşı oldu.": "Klaus Meine schrieb den Song nach dem Moscow Music Peace Festival 1989. Eine nächtliche Bootsfahrt auf der Moskwa mit Musikern aus Ost und West und der Gorki-Park fanden ihren Weg in den Text. Das gepfiffene Intro stammt von Meine selbst. Der Song wurde zur Hymne für das Ende des Kalten Krieges und die deutsche Wiedervereinigung.", "Toplam Yanıt": "Antworten gesamt", "Tamamlanan": "Abgeschlossen", "Ort. Süre": "Ø Dauer", "Bugün": "Heute", "Vaka 1 — 52Y K, Bart 2, %20": "Fall 1 — 52 J., w, Bart. 2, 20 %", "Vaka 2 — 76Y E, Bart 3, %18": "Fall 2 — 76 J., m, Bart. 3, 18 %", "Vaka 3 — 74Y K, Açık 3A, %28": "Fall 3 — 74 J., w, offen 3A, 28 %", "Vaka 4 — 55Y K, Bart 3, %36, lüksasyon": "Fall 4 — 55 J., w, Bart. 3, 36 %, Luxation", "SISTEM:": "SYSTEM:", "Vaka Bazlı Fix Oranları": "Fixationsraten je Fall", "Henüz veri yok": "Noch keine Daten", "Araştırma Ekibi": "Forschungsteam", "Yanıt Listesi (": "Antwortliste (", "Yükleniyor...": "Wird geladen …", "Yükleniyor…": "Wird geladen …", "Henüz yanıt bulunmamaktadır.": "Noch keine Antworten vorhanden.", "Tamamlandı": "Abgeschlossen", "Yarım": "Unvollständig", "Veri yok": "Keine Daten", "Yeterli veri yok": "Nicht genügend Daten", "Demografi": "Demografie", "Pratik": "Praxis", "Tutum + Vakalar": "Einstellungen + Fälle", "Çapraz analiz": "Kreuzanalyse", "Henüz tamamlanmış yanıt yok.": "Noch keine abgeschlossenen Antworten.", "İstatistikler": "Statistiken", "CSV indir": "CSV herunterladen", "A2 — Deneyim yılı": "A2 — Berufserfahrung (Jahre)", "A3 — Kurum tipi": "A3 — Art der Einrichtung", "A4 — Ülke dağılımı (top 15)": "A4 — Länderverteilung (Top 15)", "A5 — Yıllık ankle fx volume": "A5 — Sprunggelenkfrakturen pro Jahr", "A6 — Subspecialty": "A6 — Subspezialität", "A7 — Preoperatif CT rutin": "A7 — Präoperatives CT routinemäßig", "B1 — Aylık PM kırığı hacmi": "B1 — PM-Frakturen pro Monat", "D1 — Boyut eşiği (headline)": "D1 — Größenschwelle (Hauptbefund)", "Bu makalenin baş bulgularından biri": "Einer der Hauptbefunde dieser Arbeit", "C1 — Kullanılan sınıflamalar (multi)": "C1 — Verwendete Klassifikationen (Mehrfachauswahl)", "D3 — Karar faktörleri (multi)": "D3 — Entscheidungsfaktoren (Mehrfachauswahl)", "D4 — İnterkalar kriterler (multi)": "D4 — Kriterien interkalare Fragmente (Mehrfachauswahl)", "D5 — İnterkalar pratiği": "D5 — Praxis bei interkalaren Fragmenten", "E1 — Teknik tercihi": "E1 — Bevorzugte Technik", "E2 — Cerrahi yaklaşım": "E2 — Operativer Zugang", "E3 — Pozisyon": "E3 — Lagerung", "F1 — Fiksasyon sırası": "F1 — Fixationsreihenfolge", "F2 — Sindesmoz değerlendirme": "F2 — Syndesmosenprüfung", "F3 — PM sindesmoz ihtiyacını azaltır mı?": "F3 — Reduziert die PM-Fixation den Syndesmosenbedarf?", "F4 — Chaput değerlendirme": "F4 — Beurteilung Chaput", "F5 — Chaput yönetimi": "F5 — Behandlung Chaput", "H5 — Pratiğiniz 10 yılda değişti mi?": "H5 — Hat sich Ihre Praxis in 10 Jahren verändert?", "H6_driver — Etkileyen gelişmeler (multi, headline)": "H6_driver — Einflussreiche Entwicklungen (Mehrfachauswahl, Hauptbefund)", "Likert tutumlar (H1–H8)": "Likert-Einstellungen (H1–H8)", "Diverging stacked bar — kırmızı (sol) = disagree, yeşil (sağ) = agree": "Divergierendes gestapeltes Balkendiagramm — rot (links) = Ablehnung, grün (rechts) = Zustimmung", "Fragment boyutu PM fiksasyon kararında en önemli faktördür": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung", "Fragment morfolojisi boyuttan daha önemlidir": "Die Fragmentmorphologie ist wichtiger als die Größe", "Direkt posterior yaklaşım perkütan tekniklerden üstündür": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen", "Direkt PM fiksasyonu morbiditesi açık yaklaşım kullanımımı sınırlar": "Die Morbidität der direkten PM-Fixation schränkt meine Nutzung offener Zugänge ein", "Seçilmiş morfolojilerde direkt redüksiyon morbiditeyi geride bırakır": "Bei ausgewählten Morphologien überwiegt die direkte Reposition die Morbidität", "A6 (Subspecialty) × D1 (Boyut eşiği)": "A6 (Subspezialität) × D1 (Größenschwelle)", "F&A cerrahları daha düşük eşik kullanıyor mu?": "Verwenden Fuß-&-Sprunggelenk-Chirurgen eine niedrigere Schwelle?", "A7 (CT rutin) × C1 (ilk sınıflama)": "A7 (CT routinemäßig) × C1 (erste Klassifikation)", "Rutin CT yapanlar daha çok Bartoníček/Rammelt kullanıyor mu?": "Verwenden Routine-CT-Anwender häufiger Bartoníček/Rammelt?", "A2 (Deneyim) × H5 (Pratik değişim)": "A2 (Erfahrung) × H5 (Praxiswandel)", "Genç vs deneyimli cerrahlar arasında pratik değişim farkı": "Unterschied im Praxiswandel zwischen jüngeren und erfahrenen Chirurgen", "B1 (Aylık hacim) × E2 (Yaklaşım)": "B1 (Monatsvolumen) × E2 (Zugang)", "Yüksek hacimli cerrahlar hangi yaklaşımı kullanıyor?": "Welchen Zugang nutzen Chirurgen mit hohem Volumen?", "A6 (Subspecialty) × E2 (Yaklaşım)": "A6 (Subspezialität) × E2 (Zugang)", "Subspecialty cerrahi yaklaşımı belirler mi?": "Bestimmt die Subspezialität den operativen Zugang?", "D1 (Boyut eşiği) × E1 (Teknik)": "D1 (Größenschwelle) × E1 (Technik)", "Düşük eşik = açık teknik mi?": "Niedrige Schwelle = offene Technik?", "Kombine PL+PM": "Kombiniert PL+PM", "Artroskopik": "Arthroskopisch", "PM önce → Fibula → MM": "PM zuerst → Fibula → IK", "Fibula → PM → MM": "Fibula → PM → IK", "Fibula → Sindesmoz değerlendir → PM → MM": "Fibula → Syndesmosenprüfung → PM → IK", "Bireyselleştirilmiş": "Individuell", "Açık PL — buttress/locking plak": "Offen PL — Abstütz-/winkelstabile Platte", "Açık PL — lag vida": "Offen PL — Zugschraube", "Geri Bildirim Paneli": "Feedback-Bereich", "Anketin tam kopyası. Her sorunun altındaki yorum butonuyla geri bildirim bırakabilirsiniz. Hepsini bitirince en alttaki butona basarak hepsini gönderin.": "Vollständige Kopie der Umfrage. Über die Kommentar-Schaltfläche unter jeder Frage können Sie Feedback hinterlassen. Wenn Sie fertig sind, senden Sie alles über die Schaltfläche ganz unten.", "Henüz yorum eklemediniz.": "Sie haben noch keine Kommentare hinzugefügt.", "Yorum yok": "Keine Kommentare", "Yorum ekle": "Kommentar hinzufügen", "Yorumu sil": "Kommentar löschen", "Yorumunuzu yazın...": "Ihr Kommentar …", "Kapat": "Schließen", "✓ Kaydedildi ve e-posta açıldı. E-posta uygulamanızdan 'Gönder' butonuna basmayı unutmayın.": "✓ Gespeichert, E-Mail geöffnet. Bitte in Ihrem E-Mail-Programm auf „Senden“ klicken.", "⚠ Veritabanına kaydedilemedi. E-posta açıldı — lütfen mutlaka gönderin.": "⚠ Speichern in der Datenbank fehlgeschlagen. Die E-Mail wurde geöffnet — bitte unbedingt absenden.", "Evet ise aşağıdaki sorular açılır:": "Bei „Ja“ erscheinen die folgenden Fragen:", "A — Demografik Bilgiler": "A — Demografische Angaben", "B — PM Kırığı Deneyimi": "B — Erfahrung mit PM-Frakturen", "C — Sınıflama": "C — Klassifikation", "D — Fiksasyon Endikasyonları": "D — Fixationsindikationen", "E — Teknik Tercihler": "E — Technische Präferenzen", "F — Fiksasyon Sırası ve Sindesmotik Değerlendirme": "F — Fixationsreihenfolge und Syndesmosenbeurteilung", "Uzman olarak kaç yıldır çalışıyorsunuz?": "Seit wie vielen Jahren sind Sie als Facharzt tätig?", "< 5 yıl": "< 5 Jahre", "> 20 yıl": "> 20 Jahre", "Çalıştığınız kurum tipi nedir?": "In welcher Art von Einrichtung sind Sie tätig?", "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?": "Mit wie vielen posterioren Malleolusfrakturen haben Sie ungefähr pro Monat zu tun?", "Spesifik bir sınıflama kullanmıyorum": "Ich verwende keine spezifische Klassifikation", "Fragment boyutu tek başına değerlendirildiğinde, PM fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?": "Wenn die Fragmentgröße isoliert betrachtet wird: Ab welcher Gelenkflächenbeteiligung fixieren Sie das PM-Fragment?", "PM kırığında BT'de interkalar fragman olduğunda, ayrıca ele almanıza yol açan faktörler hangileridir?": "Welche Faktoren veranlassen Sie, ein interkalares Fragment im CT einer PM-Fraktur gesondert zu adressieren?", "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar", "İnterkalar fragmanları genellikle ayrıca ele almam": "Ich adressiere interkalare Fragmente üblicherweise nicht gesondert", "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?": "Reduziert die PM-Fixation Ihrer Erfahrung nach den Bedarf an Stellschrauben?", "Direkt fiksasyon (vida, sütur ankoru veya hook plak)": "Direkte Fixation (Schraube, Fadenanker oder Hakenplatte)", "Direkt posterior PM fiksasyonunun olası morbiditesi açık posterior yaklaşımları kullanmamı sınırlıyor.": "Die mögliche Morbidität der direkten posterioren PM-Fixation schränkt meine Nutzung offener posteriorer Zugänge ein.", "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, eklenen cerrahi morbiditeyi geride bırakır.": "Bei ausgewählten PM-Frakturmorphologien überwiegt der erwartete Nutzen der direkten Reposition die zusätzliche operative Morbidität.", "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?": "Hat sich Ihr Vorgehen (bzw. das Ihrer Klinik) bei PM-Frakturen in den letzten 10 Jahren wesentlich verändert?", "Son on yıldaki gelişmelerden hangileri pratiğinizi etkiledi? (Çoklu seçim)": "Welche Entwicklungen des letzten Jahrzehnts haben Ihre Praxis beeinflusst? (Mehrfachauswahl)", "(İsteğe bağlı) tek cümlelik açıklama — maks 300 karakter.": "(Optional) Erläuterung in einem Satz — max. 300 Zeichen.", "Daha rutin preoperatif BT / morfoloji bazlı değerlendirme": "Routinemäßigere präoperative CT / morphologiebasierte Beurteilung", "Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması": "Häufigere Nutzung direkter posteriorer Zugänge (posterolateral oder posteromedial)", "Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş": "Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen", "İncisura / fibular notch redüksiyonuna daha fazla dikkat": "Größere Aufmerksamkeit für die Reposition in der Incisura fibularis", "Hiçbiri — pratiğim büyük ölçüde değişmedi": "Keine davon — meine Praxis ist weitgehend unverändert geblieben", "Başarılı": "Erfolgreich", "BAŞARISIZ — bu mail yoksa veri kaybolur": "FEHLGESCHLAGEN — ohne diese E-Mail gehen die Daten verloren", "Otomatik Yedekleme": "Automatisches Backup", "Her 2 günde bir otomatik yedekleme": "Automatisches Backup alle 2 Tage", "Yedekleme Geçmişi": "Backup-Verlauf", "Henüz yedekleme yapılmadı": "Noch kein Backup erstellt", "Anket Durumu": "Umfragestatus", "Aktif": "Aktiv", "Duraklat": "Pausieren", "Anket Linki": "Umfrage-Link", "Kopyala": "Kopieren", "✓ Kopyalandı": "✓ Kopiert", "Mail Listesi": "Mailingliste", "Henüz kayıtlı mail yok": "Noch keine E-Mail-Adressen eingetragen", "dk": " Min.", "Yeni yanıt geldi!": "Neue Antwort eingegangen!", "Türkiye": "Türkei", "Uluslararası": "International", "Ülke": "Land", "YANIT": "ANTW.", "KKTC": "TRNC", "Yeni yanıt efektini dene": "Effekt für neue Antwort testen", "🔇 Alkış kapalı": "🔇 Applaus aus", "🔊 Alkış açık": "🔊 Applaus an", "Zaman çizgisi için en az iki farklı gün gerekiyor.": "Für die Zeitachse sind mindestens zwei verschiedene Tage nötig.", "TR kapanış": "TR-Abschluss", "Türkiye vs Uluslararası": "Türkei vs. International", "🌍 Türkiye vs Uluslararası": "🌍 Türkei vs. International", "Veri alınamadı:": "Daten konnten nicht geladen werden: ", "Ülke, A4 yanıtına göre. KKTC ayrı tutulur (Türkçe kanal üzerinden ulaşıldı).": "Land gemäß Antwort A4. Nordzypern (TRNC) wird separat geführt (über den türkischen Kanal erreicht).", "TR kapanış tarihi": "TR-Abschlussdatum", "İlk uluslararası yanıt": "Erste internationale Antwort", "Kapanıştan sonra gelen TR": "TR-Antworten nach Abschluss", "analizde ayrı raporlanmalı": "in der Analyse gesondert berichten", "(kümülatif)": " (kumulativ)", "Uluslararası ülkeler": "Internationale Länder", "Henüz uluslararası yanıt yok — sahne seni bekliyor.": "Noch keine internationalen Antworten — die Bühne wartet.", "Anket dili": "Umfragesprache", "Ülkesi boş:": "Ohne Land: ", "Kayıt yok.": "Keine Einträge.", "🧪 Veri kalitesi (CHERRIES)": "🧪 Datenqualität (CHERRIES)", "Yalnız gönderilen (tamamlanmış) anketler kaydediliyor; başlayıp bırakanlar veritabanına düşmüyor. Bu yüzden görüntülenme/katılım oranı buradan hesaplanamaz.": "Gespeichert werden nur abgesendete (abgeschlossene) Umfragen; abgebrochene Teilnahmen landen nicht in der Datenbank. View- und Teilnahmeraten lassen sich hier daher nicht berechnen.", "Tamamlanan anket": "Abgeschlossene Umfragen", "Medyan süre": "Median-Dauer", "Hızlı dolduran (<5 dk)": "Schnellausfüller (<5 Min.)", "Mükerrer şüphesi": "Verdacht auf Duplikat", "manuel kontrol gerekir": "manuelle Prüfung nötig", "≥ 60 dk açık kalan": "≥ 60 Min. geöffnet", "sekmede unutulmuş olabilir": "evtl. im Tab vergessen", "Tamamlama süresi dağılımı": "Verteilung der Bearbeitungsdauer", "Hızlı dolduranlar": "Schnellausfüller", "Birebir aynı cevaplar": "Identische Antworten", "Aynı cihaz + ülke ≤30 dk": "Gleiches Gerät + Land ≤30 Min.", "< 5 dk tamamlanan yanıtlar": "In < 5 Min. abgeschlossene Antworten", "Tüm kapalı uçlu cevapları aynı olan gruplar": "Gruppen mit identischen Antworten auf alle geschlossenen Fragen", "Aynı tarayıcı imzası ve ülke, 30 dk içinde": "Gleiche Browser-Signatur und gleiches Land innerhalb von 30 Min.", "Bilinmiyor": "Unbekannt", "Fibular notch tutulumu": "Beteiligung der Incisura fibularis", "47 yaşında kadın hasta (VKİ 30.5), yürüyüş sırasında burkulma. İzole PM kırığı — fibula ve medial malleol intakt. BT: PM fragmenti %26, artiküler step-off yok. Bartoníček Tip 2, Haraguchi Tip 1.": "47-jährige Patientin (BMI 30,5), Umknicktrauma beim Gehen. Isolierte PM-Fraktur — Fibula und Innenknöchel intakt. CT: PM-Fragment 26 %, keine Gelenkstufe. Bartoníček Typ 2, Haraguchi Typ 1.", "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %20'si. Bartoníček Tip 2, Haraguchi Tip 1.": "52-jährige Patientin, Vorstellung in der Notaufnahme nach Umknicken beim Treppabgehen. Vorerkrankung: arterielle Hypertonie, regelmäßig Amlodipin 5 mg. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 20 % der Gelenkfläche. Bartoníček Typ 2, Haraguchi Typ 1.", "74 yaşında kadın hasta, dış merkezden atelle sevk. Anteromedialde debride edilmiş yumuşak doku hasarı. Gustilo-Anderson Tip 3A açık trimalleolar kırık. Ext. fiksatör + VAC → 3. hafta büzüşme testi lat+post pozitif. Osteoporoz, HT. Weber B. BT: PM fragmenti %28. Bartoníček Tip 2, Haraguchi Tip 1.": "74-jährige Patientin, mit Schiene aus einem auswärtigen Haus zuverlegt. Débridierter anteromedialer Weichteilschaden. Offene trimalleoläre Fraktur Gustilo-Anderson Typ 3A. Fixateur externe + VAC → in Woche 3 Wrinkle-Test lateral und posterior positiv. Osteoporose, Hypertonie. Weber B. CT: PM-Fragment 28 %. Bartoníček Typ 2, Haraguchi Typ 1.", "76 yaşında aktif erkek hasta, bahçede düzensiz zeminde ayağının dönmesi sonrası başvurmuştur. Özgeçmişinde iyi kontrollü DM tip 2 ve BPH mevcuttur. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %18'i. Bartoníček Tip 3, Haraguchi Tip 2.": "76-jähriger aktiver Patient, Vorstellung nach Verdrehtrauma auf unebenem Gartenboden. Vorerkrankungen: gut eingestellter Diabetes mellitus Typ 2 und BPH. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 18 % der Gelenkfläche. Bartoníček Typ 3, Haraguchi Typ 2.", "Direkt posterior yaklaşım perkütan tekniklerden üstündür.": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen.", "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)": "Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hook-Test, persistierende Diastase in Stressaufnahmen etc.)", "Fragment boyutu PM fiksasyon kararında en önemli faktördür.": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung.", "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon": "Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung", "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich seltener", "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich häufiger", "Son literatür interkalar fragmanların direkt fiksasyonu hakkında çelişen kanıtlar üretti. Pratiğinizi en iyi hangisi tanımlar?": "Die aktuelle Literatur liefert widersprüchliche Evidenz zur direkten Fixation interkalarer Fragmente. Was beschreibt Ihre Praxis am besten?"}, "rules": [["^(\\d+) tamamlanmış yanıt$", "$1 abgeschlossene Antworten"], ["^Vaka (\\d) — Fix\\?$", "Fall $1 — Fixation?"], ["^Vaka (\\d) — Yaklaşım$", "Fall $1 — Zugang"], ["^Vaka (\\d)$", "Fall $1"], ["^Yorum \\((\\d+) karakter\\)$", "Kommentar ($1 Zeichen)"], ["^(\\d+) yorum hazır\\. .*$", "$1 Kommentare bereit. Beim Senden gehen alle Kommentare per E-Mail an Utku und werden in der Datenbank gespeichert."], ["^Tüm yorumları gönder \\((\\d+)\\)$", "Alle Kommentare senden ($1)"], ["^(\\d+) yeni yanıt!$", "$1 neue Antworten!"], ["^(\\d+) ülke · (.*)$", "$1 Länder · $2"], ["^Grup (\\d+): $", "Gruppe $1: "], ["^(.*) dk$", "$1 Min."], ["^(\\d+) yorum$", "$1 Kommentare"], ["^(.+) yıl$", "$1 Jahre"]]};
+const PmalI18n = (() => {
+  const map = new Map(Object.entries(PMAL_DE.map));
+  const rules = PMAL_DE.rules.map(([re, rep]) => [new RegExp(re), rep]);
+  const ATTRS = ["placeholder", "title", "aria-label"];
+  const SKIP = {
+    SCRIPT: 1,
+    STYLE: 1,
+    TEXTAREA: 1,
+    INPUT: 1
+  };
+  let lang = "tr",
+    obs = null;
+  const tr = s => {
+    const t = s.trim();
+    if (!t) return null;
+    let out = map.get(t);
+    if (out == null) for (const [re, rep] of rules) if (re.test(t)) {
+      out = t.replace(re, rep);
+      break;
+    }
+    if (out == null && /…$/.test(t) && t.length > 4) {
+      // label truncated in code before render: match by prefix, re-truncate
+      const pre = t.slice(0, -1).trim();
+      for (const [k, v] of map) if (k.startsWith(pre)) {
+        out = v.length > pre.length + 2 ? v.slice(0, Math.max(pre.length, 12)).trim() + " …" : v;
+        break;
+      }
+    }
+    if (out == null || out === t) return null;
+    return s.match(/^\s*/)[0] + out + s.match(/\s*$/)[0];
+  };
+  const doText = n => {
+    const v = n.nodeValue;
+    if (v == null || n.__pmalSet === v) return;
+    const p = n.parentNode;
+    if (p && SKIP[p.nodeName]) return;
+    const o = tr(v);
+    if (o != null) {
+      n.__pmalOrig = v;
+      n.__pmalSet = o;
+      n.nodeValue = o;
+    }
+  };
+  const doEl = el => {
+    if (!el.getAttribute) return;
+    for (const a of ATTRS) {
+      const v = el.getAttribute(a);
+      if (!v || el.__pmalAttrSet && el.__pmalAttrSet[a] === v) continue;
+      const o = tr(v);
+      if (o != null) {
+        (el.__pmalAttr = el.__pmalAttr || {})[a] = v;
+        (el.__pmalAttrSet = el.__pmalAttrSet || {})[a] = o;
+        el.setAttribute(a, o);
+      }
+    }
+  };
+  const walk = (root, fnText, fnEl) => {
+    if (root.nodeType === 3) return fnText(root);
+    if (root.nodeType !== 1 || SKIP[root.nodeName]) return;
+    fnEl(root);
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let n;
+    while (n = w.nextNode()) n.nodeType === 3 ? fnText(n) : fnEl(n);
+  };
+  const undoText = n => {
+    if (n.__pmalOrig != null && n.nodeValue === n.__pmalSet) n.nodeValue = n.__pmalOrig;
+    n.__pmalOrig = n.__pmalSet = undefined;
+  };
+  const undoEl = el => {
+    if (!el.__pmalAttr) return;
+    for (const a in el.__pmalAttr) if (el.getAttribute(a) === el.__pmalAttrSet[a]) el.setAttribute(a, el.__pmalAttr[a]);
+    el.__pmalAttr = el.__pmalAttrSet = undefined;
+  };
+  const set = l => {
+    if (l === lang) return;
+    lang = l;
+    window.PMAL_LOCALE = l === "de" ? "de-DE" : (window.PMAL_LOCALE||"tr-TR");
+    document.documentElement.lang = l;
+    if (l === "de") {
+      walk(document.body, doText, doEl);
+      obs = new MutationObserver(ms => {
+        for (const m of ms) {
+          if (m.type === "characterData") doText(m.target);else if (m.type === "attributes") doEl(m.target);else m.addedNodes.forEach(n => walk(n, doText, doEl));
+        }
+      });
+      obs.observe(document.body, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ATTRS
+      });
+    } else {
+      if (obs) obs.disconnect();
+      obs = null;
+      walk(document.body, undoText, undoEl);
+    }
+  };
+  return {
+    set,
+    tr,
+    get lang() {
+      return lang;
+    }
+  };
+})();
+window.PmalI18n = PmalI18n;
+
 
 ReactDOM.render(React.createElement(App), document.getElementById('root'));
 </script>
