@@ -3236,9 +3236,9 @@ function App() {
       overflowY: "auto",
       paddingBottom: 72
     }
-  }, /*#__PURE__*/React.createElement(MusicStory, {
+  }, React.createElement(PmalBackdrop, { page: page }), React.createElement("div", { style: { position: "relative", zIndex: 1 } }, /*#__PURE__*/React.createElement(MusicStory, {
     page: page
-  }), pages[page])), React.createElement(PmalStageFX, null), /*#__PURE__*/React.createElement(MusicBar, {
+  }), pages[page]))), React.createElement(PmalStageFX, null), /*#__PURE__*/React.createElement(MusicBar, {
     page: page,
     playing: playing,
     setPlaying: setPlaying,
@@ -4291,6 +4291,602 @@ function PmalTimeline({
   }, "TR kapanış")));
 }
 
+// ── DASHBOARD BACKDROP: "Money for Nothing" ──
+// Original 80s-computer-graphics homage behind the Dashboard page: neon
+// perspective grid, drifting wireframe TVs and microwave ovens, and a chrome
+// title marquee. Pulses at the track's ~134 BPM while the page's song plays.
+const PMAL_BD_CSS = `
+@keyframes pmalGrid{from{background-position:0 0}to{background-position:0 60px}}
+@keyframes pmalDriftR{from{transform:translateX(-25vw) rotate(-6deg)}to{transform:translateX(125vw) rotate(8deg)}}
+@keyframes pmalDriftL{from{transform:translateX(125vw) rotate(7deg)}to{transform:translateX(-30vw) rotate(-5deg)}}
+@keyframes pmalBob{0%,100%{margin-top:0}50%{margin-top:-14px}}
+@keyframes pmalMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes pmalBeat{0%{opacity:.95}35%{opacity:.55}100%{opacity:.55}}
+@keyframes pmalStatic{0%{transform:translateY(0)}100%{transform:translateY(-8px)}}
+@keyframes pmalSun{0%,100%{filter:drop-shadow(0 0 18px #ff2fa0)}50%{filter:drop-shadow(0 0 34px #ff2fa0)}}
+.pmal-bd *{animation-play-state:var(--pmal-run,running)}
+@media (prefers-reduced-motion: reduce){.pmal-bd *{animation:none!important}}
+`;
+function PmalTV({
+  w = 120,
+  hue = 190
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    width: w,
+    height: w * 0.86,
+    viewBox: "0 0 120 103",
+    style: {
+      overflow: "visible"
+    }
+  }, /*#__PURE__*/React.createElement("g", {
+    fill: "none",
+    stroke: `hsl(${hue},100%,65%)`,
+    strokeWidth: "2",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M12 18 L108 18 L114 84 L6 84 Z",
+    fill: `hsla(${hue},80%,20%,.35)`
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M12 18 L24 8 L118 8 L108 18 M118 8 L122 72 L114 84"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "18",
+    y: "25",
+    width: "70",
+    height: "50",
+    rx: "6",
+    fill: "#0a0f1a"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "100",
+    cy: "36",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "100",
+    cy: "54",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M40 84 L34 100 M80 84 L86 100"
+  })), /*#__PURE__*/React.createElement("clipPath", {
+    id: `tvc${hue}`
+  }, /*#__PURE__*/React.createElement("rect", {
+    x: "20",
+    y: "27",
+    width: "66",
+    height: "46",
+    rx: "5"
+  })), /*#__PURE__*/React.createElement("g", {
+    clipPath: `url(#tvc${hue})`,
+    opacity: ".85"
+  }, ["#ff3b3b", "#ffd23b", "#3bff6b", "#3be8ff", "#5b6bff", "#ff3bd7"].map((c, i) => /*#__PURE__*/React.createElement("rect", {
+    key: c,
+    x: 20 + i * 11,
+    y: "27",
+    width: "11",
+    height: "46",
+    fill: c,
+    opacity: ".55"
+  })), /*#__PURE__*/React.createElement("g", {
+    style: {
+      animation: "pmalStatic .18s steps(2) infinite"
+    }
+  }, Array.from({
+    length: 9
+  }, (_, i) => /*#__PURE__*/React.createElement("rect", {
+    key: i,
+    x: "20",
+    y: 27 + i * 6,
+    width: "66",
+    height: "1.4",
+    fill: "#fff",
+    opacity: ".25"
+  })))));
+}
+function PmalMicrowave({
+  w = 130,
+  hue = 320
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    width: w,
+    height: w * 0.62,
+    viewBox: "0 0 130 80",
+    style: {
+      overflow: "visible"
+    }
+  }, /*#__PURE__*/React.createElement("g", {
+    fill: "none",
+    stroke: `hsl(${hue},100%,68%)`,
+    strokeWidth: "2",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M4 14 L104 14 L104 76 L4 76 Z",
+    fill: `hsla(${hue},70%,18%,.35)`
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M4 14 L22 2 L126 2 L104 14 M126 2 L126 62 L104 76"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "12",
+    y: "22",
+    width: "64",
+    height: "46",
+    rx: "4",
+    fill: "#0a0f1a"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M18 30 L70 30 M18 40 L70 40 M18 50 L70 50 M18 60 L70 60",
+    strokeOpacity: ".35"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "91",
+    cy: "32",
+    r: "6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M91 32 L95 28"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "84",
+    y: "46",
+    width: "14",
+    height: "5"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "84",
+    y: "56",
+    width: "14",
+    height: "5"
+  })));
+}
+// Original "PMAL OR" scene drawn on canvas: a wireframe ankle (tibia, fibula,
+// talus) turns in front of the sun; every 8 beats the posterior malleolus
+// fragment drifts out, is reduced and clicks home with a screw, while two
+// blocky surgeons work either side. New survey responses fly in as light.
+function pmalAnkleMesh() {
+  const L = []; // {a:[x,y,z], b:[x,y,z], part}
+  const seg = (a, b, part) => L.push({
+    a,
+    b,
+    part
+  });
+  const P = (r, ang, y, cx = 0, cz = 0) => [cx + r * Math.cos(ang), y, cz + r * Math.sin(ang)];
+  const isFrag = (ang, y) => {
+    const d = (ang * 180 / Math.PI % 360 + 360) % 360;
+    return y <= 1.05 && d >= 215 && d <= 300;
+  };
+  const tibR = y => y > 1.1 ? 0.55 : 0.55 + 0.42 * Math.pow(1 - y / 1.1, 1.6);
+  const N = 18,
+    ys = [0, 0.35, 0.7, 1.05, 1.6, 2.3, 3.1];
+  ys.forEach(y => {
+    for (let i = 0; i < N; i++) {
+      const a0 = i / N * Math.PI * 2,
+        a1 = (i + 1) / N * Math.PI * 2;
+      seg(P(tibR(y), a0, y), P(tibR(y), a1, y), isFrag((a0 + a1) / 2, y) ? "frag" : "tib");
+    }
+  });
+  for (let i = 0; i < N; i++) {
+    const a = i / N * Math.PI * 2;
+    for (let k = 0; k < ys.length - 1; k++) {
+      const y0 = ys[k],
+        y1 = ys[k + 1];
+      const part = isFrag(a, y0) && y1 <= 1.05 ? "frag" : "tib";
+      seg(P(tibR(y0), a, y0), P(tibR(y1), a, y1), part);
+    }
+  }
+  // fracture plane of the fragment (two radial edges + chord)
+  [215, 300].forEach(d => {
+    const a = d * Math.PI / 180;
+    [0, 0.7].forEach(y => seg(P(tibR(y), a, y), P(0.25, a, y), "frag"));
+    seg(P(0.25, a, 0), P(0.25, a, 1.05), "frag");
+  });
+  // fibula (lateral = +x, slightly posterior)
+  const fy = [-0.55, 0.2, 1, 1.9, 3.1];
+  fy.forEach(y => {
+    for (let i = 0; i < 10; i++) {
+      const a0 = i / 10 * Math.PI * 2,
+        a1 = (i + 1) / 10 * Math.PI * 2;
+      const r = y < 0.3 ? 0.27 : 0.2;
+      seg(P(r, a0, y, 1.2, -0.2), P(r, a1, y, 1.2, -0.2), "fib");
+    }
+  });
+  for (let i = 0; i < 10; i += 2) {
+    const a = i / 10 * Math.PI * 2;
+    for (let k = 0; k < fy.length - 1; k++) seg(P(fy[k] < 0.3 ? 0.27 : 0.2, a, fy[k], 1.2, -0.2), P(fy[k + 1] < 0.3 ? 0.27 : 0.2, a, fy[k + 1], 1.2, -0.2), "fib");
+  }
+  // talus dome
+  for (let j = 1; j <= 4; j++) {
+    const t = j / 4,
+      y = -0.6 * t,
+      rx = 0.95 * Math.sqrt(1 - t * t * 0.85),
+      rz = 0.85 * Math.sqrt(1 - t * t * 0.85);
+    for (let i = 0; i < 16; i++) {
+      const a0 = i / 16 * Math.PI * 2,
+        a1 = (i + 1) / 16 * Math.PI * 2;
+      seg([rx * Math.cos(a0), y - 0.05, rz * Math.sin(a0)], [rx * Math.cos(a1), y - 0.05, rz * Math.sin(a1)], "tal");
+    }
+  }
+  return L;
+}
+function PmalORScene({
+  on
+}) {
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const cv = ref.current;
+    if (!cv) return;
+    const ctx = cv.getContext("2d");
+    const mesh = pmalAnkleMesh();
+    const COL = {
+      tib: "#22d3ee",
+      frag: "#fb923c",
+      fib: "#f472b6",
+      tal: "#facc15"
+    };
+    const streaks = [];
+    const onNew = e => {
+      const n = Math.min(6, e.detail && e.detail.rows && e.detail.rows.length || 1);
+      for (let i = 0; i < n; i++) streaks.push({
+        t0: performance.now() + i * 180
+      });
+    };
+    window.addEventListener("pmal:new", onNew);
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let raf,
+      last = 0;
+    const BEAT = 0.448,
+      CYCLE = BEAT * 8;
+    const draw = now => {
+      raf = requestAnimationFrame(draw);
+      if (document.hidden || now - last < 33) return;
+      last = now;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const W = cv.clientWidth,
+        H = cv.clientHeight;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) {
+        cv.width = Math.round(W * dpr);
+        cv.height = Math.round(H * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      const t = reduce ? 0 : now / 1000;
+      const playing = cv.dataset.on === "1";
+      const ph = t % CYCLE / CYCLE; // 0..1 across 8 beats
+      const beatPh = t % BEAT / BEAT;
+      const pulse = playing ? Math.pow(1 - beatPh, 3) : 0;
+      // fragment displacement: out 0–.45, reduce .45–.7, snap at .7
+      const out = ph < 0.45 ? ph / 0.45 : ph < 0.7 ? 1 - (ph - 0.45) / 0.25 : 0;
+      const ease = out * out * (3 - 2 * out);
+      const snap = ph >= 0.7 && ph < 0.78 ? 1 - (ph - 0.7) / 0.08 : 0;
+      const screwed = ph >= 0.7;
+      const cx = W * 0.5,
+        cy = H * 0.5,
+        S = Math.min(W, H) * 0.12 * (1 + pulse * 0.03);
+      const ry = t * 0.45,
+        rx = -0.28;
+      const proj = ([x, y, z]) => {
+        const c = Math.cos(ry),
+          s = Math.sin(ry);
+        let X = x * c + z * s,
+          Z = -x * s + z * c,
+          Y = y - 1.2;
+        const c2 = Math.cos(rx),
+          s2 = Math.sin(rx);
+        const Y2 = Y * c2 - Z * s2,
+          Z2 = Y * s2 + Z * c2;
+        const f = 7 / (7 + Z2);
+        return [cx + X * S * f, cy - Y2 * S * f];
+      };
+      const fragOff = p => [p[0] + 0.15 * ease, p[1] + 0.55 * ease, p[2] - 0.75 * ease];
+      ctx.lineCap = "round";
+      ["tal", "fib", "tib", "frag"].forEach(part => {
+        ctx.strokeStyle = COL[part];
+        ctx.shadowColor = COL[part];
+        ctx.shadowBlur = part === "frag" ? 10 + 18 * snap : 6 + 6 * pulse;
+        ctx.lineWidth = part === "frag" ? 1.8 + snap * 2 : 1.2;
+        ctx.globalAlpha = part === "frag" ? 1 : 0.85;
+        ctx.beginPath();
+        mesh.forEach(l => {
+          if (l.part !== part) return;
+          const a = proj(part === "frag" ? fragOff(l.a) : l.a),
+            b = proj(part === "frag" ? fragOff(l.b) : l.b);
+          ctx.moveTo(a[0], a[1]);
+          ctx.lineTo(b[0], b[1]);
+        });
+        ctx.stroke();
+      });
+      // AP screw: anterior tibia → fragment
+      if (screwed) {
+        const prog = Math.min(1, (ph - 0.7) / 0.1);
+        const A = [0.25, 0.55, 1.15],
+          B = [0.25, 0.5, -0.85];
+        const E = [A[0] + (B[0] - A[0]) * prog, A[1] + (B[1] - A[1]) * prog, A[2] + (B[2] - A[2]) * prog];
+        const a = proj(A),
+          e = proj(E);
+        ctx.globalAlpha = 1;
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.shadowColor = "#fff";
+        ctx.shadowBlur = 12;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(a[0], a[1]);
+        ctx.lineTo(e[0], e[1]);
+        ctx.stroke();
+        ctx.fillStyle = "#e5e7eb";
+        ctx.beginPath();
+        ctx.arc(a[0], a[1], 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      // snap flash ring
+      if (snap > 0) {
+        const p = proj([0.2, 0.5, -0.7]);
+        ctx.globalAlpha = snap;
+        ctx.strokeStyle = "#fde68a";
+        ctx.shadowColor = "#fde68a";
+        ctx.shadowBlur = 20;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], 10 + (1 - snap) * 40, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      // surgeons (original blocky figures)
+      const surgeon = (x, flip, hue, phase) => {
+        const bob = Math.sin(t * Math.PI * 2 / (BEAT * 2) + phase) * (playing ? 4 : 1.5);
+        const y = cy + S * 1.2 + bob,
+          u = S * 0.32;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(flip, 1);
+        ctx.globalAlpha = 0.9;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `hsl(${hue},90%,60%)`;
+        ctx.strokeStyle = `hsl(${hue},90%,65%)`;
+        ctx.fillStyle = `hsla(${hue},70%,25%,.55)`;
+        ctx.lineWidth = 1.6;
+        const poly = pts => {
+          ctx.beginPath();
+          pts.forEach(([px, py], i) => i ? ctx.lineTo(px * u, py * u) : ctx.moveTo(px * u, py * u));
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+        };
+        poly([[-1.3, 0], [1.3, 0], [1.6, -4.2], [-1.6, -4.2]]); // gown
+        poly([[-0.9, -4.4], [0.9, -4.4], [1, -6.4], [-1, -6.4]]); // head
+        poly([[-1.1, -6.3], [1.1, -6.3], [0.8, -7.3], [-0.8, -7.3]]); // cap
+        ctx.fillStyle = `hsla(${hue},60%,85%,.8)`;
+        poly([[-0.95, -4.9], [0.95, -4.9], [0.8, -5.5], [-0.8, -5.5]]); // mask
+        const arm = Math.sin(t * Math.PI * 2 / BEAT + phase) * (playing ? 0.25 : 0.08);
+        ctx.fillStyle = `hsla(${hue},70%,25%,.55)`;
+        ctx.save();
+        ctx.translate(1.3 * u, -3.8 * u);
+        ctx.rotate(-0.9 + arm);
+        poly([[0, -0.4], [3.4, -0.3], [3.4, 0.3], [0, 0.4]]);
+        ctx.strokeStyle = "#e5e7eb";
+        ctx.beginPath();
+        ctx.moveTo(3.4 * u, 0);
+        ctx.lineTo(4.6 * u, 0);
+        ctx.stroke(); // instrument
+        ctx.restore();
+        ctx.restore();
+      };
+      surgeon(cx - S * 3.1, 1, 190, 0);
+      surgeon(cx + S * 3.1, -1, 320, Math.PI);
+      // neon sign
+      ctx.globalAlpha = 0.6 + 0.4 * (playing ? Math.max(pulse, 0.4) : 0.5);
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = "#ff2fa0";
+      ctx.fillStyle = "#ffd1ec";
+      ctx.font = `italic 800 ${Math.round(S * 0.42)}px Impact, 'Arial Black', sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("PMAL · O.R.", cx, cy - S * 3.05);
+      // incoming responses: light streaks from the top-right into the fragment
+      const target = proj([0.2, 0.5, -0.7]);
+      for (let i = streaks.length - 1; i >= 0; i--) {
+        const k = (now - streaks[i].t0) / 1400;
+        if (k < 0) continue;
+        if (k > 1) {
+          streaks.splice(i, 1);
+          continue;
+        }
+        const sx = W * 0.95,
+          sy = H * 0.05,
+          x = sx + (target[0] - sx) * k,
+          y = sy + (target[1] - sy) * k * k;
+        ctx.globalAlpha = 1 - k * 0.6;
+        ctx.fillStyle = "#fde68a";
+        ctx.shadowColor = "#fde68a";
+        ctx.shadowBlur = 24;
+        ctx.beginPath();
+        ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur = 0;
+    };
+    raf = requestAnimationFrame(draw);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("pmal:new", onNew);
+    };
+  }, []);
+  return /*#__PURE__*/React.createElement("canvas", {
+    ref: ref,
+    "data-on": on ? "1" : "0",
+    style: {
+      position: "absolute",
+      left: "50%",
+      bottom: "30%",
+      width: "min(900px, 92%)",
+      height: "min(62vh, 560px)",
+      transform: "translateX(-50%)"
+    }
+  });
+}
+function PmalBackdrop({
+  page
+}) {
+  const [on, setOn] = React.useState(false);
+  React.useEffect(() => {
+    if (page !== "dashboard") return;
+    const t = setInterval(() => {
+      const a = window._pageAudios && window._pageAudios.dashboard || window._preloadedMoney;
+      setOn(!!(a && !a.paused));
+    }, 500);
+    return () => clearInterval(t);
+  }, [page]);
+  if (page !== "dashboard") return null;
+  const beat = "0.448s"; // ~134 BPM
+  const items = [{
+    k: "tv1",
+    el: /*#__PURE__*/React.createElement(PmalTV, {
+      w: 130,
+      hue: 190
+    }),
+    top: "16%",
+    dur: 46,
+    delay: -8,
+    dir: "R"
+  }, {
+    k: "mw1",
+    el: /*#__PURE__*/React.createElement(PmalMicrowave, {
+      w: 140,
+      hue: 320
+    }),
+    top: "38%",
+    dur: 58,
+    delay: -30,
+    dir: "L"
+  }, {
+    k: "tv2",
+    el: /*#__PURE__*/React.createElement(PmalTV, {
+      w: 90,
+      hue: 55
+    }),
+    top: "8%",
+    dur: 64,
+    delay: -20,
+    dir: "L"
+  }];
+  const title = "MONEY FOR NOTHING · DIRE STRAITS · 1985 · ";
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "sticky",
+      top: 0,
+      height: 0,
+      zIndex: 0,
+      pointerEvents: "none"
+    },
+    "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("style", null, PMAL_BD_CSS), /*#__PURE__*/React.createElement("div", {
+    className: "pmal-bd",
+    style: {
+      position: "absolute",
+      top: -20,
+      left: -20,
+      width: "calc(100% + 40px)",
+      height: "calc(100vh - 56px)",
+      overflow: "hidden",
+      opacity: 0.55,
+      ["--pmal-run"]: "running"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      inset: 0,
+      background: "radial-gradient(ellipse at 50% 70%, #2a0d3a 0%, #0a0a12 60%)"
+    }
+  }), /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 200 100",
+    preserveAspectRatio: "xMidYMax meet",
+    style: {
+      position: "absolute",
+      left: "50%",
+      bottom: "34%",
+      width: 260,
+      transform: "translateX(-50%)",
+      animation: "pmalSun 3.6s ease-in-out infinite"
+    }
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "pmalSunG",
+    x1: "0",
+    y1: "0",
+    x2: "0",
+    y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", {
+    offset: "0",
+    stopColor: "#ffd23b"
+  }), /*#__PURE__*/React.createElement("stop", {
+    offset: "1",
+    stopColor: "#ff2fa0"
+  })), /*#__PURE__*/React.createElement("clipPath", {
+    id: "pmalSunC"
+  }, [0, 1, 2, 3, 4, 5].map(i => /*#__PURE__*/React.createElement("rect", {
+    key: i,
+    x: "0",
+    y: i * 17,
+    width: "200",
+    height: 17 - i * 2
+  })))), /*#__PURE__*/React.createElement("circle", {
+    cx: "100",
+    cy: "100",
+    r: "96",
+    fill: "url(#pmalSunG)",
+    clipPath: "url(#pmalSunC)"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: "-50%",
+      right: "-50%",
+      bottom: 0,
+      height: "36%",
+      backgroundImage: "linear-gradient(#ff2fa0 2px, transparent 2px), linear-gradient(90deg, #22d3ee 2px, transparent 2px)",
+      backgroundSize: "60px 60px",
+      transform: "perspective(260px) rotateX(62deg)",
+      transformOrigin: "50% 0",
+      animation: on ? `pmalGrid 0.9s linear infinite` : "pmalGrid 2.4s linear infinite",
+      opacity: 0.7
+    }
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: "36%",
+      height: 2,
+      background: "#ff2fa0",
+      boxShadow: "0 0 18px #ff2fa0"
+    }
+  }), /*#__PURE__*/React.createElement(PmalORScene, {
+    on: on
+  }), items.map(it => /*#__PURE__*/React.createElement("div", {
+    key: it.k,
+    style: {
+      position: "absolute",
+      left: 0,
+      top: it.top,
+      animation: `pmalDrift${it.dir} ${it.dur}s linear ${it.delay}s infinite`
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      animation: `pmalBob ${3 + it.dur % 4}s ease-in-out infinite`,
+      filter: "drop-shadow(0 0 6px rgba(255,255,255,.35))"
+    }
+  }, it.el))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      top: 10,
+      left: 0,
+      whiteSpace: "nowrap",
+      animation: "pmalMarq 38s linear infinite"
+    }
+  }, [0, 1].map(i => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    style: {
+      fontFamily: "Impact, 'Arial Black', sans-serif",
+      fontSize: 64,
+      letterSpacing: 4,
+      fontStyle: "italic",
+      background: "linear-gradient(180deg,#fff 0%,#9fd7ff 45%,#1b3a6b 50%,#c4e6ff 70%,#fff 100%)",
+      WebkitBackgroundClip: "text",
+      backgroundClip: "text",
+      color: "transparent",
+      WebkitTextStroke: "1px rgba(255,255,255,.35)",
+      animation: on ? `pmalBeat ${beat} ease-out infinite` : "none",
+      opacity: on ? 1 : 0.6
+    }
+  }, title.repeat(3))))));
+}
+
 // ── WORLD MAP ──
 // Map data and d3 helpers load on first use from jsDelivr, pinned versions.
 const PMAL_MAP_LIBS = [
@@ -4828,7 +5424,7 @@ function usePmalDashKey() {
 // match first, then regex rules for template strings). Survey labels come
 // from the survey's own DE translations. A MutationObserver keeps React
 // re-renders translated. Switching back restores the original text.
-const PMAL_DE = {"map": {"Evet": "Ja", "Üniversite hastanesi / akademik eğitim hastanesi": "Universitätsklinikum / akademisches Lehrkrankenhaus", "Özel klinik (solo veya grup)": "Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)", "Diğer": "Sonstiges", "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?": "Wie viele Sprunggelenkfraktur-Operationen führen Sie ungefähr pro Jahr durch?", "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?": "Was beschreibt Ihren klinischen Schwerpunkt am besten?", "Ayak ve ayak bileği cerrahisi": "Fuß- und Sprunggelenkchirurgie", "Ortopedik travma": "Orthopädische Traumatologie / Unfallchirurgie", "Genel ortopedi": "Allgemeine Orthopädie", "Asistan / fellow eğitim aşamasında": "Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung", "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)": "Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)", "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?": "Wie häufig veranlassen Sie eine präoperative CT bei Sprunggelenkfrakturen mit Verdacht auf PM-Beteiligung?", "Rutin olarak": "Routinemäßig", "Sıklıkla": "Häufig", "Seçici olarak": "Selektiv", "Nadiren": "Selten", "Pratiğimde BT erişimi sınırlı": "Der Zugang zur CT ist in meinem Umfeld begrenzt", "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?": "Welche Klassifikationssysteme verwenden Sie bei der Beurteilung von PM-Frakturen?", "Haraguchi sınıflaması": "Haraguchi-Klassifikation", "Bartoníček/Rammelt sınıflaması": "Bartoníček/Rammelt-Klassifikation", "Mason & Molloy sınıflaması": "Mason-&-Molloy-Klassifikation", "AO/OTA sınıflaması": "AO/OTA-Klassifikation", "Lauge-Hansen sınıflaması": "Lauge-Hansen-Klassifikation", "Fragment boyutu (% eklem yüzeyi)": "Fragmentgröße (% der Gelenkfläche)", "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?": "Leitet das Klassifikationssystem Ihre Therapieentscheidungen?", "Evet — primer olarak sınıflamaya göre karar veririm": "Ja — ich entscheide primär anhand der Klassifikation", "Kısmen — sınıflama faktörlerden biridir": "Teilweise — die Klassifikation ist einer von mehreren Faktoren", "Hayır — sınıflamadan bağımsız değerlendiririm": "Nein — ich beurteile unabhängig von der Klassifikation", "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim": "Ich fixiere alle PM-Fragmente, sofern technisch möglich", "Boyutu tek başına bir endikasyon olarak kullanmam": "Ich verwende die Größe allein nicht als Indikation", "PM fragmentini nadiren / hiç fikse etmem": "Ich fixiere das PM-Fragment selten/nie", "PM fiksasyon kararınızı etkileyen faktörler nelerdir?": "Welche Faktoren beeinflussen Ihre Entscheidung zur PM-Fixation?", "Artiküler step-off miktarı": "Ausmaß der Gelenkstufe (Step-off)", "Sindesmoz instabilitesi": "Syndesmoseninstabilität", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)": "Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)", "Hasta yaşı ve aktivite düzeyi": "Alter und Aktivitätsniveau des Patienten", "Kemik kalitesi (osteoporoz)": "Knochenqualität (Osteoporose)", "Yumuşak doku durumu": "Weichteilverhältnisse", "İmpakte artiküler fragment varlığı": "Vorliegen impaktierter Gelenkfragmente", "Komorbidite (DM, sigara vb.)": "Komorbiditäten (Diabetes, Rauchen etc.)", "Fragmana bağlı artiküler step-off veya boşluk": "Durch das Fragment bedingte Gelenkstufe oder Spaltbildung", "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi": "Das Fragment blockiert die Reposition des PM-Hauptfragments", "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması": "Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation", "Elevasyon/greftleme gerektiren impakte osteokondral fragman": "Impaktiertes osteochondrales Fragment, das eine Anhebung/Unterfütterung mit Transplantat erfordert", "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)": "Junger/aktiver Patient (hoher funktioneller Anspruch)", "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim": "Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar", "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim": "Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerung", "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli": "Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist", "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili": "Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich", "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?": "Welche Technik bevorzugen Sie am häufigsten zur PM-Fixation?", "Perkütan AP lag vida": "Perkutane AP-Zugschraube", "Perkütan PA lag vida": "Perkutane PA-Zugschraube", "Trans-Achilles perkütan PA vida": "Transachilläre perkutane PA-Schraube", "Açık posterolateral — buttress/locking plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posterolateral — lag vida": "Offen posterolateral — Zugschraube", "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?": "Welchen operativen Zugang bevorzugen Sie am häufigsten bei PM-Frakturen?", "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)": "Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)", "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)": "Posteromedial — modifiziert (mediales Fenster, lateral der FHL)", "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)": "Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)", "Kombine posterolateral + posteromedyal": "Kombiniert posterolateral + posteromedial", "Anterior (perkütan)": "Anterior (perkutan)", "Artroskopi yardımlı": "Arthroskopisch assistiert", "Vakaya göre değişir": "Fallabhängig unterschiedlich", "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?": "Welche Patientenlagerung bevorzugen Sie am häufigsten bei PM-Frakturen?", "Supine": "Rückenlage", "Prone": "Bauchlage", "Lateral dekübitus": "Seitenlage", "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?": "Wie ist Ihre übliche Fixationsreihenfolge bei trimalleolären Frakturen?", "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)": "Fibula → PM → Innenknöchel → Syndesmose (falls instabil)", "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)": "PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)", "Fibula → Sindesmoz değerlendir → PM → Medial malleol": "Fibula → Syndesmosenprüfung → PM → Innenknöchel", "Bireyselleştirilmiş — standart sıram yok": "Individuell — keine Standardreihenfolge", "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?": "Wie beurteilen Sie die Syndesmose nach der PM-Fixation?", "İntraoperatif stres testi (eksternal rotasyon / hook test)": "Intraoperativer Stresstest (Außenrotations-/Hakentest)", "İntraoperatif artroskopi": "Intraoperative Arthroskopie", "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım": "Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität", "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar": "Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her", "Evet — bazı vakalarda": "Ja — in manchen Fällen", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder": "Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig", "Pratiğimde bunu spesifik olarak değerlendirmedim": "Ich habe dies in meiner Praxis nicht gezielt untersucht", "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?": "Prüfen Sie bei Sprunggelenkfrakturen mit PM-Beteiligung gezielt auf anteriore syndesmotische Avulsionen (Chaput-Tuberkel / Wagstaffe-Fragment)?", "Evet — rutin olarak BT'de": "Ja — routinemäßig im CT", "Bazen — kırık paternine göre": "Manchmal — je nach Frakturmuster", "Nadiren veya spesifik olarak değil": "Selten oder nicht gezielt", "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?": "Wie behandeln Sie ein identifiziertes Chaput- oder Wagstaffe-Fragment bevorzugt?", "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)": "Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)", "Sindesmoz aksi takdirde stabil ise non-operatif": "Konservativ, sofern die Syndesmose ansonsten stabil ist", "Karar fragman boyutu ve erişilebilirliğine göre": "Entscheidung nach Fragmentgröße und Erreichbarkeit", "VAKA 1": "FALL 1", "VAKA 2": "FALL 2", "VAKA 3": "FALL 3", "VAKA 4": "FALL 4", "Hayır": "Nein", "Fragment morfolojisi boyuttan daha önemlidir.": "Die Fragmentmorphologie ist wichtiger als die Größe.", "Kesinlikle katılmıyorum": "Stimme überhaupt nicht zu", "Katılmıyorum": "Stimme nicht zu", "Kararsızım": "Unentschieden", "Katılıyorum": "Stimme zu", "Kesinlikle katılıyorum": "Stimme voll zu", "Birden fazla seçebilirsiniz": "Mehrfachauswahl möglich", "Gönderiliyor...": "Wird gesendet …", "G — Klinik Vaka Senaryoları": "G — Klinische Fallszenarien", "Bu vakada posterior malleolü fikse eder misiniz?": "Würden Sie in diesem Fall den posterioren Malleolus fixieren?", "Ameliyata hangi pozisyonda başlarsınız?": "In welcher Lagerung beginnen Sie die Operation?", "Hangi cerrahi yaklaşımı tercih edersiniz?": "Welchen operativen Zugang bevorzugen Sie?", "Fiksasyon sıranız ne olur?": "Welche Fixationsreihenfolge wählen Sie?", "PM fiksasyonu için hangi teknik ve implantı tercih edersiniz?": "Welche Technik und welches Implantat bevorzugen Sie für die PM-Fixation?", "H — Tutum ve Görüşler": "H — Einstellungen und Meinungen", "Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (posterolateral oder posteromedial) erreichbar", "Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)": "Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)", "Açık posteromedyal — buttress/kilitli plak": "Offen posteromedial — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida": "Offen posteromedial — Zugschraube", "Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)": "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)", "Medial clear space değerlendirmesi yeterlidir": "Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend", "Direkt fiksasyon (vida, sütur ankoru veya plak)": "Direkte Fixation (Schraube, Fadenanker oder Platte)", "Evet — köklü değişiklik": "Ja — erheblich", "Evet — orta düzeyde değişiklik": "Ja — mäßige Veränderung", "Sadece küçük iyileştirmeler": "Nur geringfügige Anpassungen", "Anlamlı değişiklik yok": "Keine wesentliche Veränderung", "Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)": "Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)", "Daha küçük fragmanları fikse etme eşiğinin düşmesi": "Niedrigere Schwelle für die Fixation kleinerer Fragmente", "PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi": "Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert", "Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi": "Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten", "Diğer (belirtiniz)": "Sonstiges (bitte angeben)", "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)": "Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)", "Posteromedyal — standart": "Posteromedial — Standard", "Posteromedyal — modifiye": "Posteromedial — modifiziert", "Posteromedyal — geniş (FHL)": "Posteromedial — erweitert (FHL)", "PM önce → Fibula → Medial malleol": "PM zuerst → Fibula → Innenknöchel", "Fibula → PM → Medial malleol → Sindesmoz değerlendir": "Fibula → PM → Innenknöchel → Syndesmosenprüfung", "PM önce → Lateral malleol": "PM zuerst → Außenknöchel", "Lateral malleol önce → PM": "Außenknöchel zuerst → PM", "Eşzamanlı / tek yaklaşımdan fiksasyon": "Simultane Fixation / über einen einzigen Zugang", "Lateral malleol → PM → Sindesmoz değerlendir": "Außenknöchel → PM → Syndesmosenprüfung", "Perkütan AP vida fiksasyonu": "Perkutane AP-Schraubenfixation", "Perkütan PA vida fiksasyonu": "Perkutane PA-Schraubenfixation", "Açık posterolateral — lag vida (plaksız)": "Offen posterolateral — Zugschraube (ohne Platte)", "Açık posterolateral — buttress/kilitli plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida (plaksız)": "Offen posteromedial — Zugschraube (ohne Platte)", "Artroskopi yardımlı redüksiyon / fiksasyon": "Arthroskopisch assistierte Reposition/Fixation", "Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)": "Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)", "Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)": "Ja — ich würde den Operationszeitpunkt anpassen (Verschiebung oder mehrzeitiges Vorgehen)", "Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım": "Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen", "Hayır — sağlıklı hastadakiyle aynı planı uygularım": "Nein — ich würde wie bei einem gesunden Patienten vorgehen", "Admin token hatalı — sayfa yenilenince tekrar sorulacak.": "Admin-Token ungültig — er wird nach dem Neuladen erneut abgefragt.", "Doç. Dr.": "PD Dr.", "Yanıtlar": "Antworten", "İstatistik": "Statistik", "Geri Bildirim": "Feedback", "Yedekleme": "Backup", "Ayarlar": "Einstellungen", "Geçersiz şifre": "Ungültiges Passwort", "Giriş yapmak için kartınızı seçin": "Wählen Sie Ihre Karte, um sich anzumelden", "Şifre": "Passwort", "Giriş Yap": "Anmelden", "← Başka karakter seç": "← Andere Figur wählen", "Çıkış": "Abmelden", "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor.": "Der Schlusstitel des Albums The Division Bell. Gilmour schrieb den Song aus Nostalgie für seine Kindheit in Cambridge. Die erste Zeile beschreibt die Straßen, in denen er aufwuchs und Syd Barrett kennenlernte.", "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti.": "Hetfield schrieb den Song auf Tour, während er mit seiner Freundin telefonierte. Den Hörer zwischen Schulter und Ohr geklemmt, zupfte er mit der freien Hand die offenen Saiten — so entstand das berühmte Intro. Er genierte sich, ihn aufzunehmen, weil er „zu sanft für Metallica“ war. Lars Ulrich musste ihn überreden.", "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi.": "Slash spielte das berühmte Intro-Riff „nur als Fingerübung“ — ein echter Song war nie geplant. Axl Rose hörte es im Nebenzimmer und schrieb den Text dazu. Jahre später sagte Slash: „Das Riff war für mich ein Witz, ich nannte es eine Zirkusmelodie.“", "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı.": "Cobain ließ sich für das Riff von Killing Jokes „Eighties“ inspirieren. Den Text baute er auf Widersprüchen auf: „Komm, wie du bist — lass dir Zeit, aber komm nicht zu spät.“ Er verband den Song mit der Isolation seiner Kindheit in Aberdeen.", "Knopfler şarkıyı New York'ta bir beyaz eşya mağazasında duyduğu konuşmadan yazdı. Bir tesisatçı, mağazadaki TV'lerde MTV izlerken rock yıldızlarına küfrediyordu. Knopfler mikrodalgaların arasından adamı gizlice dinledi ve sözleri bir kağıt peçeteye not etti. Sting tesadüfen aynı stüdyodaydı ve ikonik intro'yu tek seferde söyledi.": "Knopfler schrieb den Song nach einem Gespräch, das er in einem New Yorker Elektrogeschäft mithörte. Ein Handwerker schimpfte über die Rockstars, die auf den Fernsehern im Laden über MTV liefen. Knopfler lauschte zwischen den Mikrowellen und notierte den Text auf einer Papierserviette. Sting war zufällig im selben Studio und sang das berühmte Intro in einem Take ein.", "Kiedis bu şarkıyı yalnızlık ve bağımlılıktan çıkış sürecinde yazdı. Sözleri bir şiir defterinde saklıyordu, kimseye göstermedi. Prodüktör Rick Rubin defteri karıştırırken buldu ve 'Bu bir şarkı olmalı' dedi. Kiedis ilk başta itiraz etti — çok kişisel buluyordu.": "Kiedis schrieb diesen Song in einer Phase der Einsamkeit, auf dem Weg aus der Sucht. Den Text bewahrte er in einem Gedichtheft auf und zeigte ihn niemandem. Produzent Rick Rubin stieß beim Blättern darauf und sagte: „Daraus muss ein Song werden.“ Kiedis sträubte sich zunächst — es war ihm zu persönlich.", "Hammett ana riff'i gece 2-3 civarında Soundgarden dinledikten sonra yazdı. Hetfield'ın orijinal sözleri bebek ölümü hakkındaydı. Prodüktör Bob Rock ve Ulrich, Hetfield'a ilk kez sözlerini değiştirmesini söyleme cesaretini gösterdi. Rock sonra anlattı: 'Kimse daha önce James'e sözleri hakkında bir şey söylememişti.'": "Hammett schrieb das Hauptriff gegen zwei, drei Uhr nachts, nachdem er Soundgarden gehört hatte. Hetfields ursprünglicher Text handelte vom plötzlichen Kindstod. Produzent Bob Rock und Ulrich wagten als Erste, Hetfield um eine Textänderung zu bitten. Rock erzählte später: „Niemand hatte James je etwas zu seinen Texten gesagt.“", "Cobain, 1994'te Rolling Stone'a 'Mükemmel pop şarkısını yazmaya çalışıyordum. Pixies'i taklit etmeye çalışıyordum, itiraf etmeliyim' dedi. Şarkının adı, Kathleen Hanna'nın sarhoş bir gece Kurt'ün duvarına yazdığı 'Kurt smells like Teen Spirit' cümlesinden geldi. Kurt bunun devrimci bir slogan olduğunu sandı — aslında bir kız deodorantı markasıydı.": "Cobain sagte 1994 dem Rolling Stone: „Ich wollte den ultimativen Popsong schreiben. Ich habe versucht, die Pixies zu kopieren, das muss ich zugeben.“ Der Titel stammt von dem Satz „Kurt smells like Teen Spirit“, den Kathleen Hanna in einer durchzechten Nacht an Kurts Wand schrieb. Kurt hielt ihn für einen revolutionären Slogan — tatsächlich war es eine Deodorantmarke für Mädchen.", "Axl Rose bu şarkı üzerinde 1983'ten 1991'e kadar çalıştı. Orijinal demo 18 dakikaydı. Slash'in çölde yağmur altında solo çalması rock tarihinin en ikonik görüntülerinden biri oldu. Slash sonra 'O sahneyi çekerken gerçekten yağmur başladı, planlanmamıştı' dedi.": "Axl Rose arbeitete von 1983 bis 1991 an diesem Song. Das ursprüngliche Demo war 18 Minuten lang. Slashs Solo im Regen in der Wüste wurde zu einem der berühmtesten Bilder der Rockgeschichte. Slash sagte später: „Beim Dreh fing es wirklich an zu regnen, das war nicht geplant.“", "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu.": "Gilmour schrieb diesen Song, während er tatsächlich Flugstunden nahm. Er arbeitete auf seinen Pilotenschein hin und nutzte das Fliegenlernen als Metapher. Der Song bewies, dass Gilmour Pink Floyd nach Waters' Weggang allein führen konnte.", "Axl Rose, şarkının sözlerini Greyhound otobüsüyle LA'e ilk geldiği gece yaşadıklarından yazdı. Otobüsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi.": "Axl Rose schrieb den Text über die Nacht, in der er mit dem Greyhound-Bus zum ersten Mal in L.A. ankam. Kaum war er ausgestiegen, rief ihm ein Obdachloser „Welcome to the jungle“ zu.", "Klaus Meine şarkıyı 1989 Moskova Müzik Barış Festivali'nin ardından yazdı. Doğulu ve Batılı müzisyenlerle Moskova Nehri'nde yapılan bir gece tekne gezisi ve Gorki Parkı sözlere girdi. Açılıştaki ıslığı Meine'nin kendisi çaldı. Şarkı Soğuk Savaş'ın bitişinin ve Almanya'nın yeniden birleşmesinin marşı oldu.": "Klaus Meine schrieb den Song nach dem Moscow Music Peace Festival 1989. Eine nächtliche Bootsfahrt auf der Moskwa mit Musikern aus Ost und West und der Gorki-Park fanden ihren Weg in den Text. Das gepfiffene Intro stammt von Meine selbst. Der Song wurde zur Hymne für das Ende des Kalten Krieges und die deutsche Wiedervereinigung.", "Toplam Yanıt": "Antworten gesamt", "Tamamlanan": "Abgeschlossen", "Ort. Süre": "Ø Dauer", "Bugün": "Heute", "Vaka 1 — 52Y K, Bart 2, %20": "Fall 1 — 52 J., w, Bart. 2, 20 %", "Vaka 2 — 76Y E, Bart 3, %18": "Fall 2 — 76 J., m, Bart. 3, 18 %", "Vaka 3 — 74Y K, Açık 3A, %28": "Fall 3 — 74 J., w, offen 3A, 28 %", "Vaka 4 — 55Y K, Bart 3, %36, lüksasyon": "Fall 4 — 55 J., w, Bart. 3, 36 %, Luxation", "SISTEM:": "SYSTEM:", "Vaka Bazlı Fix Oranları": "Fixationsraten je Fall", "Henüz veri yok": "Noch keine Daten", "Araştırma Ekibi": "Forschungsteam", "Yanıt Listesi (": "Antwortliste (", "Yükleniyor...": "Wird geladen …", "Yükleniyor…": "Wird geladen…", "Henüz yanıt bulunmamaktadır.": "Noch keine Antworten vorhanden.", "Tamamlandı": "Abgeschlossen", "Yarım": "Unvollständig", "Veri yok": "Keine Daten", "Yeterli veri yok": "Nicht genügend Daten", "Demografi": "Demografie", "Pratik": "Praxis", "Tutum + Vakalar": "Einstellungen + Fälle", "Çapraz analiz": "Kreuzanalyse", "Henüz tamamlanmış yanıt yok.": "Noch keine abgeschlossenen Antworten.", "İstatistikler": "Statistiken", "CSV indir": "CSV herunterladen", "A2 — Deneyim yılı": "A2 — Berufserfahrung (Jahre)", "A3 — Kurum tipi": "A3 — Art der Einrichtung", "A4 — Ülke dağılımı (top 15)": "A4 — Länderverteilung (Top 15)", "A5 — Yıllık ankle fx volume": "A5 — Sprunggelenkfrakturen pro Jahr", "A6 — Subspecialty": "A6 — Subspezialität", "A7 — Preoperatif CT rutin": "A7 — Präoperatives CT routinemäßig", "B1 — Aylık PM kırığı hacmi": "B1 — PM-Frakturen pro Monat", "D1 — Boyut eşiği (headline)": "D1 — Größenschwelle (Hauptbefund)", "Bu makalenin baş bulgularından biri": "Einer der Hauptbefunde dieser Arbeit", "C1 — Kullanılan sınıflamalar (multi)": "C1 — Verwendete Klassifikationen (Mehrfachauswahl)", "D3 — Karar faktörleri (multi)": "D3 — Entscheidungsfaktoren (Mehrfachauswahl)", "D4 — İnterkalar kriterler (multi)": "D4 — Kriterien interkalare Fragmente (Mehrfachauswahl)", "D5 — İnterkalar pratiği": "D5 — Praxis bei interkalaren Fragmenten", "E1 — Teknik tercihi": "E1 — Bevorzugte Technik", "E2 — Cerrahi yaklaşım": "E2 — Operativer Zugang", "E3 — Pozisyon": "E3 — Lagerung", "F1 — Fiksasyon sırası": "F1 — Fixationsreihenfolge", "F2 — Sindesmoz değerlendirme": "F2 — Syndesmosenprüfung", "F3 — PM sindesmoz ihtiyacını azaltır mı?": "F3 — Reduziert die PM-Fixation den Syndesmosenbedarf?", "F4 — Chaput değerlendirme": "F4 — Beurteilung Chaput", "F5 — Chaput yönetimi": "F5 — Behandlung Chaput", "H5 — Pratiğiniz 10 yılda değişti mi?": "H5 — Hat sich Ihre Praxis in 10 Jahren verändert?", "H6_driver — Etkileyen gelişmeler (multi, headline)": "H6_driver — Einflussreiche Entwicklungen (Mehrfachauswahl, Hauptbefund)", "Likert tutumlar (H1–H8)": "Likert-Einstellungen (H1–H8)", "Diverging stacked bar — kırmızı (sol) = disagree, yeşil (sağ) = agree": "Divergierendes gestapeltes Balkendiagramm — rot (links) = Ablehnung, grün (rechts) = Zustimmung", "Fragment boyutu PM fiksasyon kararında en önemli faktördür": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung", "Fragment morfolojisi boyuttan daha önemlidir": "Die Fragmentmorphologie ist wichtiger als die Größe", "Direkt posterior yaklaşım perkütan tekniklerden üstündür": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen", "Direkt PM fiksasyonu morbiditesi açık yaklaşım kullanımımı sınırlar": "Die Morbidität der direkten PM-Fixation schränkt meine Nutzung offener Zugänge ein", "Seçilmiş morfolojilerde direkt redüksiyon morbiditeyi geride bırakır": "Bei ausgewählten Morphologien überwiegt die direkte Reposition die Morbidität", "A6 (Subspecialty) × D1 (Boyut eşiği)": "A6 (Subspezialität) × D1 (Größenschwelle)", "F&A cerrahları daha düşük eşik kullanıyor mu?": "Verwenden Fuß-&-Sprunggelenk-Chirurgen eine niedrigere Schwelle?", "A7 (CT rutin) × C1 (ilk sınıflama)": "A7 (CT routinemäßig) × C1 (erste Klassifikation)", "Rutin CT yapanlar daha çok Bartoníček/Rammelt kullanıyor mu?": "Verwenden Routine-CT-Anwender häufiger Bartoníček/Rammelt?", "A2 (Deneyim) × H5 (Pratik değişim)": "A2 (Erfahrung) × H5 (Praxiswandel)", "Genç vs deneyimli cerrahlar arasında pratik değişim farkı": "Unterschied im Praxiswandel zwischen jüngeren und erfahrenen Chirurgen", "B1 (Aylık hacim) × E2 (Yaklaşım)": "B1 (Monatsvolumen) × E2 (Zugang)", "Yüksek hacimli cerrahlar hangi yaklaşımı kullanıyor?": "Welchen Zugang nutzen Chirurgen mit hohem Volumen?", "A6 (Subspecialty) × E2 (Yaklaşım)": "A6 (Subspezialität) × E2 (Zugang)", "Subspecialty cerrahi yaklaşımı belirler mi?": "Bestimmt die Subspezialität den operativen Zugang?", "D1 (Boyut eşiği) × E1 (Teknik)": "D1 (Größenschwelle) × E1 (Technik)", "Düşük eşik = açık teknik mi?": "Niedrige Schwelle = offene Technik?", "Kombine PL+PM": "Kombiniert PL+PM", "Artroskopik": "Arthroskopisch", "PM önce → Fibula → MM": "PM zuerst → Fibula → IK", "Fibula → PM → MM": "Fibula → PM → IK", "Fibula → Sindesmoz değerlendir → PM → MM": "Fibula → Syndesmosenprüfung → PM → IK", "Bireyselleştirilmiş": "Individuell", "Açık PL — buttress/locking plak": "Offen PL — Abstütz-/winkelstabile Platte", "Açık PL — lag vida": "Offen PL — Zugschraube", "Geri Bildirim Paneli": "Feedback-Bereich", "Anketin tam kopyası. Her sorunun altındaki yorum butonuyla geri bildirim bırakabilirsiniz. Hepsini bitirince en alttaki butona basarak hepsini gönderin.": "Vollständige Kopie der Umfrage. Über die Kommentar-Schaltfläche unter jeder Frage können Sie Feedback hinterlassen. Wenn Sie fertig sind, senden Sie alles über die Schaltfläche ganz unten.", "Henüz yorum eklemediniz.": "Sie haben noch keine Kommentare hinzugefügt.", "Yorum yok": "Keine Kommentare", "Yorum ekle": "Kommentar hinzufügen", "Yorumu sil": "Kommentar löschen", "Yorumunuzu yazın...": "Ihr Kommentar …", "Kapat": "Schließen", "✓ Kaydedildi ve e-posta açıldı. E-posta uygulamanızdan 'Gönder' butonuna basmayı unutmayın.": "✓ Gespeichert, E-Mail geöffnet. Bitte in Ihrem E-Mail-Programm auf „Senden“ klicken.", "⚠ Veritabanına kaydedilemedi. E-posta açıldı — lütfen mutlaka gönderin.": "⚠ Speichern in der Datenbank fehlgeschlagen. Die E-Mail wurde geöffnet — bitte unbedingt absenden.", "Evet ise aşağıdaki sorular açılır:": "Bei „Ja“ erscheinen die folgenden Fragen:", "A — Demografik Bilgiler": "A — Demografische Angaben", "B — PM Kırığı Deneyimi": "B — Erfahrung mit PM-Frakturen", "C — Sınıflama": "C — Klassifikation", "D — Fiksasyon Endikasyonları": "D — Fixationsindikationen", "E — Teknik Tercihler": "E — Technische Präferenzen", "F — Fiksasyon Sırası ve Sindesmotik Değerlendirme": "F — Fixationsreihenfolge und Syndesmosenbeurteilung", "Uzman olarak kaç yıldır çalışıyorsunuz?": "Seit wie vielen Jahren sind Sie als Facharzt tätig?", "< 5 yıl": "< 5 Jahre", "> 20 yıl": "> 20 Jahre", "Çalıştığınız kurum tipi nedir?": "In welcher Art von Einrichtung sind Sie tätig?", "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?": "Mit wie vielen posterioren Malleolusfrakturen haben Sie ungefähr pro Monat zu tun?", "Spesifik bir sınıflama kullanmıyorum": "Ich verwende keine spezifische Klassifikation", "Fragment boyutu tek başına değerlendirildiğinde, PM fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?": "Wenn die Fragmentgröße isoliert betrachtet wird: Ab welcher Gelenkflächenbeteiligung fixieren Sie das PM-Fragment?", "PM kırığında BT'de interkalar fragman olduğunda, ayrıca ele almanıza yol açan faktörler hangileridir?": "Welche Faktoren veranlassen Sie, ein interkalares Fragment im CT einer PM-Fraktur gesondert zu adressieren?", "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar", "İnterkalar fragmanları genellikle ayrıca ele almam": "Ich adressiere interkalare Fragmente üblicherweise nicht gesondert", "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?": "Reduziert die PM-Fixation Ihrer Erfahrung nach den Bedarf an Stellschrauben?", "Direkt fiksasyon (vida, sütur ankoru veya hook plak)": "Direkte Fixation (Schraube, Fadenanker oder Hakenplatte)", "Direkt posterior PM fiksasyonunun olası morbiditesi açık posterior yaklaşımları kullanmamı sınırlıyor.": "Die mögliche Morbidität der direkten posterioren PM-Fixation schränkt meine Nutzung offener posteriorer Zugänge ein.", "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, eklenen cerrahi morbiditeyi geride bırakır.": "Bei ausgewählten PM-Frakturmorphologien überwiegt der erwartete Nutzen der direkten Reposition die zusätzliche operative Morbidität.", "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?": "Hat sich Ihr Vorgehen (bzw. das Ihrer Klinik) bei PM-Frakturen in den letzten 10 Jahren wesentlich verändert?", "Son on yıldaki gelişmelerden hangileri pratiğinizi etkiledi? (Çoklu seçim)": "Welche Entwicklungen des letzten Jahrzehnts haben Ihre Praxis beeinflusst? (Mehrfachauswahl)", "(İsteğe bağlı) tek cümlelik açıklama — maks 300 karakter.": "(Optional) Erläuterung in einem Satz — max. 300 Zeichen.", "Daha rutin preoperatif BT / morfoloji bazlı değerlendirme": "Routinemäßigere präoperative CT / morphologiebasierte Beurteilung", "Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması": "Häufigere Nutzung direkter posteriorer Zugänge (posterolateral oder posteromedial)", "Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş": "Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen", "İncisura / fibular notch redüksiyonuna daha fazla dikkat": "Größere Aufmerksamkeit für die Reposition in der Incisura fibularis", "Hiçbiri — pratiğim büyük ölçüde değişmedi": "Keine davon — meine Praxis ist weitgehend unverändert geblieben", "Başarılı": "Erfolgreich", "BAŞARISIZ — bu mail yoksa veri kaybolur": "FEHLGESCHLAGEN — ohne diese E-Mail gehen die Daten verloren", "Otomatik Yedekleme": "Automatisches Backup", "Yedekleme Geçmişi": "Backup-Verlauf", "Henüz yedekleme yapılmadı": "Noch kein Backup erstellt", "Anket Durumu": "Umfragestatus", "Aktif": "Aktiv", "Duraklat": "Pausieren", "Anket Linki": "Umfrage-Link", "Kopyala": "Kopieren", "✓ Kopyalandı": "✓ Kopiert", "Mail Listesi": "Mailingliste", "Henüz kayıtlı mail yok": "Noch keine E-Mail-Adressen eingetragen", "dk": " Min.", "Yeni yanıt geldi!": "Neue Antwort eingegangen!", "Türkiye": "Türkei", "Uluslararası": "International", "Ülke": "Land", "YANIT": "ANTW.", "KKTC": "TRNC", "Yeni yanıt efektini dene": "Effekt für neue Antwort testen", "🔇 Alkış kapalı": "🔇 Applaus aus", "🔊 Alkış açık": "🔊 Applaus an", "Zaman çizgisi için en az iki farklı gün gerekiyor.": "Für die Zeitachse sind mindestens zwei verschiedene Tage nötig.", "TR kapanış": "TR-Abschluss", "Türkiye vs Uluslararası": "Türkei vs. International", "🌍 Türkiye vs Uluslararası": "🌍 Türkei vs. International", "Veri alınamadı:": "Daten konnten nicht geladen werden: ", "Ülke, A4 yanıtına göre. KKTC ayrı tutulur (Türkçe kanal üzerinden ulaşıldı).": "Land gemäß Antwort A4. Nordzypern (TRNC) wird separat geführt (über den türkischen Kanal erreicht).", "TR kapanış tarihi": "TR-Abschlussdatum", "İlk uluslararası yanıt": "Erste internationale Antwort", "Kapanıştan sonra gelen TR": "TR-Antworten nach Abschluss", "analizde ayrı raporlanmalı": "in der Analyse gesondert berichten", "(kümülatif)": " (kumulativ)", "Uluslararası ülkeler": "Internationale Länder", "Henüz uluslararası yanıt yok — sahne seni bekliyor.": "Noch keine internationalen Antworten — die Bühne wartet.", "Anket dili": "Umfragesprache", "Ülkesi boş:": "Ohne Land: ", "Kayıt yok.": "Keine Einträge.", "🧪 Veri kalitesi (CHERRIES)": "🧪 Datenqualität (CHERRIES)", "Yalnız gönderilen (tamamlanmış) anketler kaydediliyor; başlayıp bırakanlar veritabanına düşmüyor. Bu yüzden görüntülenme/katılım oranı buradan hesaplanamaz.": "Gespeichert werden nur abgesendete (abgeschlossene) Umfragen; abgebrochene Teilnahmen landen nicht in der Datenbank. View- und Teilnahmeraten lassen sich hier daher nicht berechnen.", "Tamamlanan anket": "Abgeschlossene Umfragen", "Medyan süre": "Median-Dauer", "Hızlı dolduran (<5 dk)": "Schnellausfüller (<5 Min.)", "Mükerrer şüphesi": "Verdacht auf Duplikat", "manuel kontrol gerekir": "manuelle Prüfung nötig", "≥ 60 dk açık kalan": "≥ 60 Min. geöffnet", "sekmede unutulmuş olabilir": "evtl. im Tab vergessen", "Tamamlama süresi dağılımı": "Verteilung der Bearbeitungsdauer", "Hızlı dolduranlar": "Schnellausfüller", "Birebir aynı cevaplar": "Identische Antworten", "Aynı cihaz + ülke ≤30 dk": "Gleiches Gerät + Land ≤30 Min.", "< 5 dk tamamlanan yanıtlar": "In < 5 Min. abgeschlossene Antworten", "Tüm kapalı uçlu cevapları aynı olan gruplar": "Gruppen mit identischen Antworten auf alle geschlossenen Fragen", "Aynı tarayıcı imzası ve ülke, 30 dk içinde": "Gleiche Browser-Signatur und gleiches Land innerhalb von 30 Min.", "Bilinmiyor": "Unbekannt", "Fibular notch tutulumu": "Beteiligung der Incisura fibularis", "47 yaşında kadın hasta (VKİ 30.5), yürüyüş sırasında burkulma. İzole PM kırığı — fibula ve medial malleol intakt. BT: PM fragmenti %26, artiküler step-off yok. Bartoníček Tip 2, Haraguchi Tip 1.": "47-jährige Patientin (BMI 30,5), Umknicktrauma beim Gehen. Isolierte PM-Fraktur — Fibula und Innenknöchel intakt. CT: PM-Fragment 26 %, keine Gelenkstufe. Bartoníček Typ 2, Haraguchi Typ 1.", "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %20'si. Bartoníček Tip 2, Haraguchi Tip 1.": "52-jährige Patientin, Vorstellung in der Notaufnahme nach Umknicken beim Treppabgehen. Vorerkrankung: arterielle Hypertonie, regelmäßig Amlodipin 5 mg. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 20 % der Gelenkfläche. Bartoníček Typ 2, Haraguchi Typ 1.", "74 yaşında kadın hasta, dış merkezden atelle sevk. Anteromedialde debride edilmiş yumuşak doku hasarı. Gustilo-Anderson Tip 3A açık trimalleolar kırık. Ext. fiksatör + VAC → 3. hafta büzüşme testi lat+post pozitif. Osteoporoz, HT. Weber B. BT: PM fragmenti %28. Bartoníček Tip 2, Haraguchi Tip 1.": "74-jährige Patientin, mit Schiene aus einem auswärtigen Haus zuverlegt. Débridierter anteromedialer Weichteilschaden. Offene trimalleoläre Fraktur Gustilo-Anderson Typ 3A. Fixateur externe + VAC → in Woche 3 Wrinkle-Test lateral und posterior positiv. Osteoporose, Hypertonie. Weber B. CT: PM-Fragment 28 %. Bartoníček Typ 2, Haraguchi Typ 1.", "76 yaşında aktif erkek hasta, bahçede düzensiz zeminde ayağının dönmesi sonrası başvurmuştur. Özgeçmişinde iyi kontrollü DM tip 2 ve BPH mevcuttur. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %18'i. Bartoníček Tip 3, Haraguchi Tip 2.": "76-jähriger aktiver Patient, Vorstellung nach Verdrehtrauma auf unebenem Gartenboden. Vorerkrankungen: gut eingestellter Diabetes mellitus Typ 2 und BPH. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 18 % der Gelenkfläche. Bartoníček Typ 3, Haraguchi Typ 2.", "Direkt posterior yaklaşım perkütan tekniklerden üstündür.": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen.", "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)": "Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hook-Test, persistierende Diastase in Stressaufnahmen etc.)", "Fragment boyutu PM fiksasyon kararında en önemli faktördür.": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung.", "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon": "Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung", "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich seltener", "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich häufiger", "Son literatür interkalar fragmanların direkt fiksasyonu hakkında çelişen kanıtlar üretti. Pratiğinizi en iyi hangisi tanımlar?": "Die aktuelle Literatur liefert widersprüchliche Evidenz zur direkten Fixation interkalarer Fragmente. Was beschreibt Ihre Praxis am besten?", "Her gün 05:17'de (TR saati) Cloudflare'de gizli bir depoya": "Täglich um 05:17 (türkische Zeit) in einen privaten Cloudflare-Speicher", "Şimdi yedekle": "Jetzt sichern", "Yedekleniyor…": "Wird gesichert…", "İndir": "Herunterladen", "Yedek alındı.": "Backup erstellt.", "Yedek": "Backup", "Dünya haritası": "Weltkarte", "Dünya": "Welt", "Avrupa": "Europa", "Harita yükleniyor…": "Karte wird geladen…", "Kabarcık büyüklüğü ve renk yoğunluğu logaritmik": "Blasengröße und Farbintensität logarithmisch"}, "rules": [["^Yedek durumu okunamadı: worker yedekleme uçlarını desteklemiyor \\(eski sürüm\\)$", "Backup-Status nicht lesbar: Worker unterstützt die Backup-Endpunkte nicht (alte Version)"], ["^(\\d+) tamamlanmış yanıt$", "$1 abgeschlossene Antworten"], ["^Vaka (\\d) — Fix\\?$", "Fall $1 — Fixation?"], ["^Vaka (\\d) — Yaklaşım$", "Fall $1 — Zugang"], ["^Vaka (\\d)$", "Fall $1"], ["^Yorum \\((\\d+) karakter\\)$", "Kommentar ($1 Zeichen)"], ["^(\\d+) yorum hazır\\. .*$", "$1 Kommentare bereit. Beim Senden gehen alle Kommentare per E-Mail an Utku und werden in der Datenbank gespeichert."], ["^Tüm yorumları gönder \\((\\d+)\\)$", "Alle Kommentare senden ($1)"], ["^(\\d+) yeni yanıt!$", "$1 neue Antworten!"], ["^(\\d+) ülke · (.*)$", "$1 Länder · $2"], ["^Grup (\\d+): $", "Gruppe $1: "], ["^(.*) dk$", "$1 Min."], ["^(\\d+) yorum$", "$1 Kommentare"], ["^(.+) yıl$", "$1 Jahre"], ["^Yedekleme Geçmişi \\((\\d+)\\)$", "Backup-Verlauf ($1)"], ["^Yedek durumu okunamadı: (.*)$", "Backup-Status nicht lesbar: $1"], ["^Yedek alınamadı: (.*)$", "Backup fehlgeschlagen: $1"], ["^Son deneme başarısız \\((.+?)\\): (.*)$", "Letzter Versuch fehlgeschlagen ($1): $2"], ["^([●○]) Son yedek: (.+?) · (\\d+) yanıt · (\\d+) posta listesi · (\\d+) hata kaydı · (\\d+) geri bildirim — 3 günden eski!$", "$1 Letztes Backup: $2 · $3 Antworten · $4 Mailingliste · $5 Fehlereinträge · $6 Feedback — älter als 3 Tage!"], ["^([●○]) Son yedek: (.+?) · (\\d+) yanıt · (\\d+) posta listesi · (\\d+) hata kaydı · (\\d+) geri bildirim$", "$1 Letztes Backup: $2 · $3 Antworten · $4 Mailingliste · $5 Fehlereinträge · $6 Feedback"], ["^Son yanıt: (.*)$", "Letzte Antwort: $1"], ["^Harita yüklenemedi: (.*)$", "Karte konnte nicht geladen werden: $1"]]};
+const PMAL_DE = {"map": {"Evet": "Ja", "Üniversite hastanesi / akademik eğitim hastanesi": "Universitätsklinikum / akademisches Lehrkrankenhaus", "Özel klinik (solo veya grup)": "Niedergelassene Praxis (Einzel- oder Gemeinschaftspraxis)", "Diğer": "Sonstiges", "Yılda yaklaşık kaç ayak bileği kırığı ameliyatı yapıyorsunuz?": "Wie viele Sprunggelenkfraktur-Operationen führen Sie ungefähr pro Jahr durch?", "Birincil klinik odağınızı en iyi tarif eden seçenek nedir?": "Was beschreibt Ihren klinischen Schwerpunkt am besten?", "Ayak ve ayak bileği cerrahisi": "Fuß- und Sprunggelenkchirurgie", "Ortopedik travma": "Orthopädische Traumatologie / Unfallchirurgie", "Genel ortopedi": "Allgemeine Orthopädie", "Asistan / fellow eğitim aşamasında": "Assistenzarzt/-ärztin bzw. Fellow in Weiterbildung", "Diğer ortopedik yan dal (omurga, spor, artroplasti vb.)": "Andere orthopädische Subspezialität (Wirbelsäule, Sport, Endoprothetik etc.)", "PM tutulumundan şüphelenilen ayak bileği kırıklarında ne sıklıkla preoperatif BT alıyorsunuz?": "Wie häufig veranlassen Sie eine präoperative CT bei Sprunggelenkfrakturen mit Verdacht auf PM-Beteiligung?", "Rutin olarak": "Routinemäßig", "Sıklıkla": "Häufig", "Seçici olarak": "Selektiv", "Nadiren": "Selten", "Pratiğimde BT erişimi sınırlı": "Der Zugang zur CT ist in meinem Umfeld begrenzt", "PM kırıklarını değerlendirirken hangi sınıflama sistemlerini kullanıyorsunuz?": "Welche Klassifikationssysteme verwenden Sie bei der Beurteilung von PM-Frakturen?", "Haraguchi sınıflaması": "Haraguchi-Klassifikation", "Bartoníček/Rammelt sınıflaması": "Bartoníček/Rammelt-Klassifikation", "Mason & Molloy sınıflaması": "Mason-&-Molloy-Klassifikation", "AO/OTA sınıflaması": "AO/OTA-Klassifikation", "Lauge-Hansen sınıflaması": "Lauge-Hansen-Klassifikation", "Fragment boyutu (% eklem yüzeyi)": "Fragmentgröße (% der Gelenkfläche)", "Sınıflama sistemi tedavi kararlarınızı yönlendiriyor mu?": "Leitet das Klassifikationssystem Ihre Therapieentscheidungen?", "Evet — primer olarak sınıflamaya göre karar veririm": "Ja — ich entscheide primär anhand der Klassifikation", "Kısmen — sınıflama faktörlerden biridir": "Teilweise — die Klassifikation ist einer von mehreren Faktoren", "Hayır — sınıflamadan bağımsız değerlendiririm": "Nein — ich beurteile unabhängig von der Klassifikation", "Teknik olarak uygunsa tüm PM fragmanlarını fikse ederim": "Ich fixiere alle PM-Fragmente, sofern technisch möglich", "Boyutu tek başına bir endikasyon olarak kullanmam": "Ich verwende die Größe allein nicht als Indikation", "PM fragmentini nadiren / hiç fikse etmem": "Ich fixiere das PM-Fragment selten/nie", "PM fiksasyon kararınızı etkileyen faktörler nelerdir?": "Welche Faktoren beeinflussen Ihre Entscheidung zur PM-Fixation?", "Artiküler step-off miktarı": "Ausmaß der Gelenkstufe (Step-off)", "Sindesmoz instabilitesi": "Syndesmoseninstabilität", "Fragment morfolojisi (Bartoníček/Haraguchi tipi)": "Fragmentmorphologie (Bartoníček-/Haraguchi-Typ)", "Hasta yaşı ve aktivite düzeyi": "Alter und Aktivitätsniveau des Patienten", "Kemik kalitesi (osteoporoz)": "Knochenqualität (Osteoporose)", "Yumuşak doku durumu": "Weichteilverhältnisse", "İmpakte artiküler fragment varlığı": "Vorliegen impaktierter Gelenkfragmente", "Komorbidite (DM, sigara vb.)": "Komorbiditäten (Diabetes, Rauchen etc.)", "Fragmana bağlı artiküler step-off veya boşluk": "Durch das Fragment bedingte Gelenkstufe oder Spaltbildung", "Fragmanın ana PM fragmentinin redüksiyonunu engellemesi": "Das Fragment blockiert die Reposition des PM-Hauptfragments", "Fragmanın ≥ 5 mm — bağımsız fiksasyona yetecek büyüklükte olması": "Fragment ≥ 5 mm — groß genug für eine eigenständige Fixation", "Elevasyon/greftleme gerektiren impakte osteokondral fragman": "Impaktiertes osteochondrales Fragment, das eine Anhebung/Unterfütterung mit Transplantat erfordert", "Hastanın genç/aktif olması (yüksek fonksiyonel beklenti)": "Junger/aktiver Patient (hoher funktioneller Anspruch)", "Erişilebilir olduğunda interkalar fragmanları rutin olarak direkt fikse etmeyi denerim": "Ich versuche routinemäßig die direkte Fixation interkalarer Fragmente, sofern erreichbar", "İnterkalar fragmanları boyut, lokalizasyon veya parçalanmaya göre seçici olarak fikse ederim": "Ich fixiere interkalare Fragmente selektiv nach Größe, Lage oder Trümmerung", "İnterkalar fragmanları genellikle direkt fikse etmem — ana PM fragman fiksasyonu genelde yeterli": "Ich fixiere interkalare Fragmente in der Regel nicht direkt — die Fixation des PM-Hauptfragments genügt meist", "Henüz oturmuş bir pratiğim yok — kanıtlar çelişkili": "Ich habe noch keine feste Praxis — die Evidenz ist widersprüchlich", "PM fiksasyonu için en sık tercih ettiğiniz teknik nedir?": "Welche Technik bevorzugen Sie am häufigsten zur PM-Fixation?", "Perkütan AP lag vida": "Perkutane AP-Zugschraube", "Perkütan PA lag vida": "Perkutane PA-Zugschraube", "Trans-Achilles perkütan PA vida": "Transachilläre perkutane PA-Schraube", "Açık posterolateral — buttress/locking plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posterolateral — lag vida": "Offen posterolateral — Zugschraube", "PM kırıklarında en sık tercih ettiğiniz cerrahi yaklaşım nedir?": "Welchen operativen Zugang bevorzugen Sie am häufigsten bei PM-Frakturen?", "Posteromedyal — standart (FDL ve posterior tibial tendon arasından)": "Posteromedial — Standard (zwischen FDL- und Tibialis-posterior-Sehne)", "Posteromedyal — modifiye (medial pencere, FHL'nin lateralinden)": "Posteromedial — modifiziert (mediales Fenster, lateral der FHL)", "Posteromedyal — geniş (FHL retraksiyonu / FHL pencere yaklaşımı)": "Posteromedial — erweitert (FHL-Retraktion / FHL-Fenster)", "Kombine posterolateral + posteromedyal": "Kombiniert posterolateral + posteromedial", "Anterior (perkütan)": "Anterior (perkutan)", "Artroskopi yardımlı": "Arthroskopisch assistiert", "Vakaya göre değişir": "Fallabhängig unterschiedlich", "PM kırıklarında en sık tercih ettiğiniz hasta pozisyonu nedir?": "Welche Patientenlagerung bevorzugen Sie am häufigsten bei PM-Frakturen?", "Supine": "Rückenlage", "Prone": "Bauchlage", "Lateral dekübitus": "Seitenlage", "Trimalleolar kırıklarda genel fiksasyon sıranız nedir?": "Wie ist Ihre übliche Fixationsreihenfolge bei trimalleolären Frakturen?", "Fibula → PM → Medial malleol → Sindesmoz (instabil ise)": "Fibula → PM → Innenknöchel → Syndesmose (falls instabil)", "PM önce → Fibula → Medial malleol → Sindesmoz (instabil ise)": "PM zuerst → Fibula → Innenknöchel → Syndesmose (falls instabil)", "Fibula → Sindesmoz değerlendir → PM → Medial malleol": "Fibula → Syndesmosenprüfung → PM → Innenknöchel", "Bireyselleştirilmiş — standart sıram yok": "Individuell — keine Standardreihenfolge", "PM fiksasyonu sonrası sindezmozu nasıl değerlendirirsiniz?": "Wie beurteilen Sie die Syndesmose nach der PM-Fixation?", "İntraoperatif stres testi (eksternal rotasyon / hook test)": "Intraoperativer Stresstest (Außenrotations-/Hakentest)", "İntraoperatif artroskopi": "Intraoperative Arthroskopie", "Stabilite durumundan bağımsız rutin sindesmotik fiksasyon uygularım": "Ich fixiere die Syndesmose routinemäßig unabhängig von der Stabilität", "Evet — tutarlı olarak; PM fiksasyonu sindesmotik stabiliteyi sağlar": "Ja — durchgehend; die PM-Fixation stellt die Syndesmosenstabilität wieder her", "Evet — bazı vakalarda": "Ja — in manchen Fällen", "Hayır — PM fiksasyonuna rağmen sindesmotik instabilite sıklıkla devam eder": "Nein — die Syndesmoseninstabilität persistiert trotz PM-Fixation häufig", "Pratiğimde bunu spesifik olarak değerlendirmedim": "Ich habe dies in meiner Praxis nicht gezielt untersucht", "PM tutulumlu ayak bileği kırıklarını değerlendirirken anterior sindesmotik avulsiyonları (Chaput tüberkülü / Wagstaffe fragmanı) spesifik olarak değerlendirir misiniz?": "Prüfen Sie bei Sprunggelenkfrakturen mit PM-Beteiligung gezielt auf anteriore syndesmotische Avulsionen (Chaput-Tuberkel / Wagstaffe-Fragment)?", "Evet — rutin olarak BT'de": "Ja — routinemäßig im CT", "Bazen — kırık paternine göre": "Manchmal — je nach Frakturmuster", "Nadiren veya spesifik olarak değil": "Selten oder nicht gezielt", "Bir Chaput veya Wagstaffe fragmanı tespit edilirse tercih ettiğiniz yönetim nedir?": "Wie behandeln Sie ein identifiziertes Chaput- oder Wagstaffe-Fragment bevorzugt?", "Sadece trans-sindesmotik fiksasyon (fragmana direkt müdahale etmeden)": "Nur transsyndesmotische Fixation (ohne direkte Adressierung des Fragments)", "Sindesmoz aksi takdirde stabil ise non-operatif": "Konservativ, sofern die Syndesmose ansonsten stabil ist", "Karar fragman boyutu ve erişilebilirliğine göre": "Entscheidung nach Fragmentgröße und Erreichbarkeit", "VAKA 1": "FALL 1", "VAKA 2": "FALL 2", "VAKA 3": "FALL 3", "VAKA 4": "FALL 4", "Hayır": "Nein", "Fragment morfolojisi boyuttan daha önemlidir.": "Die Fragmentmorphologie ist wichtiger als die Größe.", "Kesinlikle katılmıyorum": "Stimme überhaupt nicht zu", "Katılmıyorum": "Stimme nicht zu", "Kararsızım": "Unentschieden", "Katılıyorum": "Stimme zu", "Kesinlikle katılıyorum": "Stimme voll zu", "Birden fazla seçebilirsiniz": "Mehrfachauswahl möglich", "Gönderiliyor...": "Wird gesendet …", "G — Klinik Vaka Senaryoları": "G — Klinische Fallszenarien", "Bu vakada posterior malleolü fikse eder misiniz?": "Würden Sie in diesem Fall den posterioren Malleolus fixieren?", "Ameliyata hangi pozisyonda başlarsınız?": "In welcher Lagerung beginnen Sie die Operation?", "Hangi cerrahi yaklaşımı tercih edersiniz?": "Welchen operativen Zugang bevorzugen Sie?", "Fiksasyon sıranız ne olur?": "Welche Fixationsreihenfolge wählen Sie?", "PM fiksasyonu için hangi teknik ve implantı tercih edersiniz?": "Welche Technik und welches Implantat bevorzugen Sie für die PM-Fixation?", "H — Tutum ve Görüşler": "H — Einstellungen und Meinungen", "Fragmanın planladığım yaklaşımdan (posterolateral veya posteromedial) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (posterolateral oder posteromedial) erreichbar", "Fragmanın serbest cisim gibi davranması veya fiksasyona uygun olmaması (çıkarma değerlendirilir)": "Das Fragment verhält sich wie ein freier Gelenkkörper oder ist nicht fixierbar (Entfernung erwogen)", "Açık posteromedyal — buttress/kilitli plak": "Offen posteromedial — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida": "Offen posteromedial — Zugschraube", "Kombine posterolateral + medial (medial malleol için ayrı medial insizyon)": "Kombiniert posterolateral + medial (separate mediale Inzision für den Innenknöchel)", "Medial clear space değerlendirmesi yeterlidir": "Die Beurteilung des medialen Gelenkspalts (Medial Clear Space) ist ausreichend", "Direkt fiksasyon (vida, sütur ankoru veya plak)": "Direkte Fixation (Schraube, Fadenanker oder Platte)", "Evet — köklü değişiklik": "Ja — erheblich", "Evet — orta düzeyde değişiklik": "Ja — mäßige Veränderung", "Sadece küçük iyileştirmeler": "Nur geringfügige Anpassungen", "Anlamlı değişiklik yok": "Keine wesentliche Veränderung", "Posteromedyal yaklaşım varyasyonları (modifiye / geniş FHL)": "Posteromediale Zugangsvarianten (modifiziert / erweitert mit FHL)", "Daha küçük fragmanları fikse etme eşiğinin düşmesi": "Niedrigere Schwelle für die Fixation kleinerer Fragmente", "PM fiksasyonunun sindesmoz vidası ihtiyacını azalttığının fark edilmesi": "Erkenntnis, dass die PM-Fixation den Bedarf an Stellschrauben reduziert", "Chaput / Wagstaffe fragmanlarının öneminin fark edilmesi": "Anerkennung der Relevanz von Chaput-/Wagstaffe-Fragmenten", "Diğer (belirtiniz)": "Sonstiges (bitte angeben)", "Birden fazla pozisyon gerekir (örn. intraoperatif pozisyon değişikliği)": "Mehrere Lagerungen erforderlich (z. B. intraoperative Umlagerung)", "Posteromedyal — standart": "Posteromedial — Standard", "Posteromedyal — modifiye": "Posteromedial — modifiziert", "Posteromedyal — geniş (FHL)": "Posteromedial — erweitert (FHL)", "PM önce → Fibula → Medial malleol": "PM zuerst → Fibula → Innenknöchel", "Fibula → PM → Medial malleol → Sindesmoz değerlendir": "Fibula → PM → Innenknöchel → Syndesmosenprüfung", "PM önce → Lateral malleol": "PM zuerst → Außenknöchel", "Lateral malleol önce → PM": "Außenknöchel zuerst → PM", "Eşzamanlı / tek yaklaşımdan fiksasyon": "Simultane Fixation / über einen einzigen Zugang", "Lateral malleol → PM → Sindesmoz değerlendir": "Außenknöchel → PM → Syndesmosenprüfung", "Perkütan AP vida fiksasyonu": "Perkutane AP-Schraubenfixation", "Perkütan PA vida fiksasyonu": "Perkutane PA-Schraubenfixation", "Açık posterolateral — lag vida (plaksız)": "Offen posterolateral — Zugschraube (ohne Platte)", "Açık posterolateral — buttress/kilitli plak": "Offen posterolateral — Abstütz-/winkelstabile Platte", "Açık posteromedyal — lag vida (plaksız)": "Offen posteromedial — Zugschraube (ohne Platte)", "Artroskopi yardımlı redüksiyon / fiksasyon": "Arthroskopisch assistierte Reposition/Fixation", "Evet — yaklaşımı değiştiririm (daha az invazif veya farklı insizyon)": "Ja — ich würde den operativen Zugang anpassen (z. B. weniger invasiv oder andere Inzision)", "Evet — zamanlamayı değiştiririm (geciktirme veya stage uygulama)": "Ja — ich würde den Operationszeitpunkt anpassen (Verschiebung oder mehrzeitiges Vorgehen)", "Evet — cerrahi öncesi uzman konsültasyonu (hematoloji/onkoloji) alırım": "Ja — ich würde präoperativ ein Fachkonsil (Hämatologie/Onkologie) einholen", "Hayır — sağlıklı hastadakiyle aynı planı uygularım": "Nein — ich würde wie bei einem gesunden Patienten vorgehen", "Admin token hatalı — sayfa yenilenince tekrar sorulacak.": "Admin-Token ungültig — er wird nach dem Neuladen erneut abgefragt.", "Doç. Dr.": "PD Dr.", "Yanıtlar": "Antworten", "İstatistik": "Statistik", "Geri Bildirim": "Feedback", "Yedekleme": "Backup", "Ayarlar": "Einstellungen", "Geçersiz şifre": "Ungültiges Passwort", "Giriş yapmak için kartınızı seçin": "Wählen Sie Ihre Karte, um sich anzumelden", "Şifre": "Passwort", "Giriş Yap": "Anmelden", "← Başka karakter seç": "← Andere Figur wählen", "Çıkış": "Abmelden", "The Division Bell albümünün kapanış parçası. Gilmour şarkıyı Cambridge'deki çocukluğuna duyduğu nostaljiyle yazdı. Açılış satırı, büyüdüğü ve Syd Barrett ile tanıştığı sokakları anlatıyor.": "Der Schlusstitel des Albums The Division Bell. Gilmour schrieb den Song aus Nostalgie für seine Kindheit in Cambridge. Die erste Zeile beschreibt die Straßen, in denen er aufwuchs und Syd Barrett kennenlernte.", "Hetfield şarkıyı turne sırasında kız arkadaşıyla telefonda konuşurken yazdı. Telefonu omzuyla tutarken boş eliyle gitarın açık tellerini mırıldanıyordu — ikonik intro böyle doğdu. Şarkıyı banda çalmaya utandı çünkü 'Metallica için fazla yumuşaktı.' Lars Ulrich zorla ikna etti.": "Hetfield schrieb den Song auf Tour, während er mit seiner Freundin telefonierte. Den Hörer zwischen Schulter und Ohr geklemmt, zupfte er mit der freien Hand die offenen Saiten — so entstand das berühmte Intro. Er genierte sich, ihn aufzunehmen, weil er „zu sanft für Metallica“ war. Lars Ulrich musste ihn überreden.", "Slash ikonik intro riff'ini 'sadece bir parmak egzersizi' olarak çalıyordu — gerçek bir şarkı olmasını planlamıyordu. Axl Rose yan odadan duydu ve üzerine sözleri yazdı. Slash yıllar sonra 'O riff benim için bir şaka gibiydi, circus melody diyordum' dedi.": "Slash spielte das berühmte Intro-Riff „nur als Fingerübung“ — ein echter Song war nie geplant. Axl Rose hörte es im Nebenzimmer und schrieb den Text dazu. Jahre später sagte Slash: „Das Riff war für mich ein Witz, ich nannte es eine Zirkusmelodie.“", "Cobain riff'i Killing Joke'un 'Eighties' parçasından esinlenerek yazdı. Sözleri çelişkiler üzerine kurdu: 'Gel olduğun gibi, acele etmeden ama geç kalma.' Şarkıyı Aberdeen'deki çocukluğunun izolasyonuna bağladı.": "Cobain ließ sich für das Riff von Killing Jokes „Eighties“ inspirieren. Den Text baute er auf Widersprüchen auf: „Komm, wie du bist — lass dir Zeit, aber komm nicht zu spät.“ Er verband den Song mit der Isolation seiner Kindheit in Aberdeen.", "Knopfler şarkıyı New York'ta bir beyaz eşya mağazasında duyduğu konuşmadan yazdı. Bir tesisatçı, mağazadaki TV'lerde MTV izlerken rock yıldızlarına küfrediyordu. Knopfler mikrodalgaların arasından adamı gizlice dinledi ve sözleri bir kağıt peçeteye not etti. Sting tesadüfen aynı stüdyodaydı ve ikonik intro'yu tek seferde söyledi.": "Knopfler schrieb den Song nach einem Gespräch, das er in einem New Yorker Elektrogeschäft mithörte. Ein Handwerker schimpfte über die Rockstars, die auf den Fernsehern im Laden über MTV liefen. Knopfler lauschte zwischen den Mikrowellen und notierte den Text auf einer Papierserviette. Sting war zufällig im selben Studio und sang das berühmte Intro in einem Take ein.", "Kiedis bu şarkıyı yalnızlık ve bağımlılıktan çıkış sürecinde yazdı. Sözleri bir şiir defterinde saklıyordu, kimseye göstermedi. Prodüktör Rick Rubin defteri karıştırırken buldu ve 'Bu bir şarkı olmalı' dedi. Kiedis ilk başta itiraz etti — çok kişisel buluyordu.": "Kiedis schrieb diesen Song in einer Phase der Einsamkeit, auf dem Weg aus der Sucht. Den Text bewahrte er in einem Gedichtheft auf und zeigte ihn niemandem. Produzent Rick Rubin stieß beim Blättern darauf und sagte: „Daraus muss ein Song werden.“ Kiedis sträubte sich zunächst — es war ihm zu persönlich.", "Hammett ana riff'i gece 2-3 civarında Soundgarden dinledikten sonra yazdı. Hetfield'ın orijinal sözleri bebek ölümü hakkındaydı. Prodüktör Bob Rock ve Ulrich, Hetfield'a ilk kez sözlerini değiştirmesini söyleme cesaretini gösterdi. Rock sonra anlattı: 'Kimse daha önce James'e sözleri hakkında bir şey söylememişti.'": "Hammett schrieb das Hauptriff gegen zwei, drei Uhr nachts, nachdem er Soundgarden gehört hatte. Hetfields ursprünglicher Text handelte vom plötzlichen Kindstod. Produzent Bob Rock und Ulrich wagten als Erste, Hetfield um eine Textänderung zu bitten. Rock erzählte später: „Niemand hatte James je etwas zu seinen Texten gesagt.“", "Cobain, 1994'te Rolling Stone'a 'Mükemmel pop şarkısını yazmaya çalışıyordum. Pixies'i taklit etmeye çalışıyordum, itiraf etmeliyim' dedi. Şarkının adı, Kathleen Hanna'nın sarhoş bir gece Kurt'ün duvarına yazdığı 'Kurt smells like Teen Spirit' cümlesinden geldi. Kurt bunun devrimci bir slogan olduğunu sandı — aslında bir kız deodorantı markasıydı.": "Cobain sagte 1994 dem Rolling Stone: „Ich wollte den ultimativen Popsong schreiben. Ich habe versucht, die Pixies zu kopieren, das muss ich zugeben.“ Der Titel stammt von dem Satz „Kurt smells like Teen Spirit“, den Kathleen Hanna in einer durchzechten Nacht an Kurts Wand schrieb. Kurt hielt ihn für einen revolutionären Slogan — tatsächlich war es eine Deodorantmarke für Mädchen.", "Axl Rose bu şarkı üzerinde 1983'ten 1991'e kadar çalıştı. Orijinal demo 18 dakikaydı. Slash'in çölde yağmur altında solo çalması rock tarihinin en ikonik görüntülerinden biri oldu. Slash sonra 'O sahneyi çekerken gerçekten yağmur başladı, planlanmamıştı' dedi.": "Axl Rose arbeitete von 1983 bis 1991 an diesem Song. Das ursprüngliche Demo war 18 Minuten lang. Slashs Solo im Regen in der Wüste wurde zu einem der berühmtesten Bilder der Rockgeschichte. Slash sagte später: „Beim Dreh fing es wirklich an zu regnen, das war nicht geplant.“", "Gilmour bu şarkıyı gerçek uçuş dersleri alırken yazdı. Pilot lisansı için çalışıyordu ve uçağı kontrol etmeyi öğrenme sürecini bir metafor olarak kullandı. Waters'ın ayrılığından sonra Gilmour'un Pink Floyd'u tek başına yönlendirebildiğinin kanıtı oldu.": "Gilmour schrieb diesen Song, während er tatsächlich Flugstunden nahm. Er arbeitete auf seinen Pilotenschein hin und nutzte das Fliegenlernen als Metapher. Der Song bewies, dass Gilmour Pink Floyd nach Waters' Weggang allein führen konnte.", "Axl Rose, şarkının sözlerini Greyhound otobüsüyle LA'e ilk geldiği gece yaşadıklarından yazdı. Otobüsten iner inmez bir evsiz adam ona \"Welcome to the jungle\" diye seslendi.": "Axl Rose schrieb den Text über die Nacht, in der er mit dem Greyhound-Bus zum ersten Mal in L.A. ankam. Kaum war er ausgestiegen, rief ihm ein Obdachloser „Welcome to the jungle“ zu.", "Klaus Meine şarkıyı 1989 Moskova Müzik Barış Festivali'nin ardından yazdı. Doğulu ve Batılı müzisyenlerle Moskova Nehri'nde yapılan bir gece tekne gezisi ve Gorki Parkı sözlere girdi. Açılıştaki ıslığı Meine'nin kendisi çaldı. Şarkı Soğuk Savaş'ın bitişinin ve Almanya'nın yeniden birleşmesinin marşı oldu.": "Klaus Meine schrieb den Song nach dem Moscow Music Peace Festival 1989. Eine nächtliche Bootsfahrt auf der Moskwa mit Musikern aus Ost und West und der Gorki-Park fanden ihren Weg in den Text. Das gepfiffene Intro stammt von Meine selbst. Der Song wurde zur Hymne für das Ende des Kalten Krieges und die deutsche Wiedervereinigung.", "Toplam Yanıt": "Antworten gesamt", "Tamamlanan": "Abgeschlossen", "Ort. Süre": "Ø Dauer", "Bugün": "Heute", "Vaka 1 — 52Y K, Bart 2, %20": "Fall 1 — 52 J., w, Bart. 2, 20 %", "Vaka 2 — 76Y E, Bart 3, %18": "Fall 2 — 76 J., m, Bart. 3, 18 %", "Vaka 3 — 74Y K, Açık 3A, %28": "Fall 3 — 74 J., w, offen 3A, 28 %", "Vaka 4 — 55Y K, Bart 3, %36, lüksasyon": "Fall 4 — 55 J., w, Bart. 3, 36 %, Luxation", "SISTEM:": "SYSTEM:", "Vaka Bazlı Fix Oranları": "Fixationsraten je Fall", "Henüz veri yok": "Noch keine Daten", "Araştırma Ekibi": "Forschungsteam", "Yanıt Listesi (": "Antwortliste (", "Yükleniyor...": "Wird geladen …", "Yükleniyor…": "Wird geladen…", "Henüz yanıt bulunmamaktadır.": "Noch keine Antworten vorhanden.", "Tamamlandı": "Abgeschlossen", "Yarım": "Unvollständig", "Veri yok": "Keine Daten", "Yeterli veri yok": "Nicht genügend Daten", "Demografi": "Demografie", "Pratik": "Praxis", "Tutum + Vakalar": "Einstellungen + Fälle", "Çapraz analiz": "Kreuzanalyse", "Henüz tamamlanmış yanıt yok.": "Noch keine abgeschlossenen Antworten.", "İstatistikler": "Statistiken", "CSV indir": "CSV herunterladen", "A2 — Deneyim yılı": "A2 — Berufserfahrung (Jahre)", "A3 — Kurum tipi": "A3 — Art der Einrichtung", "A4 — Ülke dağılımı (top 15)": "A4 — Länderverteilung (Top 15)", "A5 — Yıllık ankle fx volume": "A5 — Sprunggelenkfrakturen pro Jahr", "A6 — Subspecialty": "A6 — Subspezialität", "A7 — Preoperatif CT rutin": "A7 — Präoperatives CT routinemäßig", "B1 — Aylık PM kırığı hacmi": "B1 — PM-Frakturen pro Monat", "D1 — Boyut eşiği (headline)": "D1 — Größenschwelle (Hauptbefund)", "Bu makalenin baş bulgularından biri": "Einer der Hauptbefunde dieser Arbeit", "C1 — Kullanılan sınıflamalar (multi)": "C1 — Verwendete Klassifikationen (Mehrfachauswahl)", "D3 — Karar faktörleri (multi)": "D3 — Entscheidungsfaktoren (Mehrfachauswahl)", "D4 — İnterkalar kriterler (multi)": "D4 — Kriterien interkalare Fragmente (Mehrfachauswahl)", "D5 — İnterkalar pratiği": "D5 — Praxis bei interkalaren Fragmenten", "E1 — Teknik tercihi": "E1 — Bevorzugte Technik", "E2 — Cerrahi yaklaşım": "E2 — Operativer Zugang", "E3 — Pozisyon": "E3 — Lagerung", "F1 — Fiksasyon sırası": "F1 — Fixationsreihenfolge", "F2 — Sindesmoz değerlendirme": "F2 — Syndesmosenprüfung", "F3 — PM sindesmoz ihtiyacını azaltır mı?": "F3 — Reduziert die PM-Fixation den Syndesmosenbedarf?", "F4 — Chaput değerlendirme": "F4 — Beurteilung Chaput", "F5 — Chaput yönetimi": "F5 — Behandlung Chaput", "H5 — Pratiğiniz 10 yılda değişti mi?": "H5 — Hat sich Ihre Praxis in 10 Jahren verändert?", "H6_driver — Etkileyen gelişmeler (multi, headline)": "H6_driver — Einflussreiche Entwicklungen (Mehrfachauswahl, Hauptbefund)", "Likert tutumlar (H1–H8)": "Likert-Einstellungen (H1–H8)", "Diverging stacked bar — kırmızı (sol) = disagree, yeşil (sağ) = agree": "Divergierendes gestapeltes Balkendiagramm — rot (links) = Ablehnung, grün (rechts) = Zustimmung", "Fragment boyutu PM fiksasyon kararında en önemli faktördür": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung", "Fragment morfolojisi boyuttan daha önemlidir": "Die Fragmentmorphologie ist wichtiger als die Größe", "Direkt posterior yaklaşım perkütan tekniklerden üstündür": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen", "Direkt PM fiksasyonu morbiditesi açık yaklaşım kullanımımı sınırlar": "Die Morbidität der direkten PM-Fixation schränkt meine Nutzung offener Zugänge ein", "Seçilmiş morfolojilerde direkt redüksiyon morbiditeyi geride bırakır": "Bei ausgewählten Morphologien überwiegt die direkte Reposition die Morbidität", "A6 (Subspecialty) × D1 (Boyut eşiği)": "A6 (Subspezialität) × D1 (Größenschwelle)", "F&A cerrahları daha düşük eşik kullanıyor mu?": "Verwenden Fuß-&-Sprunggelenk-Chirurgen eine niedrigere Schwelle?", "A7 (CT rutin) × C1 (ilk sınıflama)": "A7 (CT routinemäßig) × C1 (erste Klassifikation)", "Rutin CT yapanlar daha çok Bartoníček/Rammelt kullanıyor mu?": "Verwenden Routine-CT-Anwender häufiger Bartoníček/Rammelt?", "A2 (Deneyim) × H5 (Pratik değişim)": "A2 (Erfahrung) × H5 (Praxiswandel)", "Genç vs deneyimli cerrahlar arasında pratik değişim farkı": "Unterschied im Praxiswandel zwischen jüngeren und erfahrenen Chirurgen", "B1 (Aylık hacim) × E2 (Yaklaşım)": "B1 (Monatsvolumen) × E2 (Zugang)", "Yüksek hacimli cerrahlar hangi yaklaşımı kullanıyor?": "Welchen Zugang nutzen Chirurgen mit hohem Volumen?", "A6 (Subspecialty) × E2 (Yaklaşım)": "A6 (Subspezialität) × E2 (Zugang)", "Subspecialty cerrahi yaklaşımı belirler mi?": "Bestimmt die Subspezialität den operativen Zugang?", "D1 (Boyut eşiği) × E1 (Teknik)": "D1 (Größenschwelle) × E1 (Technik)", "Düşük eşik = açık teknik mi?": "Niedrige Schwelle = offene Technik?", "Kombine PL+PM": "Kombiniert PL+PM", "Artroskopik": "Arthroskopisch", "PM önce → Fibula → MM": "PM zuerst → Fibula → IK", "Fibula → PM → MM": "Fibula → PM → IK", "Fibula → Sindesmoz değerlendir → PM → MM": "Fibula → Syndesmosenprüfung → PM → IK", "Bireyselleştirilmiş": "Individuell", "Açık PL — buttress/locking plak": "Offen PL — Abstütz-/winkelstabile Platte", "Açık PL — lag vida": "Offen PL — Zugschraube", "Geri Bildirim Paneli": "Feedback-Bereich", "Anketin tam kopyası. Her sorunun altındaki yorum butonuyla geri bildirim bırakabilirsiniz. Hepsini bitirince en alttaki butona basarak hepsini gönderin.": "Vollständige Kopie der Umfrage. Über die Kommentar-Schaltfläche unter jeder Frage können Sie Feedback hinterlassen. Wenn Sie fertig sind, senden Sie alles über die Schaltfläche ganz unten.", "Henüz yorum eklemediniz.": "Sie haben noch keine Kommentare hinzugefügt.", "Yorum yok": "Keine Kommentare", "Yorum ekle": "Kommentar hinzufügen", "Yorumu sil": "Kommentar löschen", "Yorumunuzu yazın...": "Ihr Kommentar …", "Kapat": "Schließen", "✓ Kaydedildi ve e-posta açıldı. E-posta uygulamanızdan 'Gönder' butonuna basmayı unutmayın.": "✓ Gespeichert, E-Mail geöffnet. Bitte in Ihrem E-Mail-Programm auf „Senden“ klicken.", "⚠ Veritabanına kaydedilemedi. E-posta açıldı — lütfen mutlaka gönderin.": "⚠ Speichern in der Datenbank fehlgeschlagen. Die E-Mail wurde geöffnet — bitte unbedingt absenden.", "Evet ise aşağıdaki sorular açılır:": "Bei „Ja“ erscheinen die folgenden Fragen:", "A — Demografik Bilgiler": "A — Demografische Angaben", "B — PM Kırığı Deneyimi": "B — Erfahrung mit PM-Frakturen", "C — Sınıflama": "C — Klassifikation", "D — Fiksasyon Endikasyonları": "D — Fixationsindikationen", "E — Teknik Tercihler": "E — Technische Präferenzen", "F — Fiksasyon Sırası ve Sindesmotik Değerlendirme": "F — Fixationsreihenfolge und Syndesmosenbeurteilung", "Uzman olarak kaç yıldır çalışıyorsunuz?": "Seit wie vielen Jahren sind Sie als Facharzt tätig?", "< 5 yıl": "< 5 Jahre", "> 20 yıl": "> 20 Jahre", "Çalıştığınız kurum tipi nedir?": "In welcher Art von Einrichtung sind Sie tätig?", "Ayda yaklaşık kaç posterior malleol kırığı ile karşılaşıyorsunuz?": "Mit wie vielen posterioren Malleolusfrakturen haben Sie ungefähr pro Monat zu tun?", "Spesifik bir sınıflama kullanmıyorum": "Ich verwende keine spezifische Klassifikation", "Fragment boyutu tek başına değerlendirildiğinde, PM fragmentini hangi eklem yüzeyi tutulumunda fikse etmeye karar verirsiniz?": "Wenn die Fragmentgröße isoliert betrachtet wird: Ab welcher Gelenkflächenbeteiligung fixieren Sie das PM-Fragment?", "PM kırığında BT'de interkalar fragman olduğunda, ayrıca ele almanıza yol açan faktörler hangileridir?": "Welche Faktoren veranlassen Sie, ein interkalares Fragment im CT einer PM-Fraktur gesondert zu adressieren?", "Fragmanın planladığım yaklaşımdan (PL veya PM) erişilebilir olması": "Das Fragment ist über meinen geplanten Zugang (PL oder PM) erreichbar", "İnterkalar fragmanları genellikle ayrıca ele almam": "Ich adressiere interkalare Fragmente üblicherweise nicht gesondert", "Deneyiminize göre PM fiksasyonu sindesmotik vida ihtiyacını azaltır mı?": "Reduziert die PM-Fixation Ihrer Erfahrung nach den Bedarf an Stellschrauben?", "Direkt fiksasyon (vida, sütur ankoru veya hook plak)": "Direkte Fixation (Schraube, Fadenanker oder Hakenplatte)", "Direkt posterior PM fiksasyonunun olası morbiditesi açık posterior yaklaşımları kullanmamı sınırlıyor.": "Die mögliche Morbidität der direkten posterioren PM-Fixation schränkt meine Nutzung offener posteriorer Zugänge ein.", "Seçilmiş PM kırığı morfolojilerinde direkt redüksiyonun beklenen yararı, eklenen cerrahi morbiditeyi geride bırakır.": "Bei ausgewählten PM-Frakturmorphologien überwiegt der erwartete Nutzen der direkten Reposition die zusätzliche operative Morbidität.", "Sizin (veya kliniğinizin) PM kırığı yönetimine yaklaşımı son 10 yılda anlamlı şekilde değişti mi?": "Hat sich Ihr Vorgehen (bzw. das Ihrer Klinik) bei PM-Frakturen in den letzten 10 Jahren wesentlich verändert?", "Son on yıldaki gelişmelerden hangileri pratiğinizi etkiledi? (Çoklu seçim)": "Welche Entwicklungen des letzten Jahrzehnts haben Ihre Praxis beeinflusst? (Mehrfachauswahl)", "(İsteğe bağlı) tek cümlelik açıklama — maks 300 karakter.": "(Optional) Erläuterung in einem Satz — max. 300 Zeichen.", "Daha rutin preoperatif BT / morfoloji bazlı değerlendirme": "Routinemäßigere präoperative CT / morphologiebasierte Beurteilung", "Direkt posterior yaklaşımların (posterolateral veya posteromedial) daha fazla kullanılması": "Häufigere Nutzung direkter posteriorer Zugänge (posterolateral oder posteromedial)", "Boyut bazlı eşikten morfoloji bazlı endikasyona geçiş": "Wechsel von größenbasierten Schwellenwerten zu morphologiebasierten Indikationen", "İncisura / fibular notch redüksiyonuna daha fazla dikkat": "Größere Aufmerksamkeit für die Reposition in der Incisura fibularis", "Hiçbiri — pratiğim büyük ölçüde değişmedi": "Keine davon — meine Praxis ist weitgehend unverändert geblieben", "Başarılı": "Erfolgreich", "BAŞARISIZ — bu mail yoksa veri kaybolur": "FEHLGESCHLAGEN — ohne diese E-Mail gehen die Daten verloren", "Otomatik Yedekleme": "Automatisches Backup", "Yedekleme Geçmişi": "Backup-Verlauf", "Henüz yedekleme yapılmadı": "Noch kein Backup erstellt", "Anket Durumu": "Umfragestatus", "Aktif": "Aktiv", "Duraklat": "Pausieren", "Anket Linki": "Umfrage-Link", "Kopyala": "Kopieren", "✓ Kopyalandı": "✓ Kopiert", "Mail Listesi": "Mailingliste", "Henüz kayıtlı mail yok": "Noch keine E-Mail-Adressen eingetragen", "dk": " Min.", "Yeni yanıt geldi!": "Neue Antwort eingegangen!", "Türkiye": "Türkei", "Uluslararası": "International", "Ülke": "Land", "YANIT": "ANTW.", "KKTC": "TRNC", "Yeni yanıt efektini dene": "Effekt für neue Antwort testen", "🔇 Alkış kapalı": "🔇 Applaus aus", "🔊 Alkış açık": "🔊 Applaus an", "Zaman çizgisi için en az iki farklı gün gerekiyor.": "Für die Zeitachse sind mindestens zwei verschiedene Tage nötig.", "TR kapanış": "TR-Abschluss", "Türkiye vs Uluslararası": "Türkei vs. International", "🌍 Türkiye vs Uluslararası": "🌍 Türkei vs. International", "Veri alınamadı:": "Daten konnten nicht geladen werden: ", "Ülke, A4 yanıtına göre. KKTC ayrı tutulur (Türkçe kanal üzerinden ulaşıldı).": "Land gemäß Antwort A4. Nordzypern (TRNC) wird separat geführt (über den türkischen Kanal erreicht).", "TR kapanış tarihi": "TR-Abschlussdatum", "İlk uluslararası yanıt": "Erste internationale Antwort", "Kapanıştan sonra gelen TR": "TR-Antworten nach Abschluss", "analizde ayrı raporlanmalı": "in der Analyse gesondert berichten", "(kümülatif)": " (kumulativ)", "Uluslararası ülkeler": "Internationale Länder", "Henüz uluslararası yanıt yok — sahne seni bekliyor.": "Noch keine internationalen Antworten — die Bühne wartet.", "Anket dili": "Umfragesprache", "Ülkesi boş:": "Ohne Land: ", "Kayıt yok.": "Keine Einträge.", "🧪 Veri kalitesi (CHERRIES)": "🧪 Datenqualität (CHERRIES)", "Yalnız gönderilen (tamamlanmış) anketler kaydediliyor; başlayıp bırakanlar veritabanına düşmüyor. Bu yüzden görüntülenme/katılım oranı buradan hesaplanamaz.": "Gespeichert werden nur abgesendete (abgeschlossene) Umfragen; abgebrochene Teilnahmen landen nicht in der Datenbank. View- und Teilnahmeraten lassen sich hier daher nicht berechnen.", "Tamamlanan anket": "Abgeschlossene Umfragen", "Medyan süre": "Median-Dauer", "Hızlı dolduran (<5 dk)": "Schnellausfüller (<5 Min.)", "Mükerrer şüphesi": "Verdacht auf Duplikat", "manuel kontrol gerekir": "manuelle Prüfung nötig", "≥ 60 dk açık kalan": "≥ 60 Min. geöffnet", "sekmede unutulmuş olabilir": "evtl. im Tab vergessen", "Tamamlama süresi dağılımı": "Verteilung der Bearbeitungsdauer", "Hızlı dolduranlar": "Schnellausfüller", "Birebir aynı cevaplar": "Identische Antworten", "Aynı cihaz + ülke ≤30 dk": "Gleiches Gerät + Land ≤30 Min.", "< 5 dk tamamlanan yanıtlar": "In < 5 Min. abgeschlossene Antworten", "Tüm kapalı uçlu cevapları aynı olan gruplar": "Gruppen mit identischen Antworten auf alle geschlossenen Fragen", "Aynı tarayıcı imzası ve ülke, 30 dk içinde": "Gleiche Browser-Signatur und gleiches Land innerhalb von 30 Min.", "Bilinmiyor": "Unbekannt", "Fibular notch tutulumu": "Beteiligung der Incisura fibularis", "47 yaşında kadın hasta (VKİ 30.5), yürüyüş sırasında burkulma. İzole PM kırığı — fibula ve medial malleol intakt. BT: PM fragmenti %26, artiküler step-off yok. Bartoníček Tip 2, Haraguchi Tip 1.": "47-jährige Patientin (BMI 30,5), Umknicktrauma beim Gehen. Isolierte PM-Fraktur — Fibula und Innenknöchel intakt. CT: PM-Fragment 26 %, keine Gelenkstufe. Bartoníček Typ 2, Haraguchi Typ 1.", "52 yaşında kadın hasta, merdivenden inerken ayağının burkulması sonrası acil servise başvurmuştur. Özgeçmişinde hipertansiyon mevcuttur ve düzenli amlodipin 5 mg kullanmaktadır. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %20'si. Bartoníček Tip 2, Haraguchi Tip 1.": "52-jährige Patientin, Vorstellung in der Notaufnahme nach Umknicken beim Treppabgehen. Vorerkrankung: arterielle Hypertonie, regelmäßig Amlodipin 5 mg. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 20 % der Gelenkfläche. Bartoníček Typ 2, Haraguchi Typ 1.", "74 yaşında kadın hasta, dış merkezden atelle sevk. Anteromedialde debride edilmiş yumuşak doku hasarı. Gustilo-Anderson Tip 3A açık trimalleolar kırık. Ext. fiksatör + VAC → 3. hafta büzüşme testi lat+post pozitif. Osteoporoz, HT. Weber B. BT: PM fragmenti %28. Bartoníček Tip 2, Haraguchi Tip 1.": "74-jährige Patientin, mit Schiene aus einem auswärtigen Haus zuverlegt. Débridierter anteromedialer Weichteilschaden. Offene trimalleoläre Fraktur Gustilo-Anderson Typ 3A. Fixateur externe + VAC → in Woche 3 Wrinkle-Test lateral und posterior positiv. Osteoporose, Hypertonie. Weber B. CT: PM-Fragment 28 %. Bartoníček Typ 2, Haraguchi Typ 1.", "76 yaşında aktif erkek hasta, bahçede düzensiz zeminde ayağının dönmesi sonrası başvurmuştur. Özgeçmişinde iyi kontrollü DM tip 2 ve BPH mevcuttur. Trimalleolar ayak bileği kırığı, Weber B. BT: PM fragmenti eklem yüzeyinin %18'i. Bartoníček Tip 3, Haraguchi Tip 2.": "76-jähriger aktiver Patient, Vorstellung nach Verdrehtrauma auf unebenem Gartenboden. Vorerkrankungen: gut eingestellter Diabetes mellitus Typ 2 und BPH. Trimalleoläre Sprunggelenkfraktur, Weber B. CT: PM-Fragment 18 % der Gelenkfläche. Bartoníček Typ 3, Haraguchi Typ 2.", "Direkt posterior yaklaşım perkütan tekniklerden üstündür.": "Der direkte posteriore Zugang ist perkutanen Techniken überlegen.", "Evet — sadece sindesmotik instabiliteden klinik olarak şüphelenildiğinde (pozitif hook test, stres görüntülemede kalıcı diastaz vb.)": "Ja — nur bei klinischem Verdacht auf Syndesmoseninstabilität (positiver Hook-Test, persistierende Diastase in Stressaufnahmen etc.)", "Fragment boyutu PM fiksasyon kararında en önemli faktördür.": "Die Fragmentgröße ist der wichtigste Faktor für die PM-Fixationsentscheidung.", "Her ikisi — direkt fragman fiksasyonu ve trans-sindesmotik stabilizasyon": "Beides — direkte Fragmentfixation und transsyndesmotische Stabilisierung", "Son 5 yılda pratiğim daha az sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich seltener", "Son 5 yılda pratiğim daha sık fiksasyon yönünde değişti": "In den letzten 5 Jahren fixiere ich häufiger", "Son literatür interkalar fragmanların direkt fiksasyonu hakkında çelişen kanıtlar üretti. Pratiğinizi en iyi hangisi tanımlar?": "Die aktuelle Literatur liefert widersprüchliche Evidenz zur direkten Fixation interkalarer Fragmente. Was beschreibt Ihre Praxis am besten?", "Her gün 05:17'de (TR saati) Cloudflare'de gizli bir depoya": "Täglich um 05:17 (türkische Zeit) in einen privaten Cloudflare-Speicher", "Şimdi yedekle": "Jetzt sichern", "Yedekleniyor…": "Wird gesichert…", "İndir": "Herunterladen", "Yedek alındı.": "Backup erstellt.", "Yedek": "Backup", "Dünya haritası": "Weltkarte", "Dünya": "Welt", "Avrupa": "Europa", "Harita yükleniyor…": "Karte wird geladen…", "Kabarcık büyüklüğü ve renk yoğunluğu logaritmik": "Blasengröße und Farbintensität logarithmisch", "Her 2 günde bir otomatik yedekleme": "Automatisches Backup alle 2 Tage", "Harita yüklenemedi:": "Karte konnte nicht geladen werden: ", "Son yanıt:": "Letzte Antwort: ", "Haritada gösterilemeyen:": "Nicht auf der Karte: ", "Dünya haritası ·": "Weltkarte · ", "yanıt": " Antworten"}, "rules": [["^Yedek durumu okunamadı: worker yedekleme uçlarını desteklemiyor \\(eski sürüm\\)$", "Backup-Status nicht lesbar: Worker unterstützt die Backup-Endpunkte nicht (alte Version)"], ["^(\\d+) tamamlanmış yanıt$", "$1 abgeschlossene Antworten"], ["^Vaka (\\d) — Fix\\?$", "Fall $1 — Fixation?"], ["^Vaka (\\d) — Yaklaşım$", "Fall $1 — Zugang"], ["^Vaka (\\d)$", "Fall $1"], ["^Yorum \\((\\d+) karakter\\)$", "Kommentar ($1 Zeichen)"], ["^(\\d+) yorum hazır\\. .*$", "$1 Kommentare bereit. Beim Senden gehen alle Kommentare per E-Mail an Utku und werden in der Datenbank gespeichert."], ["^Tüm yorumları gönder \\((\\d+)\\)$", "Alle Kommentare senden ($1)"], ["^(\\d+) yeni yanıt!$", "$1 neue Antworten!"], ["^(\\d+) ülke · (.*)$", "$1 Länder · $2"], ["^Grup (\\d+): $", "Gruppe $1: "], ["^(.*) dk$", "$1 Min."], ["^(\\d+) yorum$", "$1 Kommentare"], ["^(.+) yıl$", "$1 Jahre"], ["^Yedekleme Geçmişi \\((\\d+)\\)$", "Backup-Verlauf ($1)"], ["^Yedek durumu okunamadı: (.*)$", "Backup-Status nicht lesbar: $1"], ["^Yedek alınamadı: (.*)$", "Backup fehlgeschlagen: $1"], ["^Son deneme başarısız \\((.+?)\\): (.*)$", "Letzter Versuch fehlgeschlagen ($1): $2"], ["^([●○]) Son yedek: (.+?) · (\\d+) yanıt · (\\d+) posta listesi · (\\d+) hata kaydı · (\\d+) geri bildirim — 3 günden eski!$", "$1 Letztes Backup: $2 · $3 Antworten · $4 Mailingliste · $5 Fehlereinträge · $6 Feedback — älter als 3 Tage!"], ["^([●○]) Son yedek: (.+?) · (\\d+) yanıt · (\\d+) posta listesi · (\\d+) hata kaydı · (\\d+) geri bildirim$", "$1 Letztes Backup: $2 · $3 Antworten · $4 Mailingliste · $5 Fehlereinträge · $6 Feedback"], ["^Son yanıt: (.*)$", "Letzte Antwort: $1"], ["^Harita yüklenemedi: (.*)$", "Karte konnte nicht geladen werden: $1"], ["^(\\d+) ülke$", "$1 Länder"]]};
 const PmalI18n = (() => {
   const map = new Map(Object.entries(PMAL_DE.map));
   const rules = PMAL_DE.rules.map(([re, rep]) => [new RegExp(re), rep]);
