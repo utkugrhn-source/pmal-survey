@@ -3,3 +3,5 @@ cloudflare_worker_*.js
 pass6_feedback.py
 analysis/
 tailwind.config.js
+wrangler.toml
+.wrangler/

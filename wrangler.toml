@@ -1,0 +1,18 @@
+# Deploy: npx wrangler deploy   (secrets: npx wrangler secret put <NAME>)
+name = "pmal-r2-api"
+main = "cloudflare_worker_v4.js"
+compatibility_date = "2026-04-16"
+workers_dev = true
+preview_urls = false
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "pm-survey-dicom"
+
+[[r2_buckets]]
+binding = "BACKUP"
+bucket_name = "pmal-backup"
+
+# Daily backup at 02:17 UTC (05:17 Turkey/Cyprus)
+[triggers]
+crons = ["17 2 * * *"]
