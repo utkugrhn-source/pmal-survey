@@ -4499,7 +4499,8 @@ function pmalAnkleMesh() {
   return L;
 }
 function PmalORScene({
-  on
+  on,
+  full
 }) {
   const ref = React.useRef(null);
   React.useEffect(() => {
@@ -4702,7 +4703,14 @@ function PmalORScene({
   return /*#__PURE__*/React.createElement("canvas", {
     ref: ref,
     "data-on": on ? "1" : "0",
-    style: {
+    style: full ? {
+      position: "absolute",
+      left: "50%",
+      top: "46%",
+      width: "min(1100px, 96vw)",
+      height: "min(78vh, 720px)",
+      transform: "translate(-50%,-50%)"
+    } : {
       position: "absolute",
       left: "50%",
       bottom: "30%",
@@ -5533,8 +5541,45 @@ const PmalI18n = (() => {
 })();
 window.PmalI18n = PmalI18n;
 
+// ── OPENING INTRO: PMAL O.R. scene, full screen, once per day ──
+function pmalIntroDue() {
+  try {
+    const d = new Date();
+    const key = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+    if (localStorage.getItem("pmal_intro_day") === key) return false;
+    localStorage.setItem("pmal_intro_day", key);
+  } catch (e) {}
+  return true;
+}
+function PmalIntro() {
+  const [show, setShow] = React.useState(() => pmalIntroDue());
+  const [fade, setFade] = React.useState(false);
+  React.useEffect(() => {
+    if (!show) return;
+    const t1 = setTimeout(() => setFade(true), 7200);
+    const t2 = setTimeout(() => setShow(false), 8000);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [show]);
+  if (!show) return null;
+  const close = () => { setFade(true); setTimeout(() => setShow(false), 500); };
+  return React.createElement("div", {
+    onClick: close,
+    style: {
+      position: "fixed", inset: 0, zIndex: 99999, cursor: "pointer",
+      background: "radial-gradient(ellipse at 50% 60%, #1a0b2e 0%, #07040f 70%)",
+      opacity: fade ? 0 : 1, transition: "opacity .6s ease"
+    }
+  }, React.createElement(PmalORScene, { on: true, full: true }),
+  React.createElement("div", {
+    style: {
+      position: "absolute", left: 0, right: 0, bottom: "5%", textAlign: "center",
+      color: "#ff2fa0", font: "700 13px/1.4 ui-monospace, Menlo, monospace",
+      letterSpacing: ".3em", textShadow: "0 0 10px #ff2fa0", opacity: .85
+    }
+  }, "TIKLA · GEÇ"));
+}
 
-ReactDOM.render(React.createElement(App), document.getElementById('root'));
+ReactDOM.render(React.createElement(React.Fragment, null, React.createElement(App), React.createElement(PmalIntro)), document.getElementById('root'));
 </script>
 </body>
 </html>
