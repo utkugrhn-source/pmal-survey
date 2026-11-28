@@ -3927,7 +3927,13 @@ function App() {
   const loadSaved = () => {
     try {
       const raw = typeof window !== 'undefined' ? window.localStorage.getItem(LS_KEY) : null;
-      return raw ? JSON.parse(raw) : null;
+      const sv = raw ? JSON.parse(raw) : null;
+      // A finished survey must not reopen on the thank-you page: start fresh.
+      if (sv && typeof sv.step === 'number' && STEP_KEYS[sv.step] === 'thanks') {
+        window.localStorage.removeItem(LS_KEY);
+        return null;
+      }
+      return sv;
     } catch (e) { return null; }
   };
   const _saved = loadSaved();
@@ -4016,6 +4022,8 @@ function App() {
   useEffect(() => {
     try {
       if (typeof window === 'undefined') return;
+      // Never persist the thank-you screen (submit already cleared the state).
+      if (STEP_KEYS[step] === 'thanks') { window.localStorage.removeItem(LS_KEY); return; }
       window.localStorage.setItem(LS_KEY, JSON.stringify({
         lang, step, answers, consented, email,
         savedAt: Date.now()
